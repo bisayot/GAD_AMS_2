@@ -24,14 +24,15 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # 6. Set the working directory inside the server
 WORKDIR /var/www/html
 
-# 7. Copy ONLY the Composer files first to leverage Docker cache
-COPY composer.json composer.lock ./
+# 7. Copy ONLY the Composer files from the backend folder first
+COPY backend/composer.json backend/composer.lock ./
 
-# 8. Install CodeIgniter dependencies (with memory limit bypassed)
+# 8. Install CodeIgniter dependencies (memory limit bypassed)
 RUN COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader
 
 # 9. NOW copy the rest of your backend files into the container
-COPY . .
+# The dot at the end means "copy into the current WORKDIR (/var/www/html)"
+COPY backend/ .
 
 # 10. Set the correct permissions so CI4 can write to its cache and log folders
 RUN chown -R www-data:www-data writable/ public/
