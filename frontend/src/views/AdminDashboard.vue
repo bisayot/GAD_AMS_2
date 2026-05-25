@@ -154,7 +154,7 @@ const deadlines = [
 
 const handleLogout = async () => {
   try {
-    await axios.get('http://localhost/GAD_v12/backend/public/api/logout');
+    await axios.get('https://gad-ams-2.onrender.com/api/logout');
     localStorage.removeItem('user');
     router.push('/login');
   } catch (err) {

@@ -128,7 +128,7 @@ const handleLogin = async () => {
   error.value = '';
   
   try {
-    const response = await axios.post('http://localhost/GAD_v12/backend/public/api/login', {
+    const response = await axios.post('https://gad-ams-2.onrender.com/api/login', {
       identity: identity.value,
       password: password.value
     });
