@@ -13,43 +13,45 @@ class Database extends Config
     public string $defaultGroup = 'default';
 
     public array $default = [
-        'DSN'      => '',
+        'DSN'      => '', 
         'hostname' => '',
         'username' => '',
         'password' => '',
         'database' => '',
-        'DBDriver' => '',
+        'DBDriver' => 'MySQLi',
         'DBPrefix' => '',
         'pConnect' => false,
         'DBDebug'  => true,
-        'charset'  => '',
-        'DBCollat' => '',
+        'charset'  => 'utf8mb4',
+        'DBCollat' => 'utf8mb4_general_ci',
         'swapPre'  => '',
-        'encrypt'  => [],
+        'encrypt'  => [
+            'ssl_verify' => false, 
+        ],
         'compress' => false,
         'strictOn' => false,
         'failover' => [],
-        'port'     => 26685, // FIX: This MUST be an integer number, not a string
+        'port'     => 26685, 
     ];
 
     public array $tests = [
         'DSN'         => '',
-        'hostname'    => '',
+        'hostname'    => '127.0.0.1',
         'username'    => '',
         'password'    => '',
-        'database'    => '',
-        'DBDriver'    => '',
-        'DBPrefix'    => '',
+        'database'    => ':memory:',
+        'DBDriver'    => 'SQLite3',
+        'DBPrefix'    => 'db_',
         'pConnect'    => false,
         'DBDebug'     => true,
-        'charset'     => '',
-        'DBCollat'    => '',
+        'charset'     => 'utf8',
+        'DBCollat'    => 'utf8_general_ci',
         'swapPre'     => '',
-        'encrypt'     => [],
+        'encrypt'     => false,
         'compress'    => false,
         'strictOn'    => false,
         'failover'    => [],
-        'port'        => 3306, // FIX: Integer requirement
+        'port'        => 3306,
         'foreignKeys' => true,
         'busyTimeout' => 1000,
     ];
@@ -58,16 +60,25 @@ class Database extends Config
     {
         parent::__construct();
 
-        // 1. Grab the dynamic DSN connection string from Render
-        $dsn = getenv('DB_DSN') ?: '';
+        // 1. Grab the dynamic Render environment string
+        $dsnString = getenv('DB_DSN') ?: '';
 
-        // 2. If it starts with lowercase "mysql://", switch it to "MySQLi://"
-        if (str_starts_with($dsn, 'mysql://')) {
-            $dsn = 'MySQLi' . substr($dsn, 5);
+        // 2. Manually crack the string open to bypass CodeIgniter's buggy DSN parser
+        if (!empty($dsnString)) {
+            $parsed = parse_url($dsnString);
+
+            if ($parsed) {
+                $this->default['hostname'] = $parsed['host'] ?? '';
+                $this->default['username'] = $parsed['user'] ?? '';
+                $this->default['password'] = $parsed['pass'] ?? '';
+                
+                // Remove the leading slash from the database name
+                $this->default['database'] = ltrim($parsed['path'] ?? '', '/');
+                
+                // FIX: Force the port to be an exact integer using (int)
+                $this->default['port']     = isset($parsed['port']) ? (int) $parsed['port'] : 26685;
+            }
         }
-
-        // 3. Inject the corrected string into your default group
-        $this->default['DSN'] = $dsn;
 
         if (ENVIRONMENT === 'testing') {
             $this->defaultGroup = 'tests';
