@@ -34,9 +34,11 @@ RUN COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader
 # The dot at the end means "copy into the current WORKDIR (/var/www/html)"
 COPY backend/ .
 
-# 10. Set the correct permissions so CI4 can write to its cache and log folders
-RUN chown -R www-data:www-data writable/ public/
-RUN chmod -R 775 writable/
+# 10. Create the writable folder (just in case), then set permissions
+# The 'mkdir -p' command ensures the directory exists and won't crash if it already does.
+RUN mkdir -p writable/ public/ \
+    && chown -R www-data:www-data writable/ public/ \
+    && chmod -R 775 writable/
 
 # 11. Start the Apache web server
 CMD ["apache2-foreground"]
