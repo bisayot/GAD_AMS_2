@@ -14,11 +14,11 @@ class Database extends Config
 
     public array $default = [
         'DSN'      => '',
-        'hostname' => 'localhost',
-        'username' => '',
-        'password' => '',
-        'database' => '',
-        'DBDriver' => 'MySQLi',
+        'hostname' => $_ENV['database.default.hostname'] ?? 'localhost',
+        'username' => $_ENV['database.default.username'] ?? '',
+        'password' => $_ENV['database.default.password'] ?? '',
+        'database' => $_ENV['database.default.database'] ?? '',
+        'DBDriver' => $_ENV['database.default.DBDriver'] ?? 'MySQLi',
         'DBPrefix' => '',
         'pConnect' => false,
         'DBDebug'  => true,
@@ -29,7 +29,7 @@ class Database extends Config
         'compress' => false,
         'strictOn' => false,
         'failover' => [],
-        'port'     => 3306,
+        'port'     => $_ENV['database.default.port'] ?? 3306,
     ];
 
     public array $tests = [
