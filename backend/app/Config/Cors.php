@@ -25,7 +25,7 @@ class Cors extends BaseConfig
      *  }
      */
     public array $default = [
-        'allowedOrigins'      => ['https://your-app-name.vercel.app'], // <-- Paste your live Vercel link here!
+        'allowedOrigins'      => ['https://gad-ams-2.vercel.app'],
         'allowedHeaders'      => ['*'],
         'allowedMethods'      => ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
         'exposedHeaders'      => [],
