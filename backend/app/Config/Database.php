@@ -13,7 +13,7 @@ class Database extends Config
     public string $defaultGroup = 'default';
 
     public array $default = [
-        'DSN'      => '', // Left completely blank here
+        'DSN'      => '',
         'hostname' => '',
         'username' => '',
         'password' => '',
@@ -29,7 +29,7 @@ class Database extends Config
         'compress' => false,
         'strictOn' => false,
         'failover' => [],
-        'port'     => '',
+        'port'     => 26685, // FIX: This MUST be an integer number, not a string
     ];
 
     public array $tests = [
@@ -49,7 +49,7 @@ class Database extends Config
         'compress'    => false,
         'strictOn'    => false,
         'failover'    => [],
-        'port'        => '',
+        'port'        => 3306, // FIX: Integer requirement
         'foreignKeys' => true,
         'busyTimeout' => 1000,
     ];
