@@ -58,8 +58,16 @@ class Database extends Config
     {
         parent::__construct();
 
-        // Dynamically inject the Render environment variable when the class runs
-        $this->default['DSN'] = getenv('DB_DSN') ?: '';
+        // 1. Grab the dynamic DSN connection string from Render
+        $dsn = getenv('DB_DSN') ?: '';
+
+        // 2. If it starts with lowercase "mysql://", switch it to "MySQLi://"
+        if (str_starts_with($dsn, 'mysql://')) {
+            $dsn = 'MySQLi' . substr($dsn, 5);
+        }
+
+        // 3. Inject the corrected string into your default group
+        $this->default['DSN'] = $dsn;
 
         if (ENVIRONMENT === 'testing') {
             $this->defaultGroup = 'tests';
