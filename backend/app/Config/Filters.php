@@ -27,6 +27,7 @@ class Filters extends BaseFilters
     public array $aliases = [
         'csrf'          => CSRF::class,
         'toolbar'       => DebugToolbar::class,
+        'cors'          => Cors::class,
         'honeypot'      => Honeypot::class,
         'invalidchars'  => InvalidChars::class,
         'secureheaders' => SecureHeaders::class,
@@ -72,14 +73,11 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
-            'cors',
-            // 'honeypot',
+            'cors', // <-- Add this here to enable CORS globally!
             // 'csrf',
-            // 'invalidchars',
         ],
         'after' => [
-            // 'honeypot',
-            // 'secureheaders',
+            'toolbar',
         ],
     ];
 
