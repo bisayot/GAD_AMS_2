@@ -25,7 +25,7 @@ class Cors extends BaseConfig
      *  }
      */
     public array $default = [
-        'allowedOrigins'         => ['https://gad-ams-2.vercel.app', 'https://gadams.vercel.app/'],
+        'allowedOrigins'         => ['https://gad-ams-2.vercel.app', 'https://gadams.vercel.app'],
         'allowedOriginsPatterns' => [],
         'allowedHeaders'         => ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
         'allowedMethods'         => ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
