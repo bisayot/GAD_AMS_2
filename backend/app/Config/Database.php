@@ -13,43 +13,43 @@ class Database extends Config
     public string $defaultGroup = 'default';
 
     public array $default = [
-        'DSN'      => '',
-        'hostname' => 'localhost',
+        'DSN'      => '', // Left completely blank here
+        'hostname' => '',
         'username' => '',
         'password' => '',
         'database' => '',
-        'DBDriver' => 'MySQLi',
+        'DBDriver' => '',
         'DBPrefix' => '',
         'pConnect' => false,
         'DBDebug'  => true,
-        'charset'  => 'utf8mb4',
-        'DBCollat' => 'utf8mb4_general_ci',
+        'charset'  => '',
+        'DBCollat' => '',
         'swapPre'  => '',
-        'encrypt'  => false,
+        'encrypt'  => [],
         'compress' => false,
         'strictOn' => false,
         'failover' => [],
-        'port'     => 3306,
+        'port'     => '',
     ];
 
     public array $tests = [
         'DSN'         => '',
-        'hostname'    => '127.0.0.1',
+        'hostname'    => '',
         'username'    => '',
         'password'    => '',
-        'database'    => ':memory:',
-        'DBDriver'    => 'SQLite3',
-        'DBPrefix'    => 'db_',
+        'database'    => '',
+        'DBDriver'    => '',
+        'DBPrefix'    => '',
         'pConnect'    => false,
         'DBDebug'     => true,
-        'charset'     => 'utf8',
-        'DBCollat'    => 'utf8_general_ci',
+        'charset'     => '',
+        'DBCollat'    => '',
         'swapPre'     => '',
-        'encrypt'     => false,
+        'encrypt'     => [],
         'compress'    => false,
         'strictOn'    => false,
         'failover'    => [],
-        'port'        => 3306,
+        'port'        => '',
         'foreignKeys' => true,
         'busyTimeout' => 1000,
     ];
@@ -57,6 +57,9 @@ class Database extends Config
     public function __construct()
     {
         parent::__construct();
+
+        // Dynamically inject the Render environment variable when the class runs
+        $this->default['DSN'] = getenv('DB_DSN') ?: '';
 
         if (ENVIRONMENT === 'testing') {
             $this->defaultGroup = 'tests';
