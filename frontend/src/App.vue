@@ -13,7 +13,10 @@ import Navbar from './components/Navbar.vue';
 import Footer from './components/Footer.vue';
 
 const route = useRoute();
-const isDashboard = computed(() => route.path.includes('/dashboard'));
+const isDashboard = computed(() => {
+  const path = route.path;
+  return path.startsWith('/admin') || path.startsWith('/staff') || path.startsWith('/college');
+});
 </script>
 
 <style>
