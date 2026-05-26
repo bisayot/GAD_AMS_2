@@ -33,7 +33,8 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import axios from 'axios';
+// 1. Swap the old raw axios import with your custom dynamic api instance
+import api from '../api'; 
 import DashboardSidebar from '../components/DashboardSidebar.vue';
 import DashboardHeader from '../components/DashboardHeader.vue';
 
@@ -94,13 +95,16 @@ const menuItems = computed(() => {
   return [];
 });
 
+// 2. Clear out the hardcoded production link so logout functions offline
 const handleLogout = async () => {
   try {
-    await axios.get('https://gad-ams-2.onrender.com/api/logout');
-    localStorage.removeItem('user');
-    router.push('/login');
+    await api.get('logout');
   } catch (err) {
+    console.error('Logout failed tracking context:', err);
+  } finally {
+    // Always clean up local storage keys and route back to lockscreen
     localStorage.removeItem('user');
+    localStorage.removeItem('authToken'); 
     router.push('/login');
   }
 };

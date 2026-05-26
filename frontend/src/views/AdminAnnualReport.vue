@@ -118,7 +118,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+// 1. SWAP raw axios out for your custom api instance
+import api from '../api'; 
 import DashboardSidebar from '../components/DashboardSidebar.vue';
 import DashboardHeader from '../components/DashboardHeader.vue';
 
@@ -171,13 +172,17 @@ const totals = computed(() => {
   };
 });
 
+// 2. REFACTOR to utilize the custom API instance dynamically
 const handleLogout = async () => {
   try {
-    await axios.get('https://gad-ams-2.onrender.com/api/logout');
-    localStorage.removeItem('user');
-    router.push('/login');
+    // Replaced axios.get('https://.../logout') with clean relative api context call
+    await api.get('logout');
   } catch (err) {
+    console.error('Logout error context:', err);
+  } finally {
+    // Always clear tokens and redirect to ensure user isn't stuck logged in
     localStorage.removeItem('user');
+    localStorage.removeItem('authToken'); // Clear auth token too if it's there
     router.push('/login');
   }
 };

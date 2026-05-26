@@ -118,7 +118,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+// 1. Swap the old raw axios import with your custom dynamic api instance
+import api from '../api'; 
 import DashboardSidebar from '../components/DashboardSidebar.vue';
 import DashboardHeader from '../components/DashboardHeader.vue';
 
@@ -151,13 +152,16 @@ const deadlines = [
   { id: 2, title: 'Budget Plan Q1 2025', control: 'ACC-OSS-2025-004', date: '2025-04-22', type: 'Submission', badgeClass: 'bg-yellow-100 text-yellow-700' }
 ];
 
+// 2. Clear out the hardcoded production link so logout functions offline
 const handleLogout = async () => {
   try {
-    await axios.get('https://gad-ams-2.onrender.com/api/logout');
-    localStorage.removeItem('user');
-    router.push('/login');
+    await api.get('logout');
   } catch (err) {
+    console.error('Logout failed tracking context:', err);
+  } finally {
+    // Always clean up local storage keys and route back to lockscreen
     localStorage.removeItem('user');
+    localStorage.removeItem('authToken'); 
     router.push('/login');
   }
 };

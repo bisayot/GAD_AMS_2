@@ -113,8 +113,9 @@
 
 <script setup>
 import { ref } from 'vue';
-import axios from 'axios';
 import { useRouter } from 'vue-router';
+// Use the relative path to step up out of the 'views' folder and find api.js
+import api from '../api'; 
 
 const router = useRouter();
 const identity = ref('');
@@ -128,7 +129,7 @@ const handleLogin = async () => {
   error.value = '';
   
   try {
-    const response = await axios.post('https://gad-ams-2.onrender.com/api/login', {
+    const response = await api.post('login', {
       identity: identity.value,
       password: password.value
     });
@@ -144,24 +145,17 @@ const handleLogin = async () => {
     else router.push('/');
     
   } catch (err) {
-      console.error('Login error:', err);
-      if (err.response && err.response.data && err.response.data.messages) {
-        error.value = err.response.data.messages.error || 'Login failed';
-      } else {
-        error.value = 'Connection error. Please check if the backend is running.';
-      }
-    } finally {
+    console.error('Login error:', err);
+    
+    if (err && err.messages) {
+      error.value = err.messages.error || 'Login failed';
+    } else if (err && err.message) {
+      error.value = err.message;
+    } else {
+      error.value = 'Connection error. Please check if the backend is running.';
+    }
+  } finally {
     loading.value = false;
   }
 };
 </script>
-
-<style scoped>
-.bg-login-texture {
-  background-color: #f9f9fb;
-  background-image: radial-gradient(#422b68 0.5px, transparent 0.5px), radial-gradient(#422b68 0.5px, #f9f9fb 0.5px);
-  background-size: 20px 20px;
-  background-position: 0 0, 10px 10px;
-  opacity: 0.03;
-}
-</style>

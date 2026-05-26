@@ -12,12 +12,15 @@ class Database extends Config
     public string $filesPath = APPPATH . 'Database' . DIRECTORY_SEPARATOR;
     public string $defaultGroup = 'default';
 
+    // --------------------------------------------------------------------------
+    // LOCAL XAMPP DEFAULTS (Offline Development)
+    // --------------------------------------------------------------------------
     public array $default = [
         'DSN'      => '', 
-        'hostname' => '',
-        'username' => '',
+        'hostname' => '127.0.0.1',
+        'username' => 'root',
         'password' => '',
-        'database' => '',
+        'database' => 'gad_submission_system',
         'DBDriver' => 'MySQLi',
         'DBPrefix' => '',
         'pConnect' => false,
@@ -25,15 +28,16 @@ class Database extends Config
         'charset'  => 'utf8mb4',
         'DBCollat' => 'utf8mb4_general_ci',
         'swapPre'  => '',
-        'encrypt'  => [
-            'ssl_verify' => false, 
-        ],
+        'encrypt'  => false,    // LOCAL ENCRYPTION OFF
         'compress' => false,
         'strictOn' => false,
         'failover' => [],
-        'port'     => 26685, 
+        'port'     => 3308,     // LOCAL PORT 3308
     ];
 
+    // --------------------------------------------------------------------------
+    // TESTING DEFAULTS (For automated PHPUnit testing)
+    // --------------------------------------------------------------------------
     public array $tests = [
         'DSN'         => '',
         'hostname'    => '127.0.0.1',
@@ -60,10 +64,14 @@ class Database extends Config
     {
         parent::__construct();
 
-        // 1. Grab the dynamic Render environment string
+        // --------------------------------------------------------------------------
+        // CLOUD OVERRIDE LOGIC (Render Deployment)
+        // --------------------------------------------------------------------------
+        
+        // 1. Check if we are in the cloud by looking for Render's DB_DSN variable
         $dsnString = getenv('DB_DSN') ?: '';
 
-        // 2. Manually crack the string open to bypass CodeIgniter's buggy DSN parser
+        // 2. If the string exists, we are on Render! Overwrite the local defaults.
         if (!empty($dsnString)) {
             $parsed = parse_url($dsnString);
 
@@ -75,11 +83,15 @@ class Database extends Config
                 // Remove the leading slash from the database name
                 $this->default['database'] = ltrim($parsed['path'] ?? '', '/');
                 
-                // FIX: Force the port to be an exact integer using (int)
+                // Set the cloud port
                 $this->default['port']     = isset($parsed['port']) ? (int) $parsed['port'] : 26685;
+                
+                // TURN ENCRYPTION BACK ON FOR CLOUD DATABASE!
+                $this->default['encrypt']  = ['ssl_verify' => false]; 
             }
         }
 
+        // Apply test group if running test suites
         if (ENVIRONMENT === 'testing') {
             $this->defaultGroup = 'tests';
         }
