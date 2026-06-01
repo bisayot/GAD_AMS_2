@@ -32,7 +32,7 @@ class Database extends Config
         'compress' => false,
         'strictOn' => false,
         'failover' => [],
-        'port'     => 3308,     // LOCAL PORT 3308
+        'port'     => 3306,    
     ];
 
     // --------------------------------------------------------------------------
@@ -55,7 +55,7 @@ class Database extends Config
         'compress'    => false,
         'strictOn'    => false,
         'failover'    => [],
-        'port'        => 3308,
+        'port'        => 3306,
         'foreignKeys' => true,
         'busyTimeout' => 1000,
     ];
