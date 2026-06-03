@@ -88,15 +88,6 @@ class Database extends Config
                 
                 // TURN ENCRYPTION BACK ON FOR CLOUD DATABASE!
                 $this->default['encrypt']  = ['ssl_verify' => false]; 
-
-                // --------------------------------------------------------------------------
-                // FIXED: PREVENT STALE DISCONNECTIONS FROM AIVEN
-                // --------------------------------------------------------------------------
-                // Forces CodeIgniter to reconnect if Aiven/Render silently drops the pipeline.
-                $this->default['DBReconnect'] = true;
-                
-                // Double check persistent connections are turned off in the cloud environment.
-                $this->default['pConnect']    = false;
             }
         }
 
