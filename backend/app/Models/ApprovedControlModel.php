@@ -28,8 +28,10 @@ class ApprovedControlModel extends Model
                               archived_activity_designs.venue,
                               archived_activity_designs.target_participants')
                     ->join('archived_activity_designs', 'archived_activity_designs.original_act_design_id = control_number.act_design_id')
+                    ->join('accomplishment_report', 'accomplishment_report.control_number = control_number.control_number', 'left')
                     ->where('archived_activity_designs.user_id', $userId)
                     ->where('archived_activity_designs.status', 'Approved')
+                    ->where('accomplishment_report.id IS NULL')
                     ->findAll();
     }
 }

@@ -21,7 +21,7 @@
               <div class="status-badge-view" :class="getStatusClass(design.status)">
                 <span class="status-text">{{ formatStatus(design.status) }}</span>
               </div>
-              <span class="control-number">{{ design.control || 'NO CONTROL NUMBER' }}</span>
+              <span class="control-number">{{ design.control || 'PENDING ASSIGNMENT' }}</span>
             </div>
 
             <h2 class="report-title">{{ design.activity_title }}</h2>

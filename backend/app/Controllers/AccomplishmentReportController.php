@@ -40,9 +40,16 @@ class AccomplishmentReportController extends BaseController
             $file = $this->request->getFile('attachment');
             $fileName = FileStorage::saveToDrafts($file);
 
+            $db = \Config\Database::connect();
+            $controlRecord = $db->table('control_number')
+                                ->where('control_number', $this->request->getPost("control_number"))
+                                ->get()->getRowArray();
+            $actDesignId = $controlRecord ? $controlRecord['act_design_id'] : null;
+
             $data = [
                 "activity_title" => $this->request->getPost("activity_title"),
                 "control_number" => $this->request->getPost("control_number"),
+                "act_design_id"  => $actDesignId,
                 "start_date"     => $this->request->getPost("start_date"),
                 "end_date"       => $this->request->getPost("end_date"),
                 "start_time"     => $this->request->getPost("start_time"),
@@ -290,6 +297,7 @@ class AccomplishmentReportController extends BaseController
         $archiveData = [
             'original_report_id' => $item['id'],
             'control_number'     => $item['control_number'],
+            'act_design_id'      => $item['act_design_id'] ?? null,
             'activity_title'     => $item['activity_title'],
             'start_date'         => $item['start_date'],
             'end_date'           => $item['end_date'],

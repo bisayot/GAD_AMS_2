@@ -18,10 +18,10 @@
         <section class="flex-06 glass-card">
           <div class="report-header">
             <div class="meta-header">
-              <div class="status-badge-view" :class="design.status === 'cancelled' ? 'cancelled' : 'completed'">
-                <span class="status-text">{{ design.status === 'cancelled' ? 'Cancelled' : 'Archived' }}</span>
+              <div class="status-badge-view" :class="getStatusClass(design.status)">
+                <span class="status-text">{{ formatStatus(design.status) }}</span>
               </div>
-              <span class="control-number">{{ design.control || 'NO CONTROL NUMBER' }}</span>
+              <span class="control-number">{{ design.control || 'PENDING ASSIGNMENT' }}</span>
             </div>
 
             <h2 class="report-title">{{ design.activity_title }}</h2>
@@ -179,6 +179,23 @@ const formatTime = (time) => {
   const [h, m] = time.split(':');
   return `${h % 12 || 12}:${m} ${h >= 12 ? 'PM' : 'AM'}`;
 };
+
+const formatStatus = (status) => {
+  if (!status) return 'Unknown';
+  if (status.toLowerCase() === 'revision required') return 'For Revision';
+  return status.charAt(0).toUpperCase() + status.slice(1);
+};
+
+const getStatusClass = (status) => {
+  const s = (status || '').toLowerCase();
+  if (s === 'pending') return 'pending';
+  if (s === 'approved') return 'approved';
+  if (s === 'completed' || s === 'archived') return 'completed';
+  if (s === 'cancelled') return 'cancelled';
+  if (s === 'revision required' || s === 'revision') return 'revision';
+  return 'completed';
+};
+
 const formatCurrency = (amt) => amt ? parseFloat(amt).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00';
 
 const isPdfModalOpen = ref(false);
@@ -224,6 +241,9 @@ onMounted(() => {
 .status-badge-view { padding: 4px 12px; border-radius: 9999px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; }
 .status-badge-view.completed { background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
 .status-badge-view.cancelled { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.status-badge-view.pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+.status-badge-view.approved { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+.status-badge-view.revision { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
 .control-number { font-size: 11px; font-weight: 700; color: #b979cc; text-transform: uppercase; margin-left: 12px; font-family: monospace; }
 .info-grid { display: flex; flex-wrap: wrap; gap: 24px; padding-top: 16px; border-top: 1px solid rgba(185, 121, 204, 0.1); }
 .info-item { display: flex; flex-direction: column; }

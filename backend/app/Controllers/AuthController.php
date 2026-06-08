@@ -85,6 +85,18 @@ class AuthController extends ResourceController
             return $this->failResourceExists('A user with that email or username already exists');
         }
 
+        // Map department string to office_id
+        $db = \Config\Database::connect();
+        $departmentName = $data['department'];
+        $office = $db->table('office_units')->where('office_name', $departmentName)->get()->getRowArray();
+        
+        if ($office) {
+            $officeId = $office['office_id'];
+        } else {
+            $db->table('office_units')->insert(['office_name' => $departmentName]);
+            $officeId = $db->insertID();
+        }
+
         $userData = [
             'username' => $username,
             'email' => $email,
@@ -92,7 +104,7 @@ class AuthController extends ResourceController
             'role' => 'college', // Default role for registration
             'full_name' => $data['fullname'],
             'student_id' => $data['university_id'],
-            'college' => $data['department']
+            'office_id' => $officeId
         ];
 
         if ($userModel->insert($userData)) {
