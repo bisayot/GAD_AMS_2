@@ -5,6 +5,7 @@ vendor/
 # Configuration files
 .env
 config/config.php
+database.php
 
 # Log files
 logs/
