@@ -21,6 +21,4 @@ const isDashboard = computed(() => {
 
 <style>
 /* Global styles can stay here or in style.css */
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 </style>

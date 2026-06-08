@@ -16,7 +16,7 @@
             </p>
           </div>
           <div class="relative w-full aspect-square rounded-xl overflow-hidden shadow-2xl">
-            <img alt="Academic Building" class="object-cover w-full h-full grayscale hover:grayscale-0 transition-all duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8nYYL7wB7f7aO6xD9YmqF4a5EEvWxuG3gjap1VnrmGH6QoUtPdArd-LTbR6PAmLIf1R6P4DDC-2s_ZM1ncYyMn1i5wbipjXlYbmzfUM9NGZ8sEh9affvurdentdsie0DQNMXroezFpxyGlz_a0TkDVXF4F7T-9Y5dOjyOWhwggU1Wd2aUR3QcpIg4azf8r6vcJ-8yZCqmyID0XMuhcJ7iibjgZO2qVBoKJ_IBmUSgxB7wsD_3wjdtCnZxOfIEJQouT_McUGz5E8v3" />
+            <img alt="Academic Building" class="object-cover w-full h-full grayscale hover:grayscale-0 transition-all duration-700" src="/images/img_16.jpg" />
             <div class="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent"></div>
             <div class="absolute bottom-6 left-6 right-6 text-white">
               <p class="text-sm font-label uppercase tracking-widest opacity-80 mb-2">Heritage & Excellence</p>
