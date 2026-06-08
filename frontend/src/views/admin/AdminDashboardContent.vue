@@ -63,7 +63,7 @@
 
             <div class="table-footer">
               <p class="footer-text">Showing {{ pendingActivities.length }} pending items</p>
-              <router-link to="/staff/submitted-list?filter=pending" class="view-all-link">
+              <router-link to="/admin/submitted-list?filter=pending" class="view-all-link">
                 View All Activity Hub →
               </router-link>
             </div>
@@ -192,8 +192,9 @@ const fetchStats = async () => {
           id: d.act_design_id,
           type: 'design',
           title: d.title,
-          badgeText: 'Activity Design',
-          timeAgo: 'Pending Review'
+          typeName: 'Activity Design',
+          office: d.office || d.submitter_name || 'N/A',
+          date: d.date || 'Pending Review'
         }));
       pendingActivities.value = pDesigns;
     }
@@ -209,8 +210,9 @@ const fetchStats = async () => {
           id: r.id || r.acc_report_id,
           type: 'report',
           title: r.title,
-          badgeText: 'Accomplishment Report',
-          timeAgo: 'Pending Verification'
+          typeName: 'Accomplishment Report',
+          office: r.office || r.submitter_name || 'N/A',
+          date: r.date || 'Pending Verification'
         }));
       
       pendingActivities.value = [...pendingActivities.value, ...pReports].slice(0, 4);
