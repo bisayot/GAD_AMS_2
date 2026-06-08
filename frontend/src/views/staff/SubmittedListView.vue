@@ -226,13 +226,34 @@ const filteredUnits = computed(() => {
 
 const fetchTWGSubmissions = async (page = 1) => {
   try {
-    // Staged to fetch live data records matching your endpoint framework
-    // const response = await api.get(`staff/twg-submissions?page=${page}&per_page=${perPage.value}`);
-    // twgUnits.value = response.data.data;
-    // paginationMeta.value = response.data.meta;
-    // currentPage.value = page;
+    const response = await api.get('admin/twg-submissions');
+    if (response.data.success) {
+      twgUnits.value = response.data.data.map(u => ({
+        ...u,
+        name: u.username,
+        code: u.role
+      }));
+      const meta = response.data.meta;
+      paginationMeta.value = {
+        total: meta.total,
+        from: meta.total > 0 ? 1 : 0,
+        to: meta.total,
+        last_page: meta.last_page || 1
+      };
+      currentPage.value = page;
+
+      // Update stat cards
+      const totalDesigns = meta.total_designs;
+      const totalReports = meta.total_reports;
+      const withSubs = twgUnits.value.filter(u => u.total_submissions > 0).length;
+      const noSubs = twgUnits.value.filter(u => u.total_submissions === 0).length;
+      metricsStats.value[0].value = String(withSubs);
+      metricsStats.value[1].value = String(noSubs);
+      metricsStats.value[2].value = String(totalDesigns);
+      metricsStats.value[3].value = String(totalReports);
+    }
   } catch (err) {
-    console.error('Error parsing operational submissions context registry:', err);
+    console.error('Error fetching TWG submissions:', err);
   }
 };
 

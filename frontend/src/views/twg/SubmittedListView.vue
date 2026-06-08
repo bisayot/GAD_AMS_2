@@ -56,17 +56,17 @@
           <div class="tabs-container">
             <div class="tabs-header">
               <button 
-                @click="activeTab = 'designs'" 
+                @click="activeTab = 'design'" 
                 class="tab-btn"
-                :class="{ 'tab-active': activeTab === 'designs', 'tab-inactive': activeTab !== 'designs' }"
+                :class="{ 'tab-active': activeTab === 'design', 'tab-inactive': activeTab !== 'design' }"
               >
                 Activity Designs
                 <span class="tab-badge">{{ totalDesigns }}</span>
               </button>
               <button 
-                @click="activeTab = 'reports'" 
+                @click="activeTab = 'report'" 
                 class="tab-btn"
-                :class="{ 'tab-active': activeTab === 'reports', 'tab-inactive': activeTab !== 'reports' }"
+                :class="{ 'tab-active': activeTab === 'report', 'tab-inactive': activeTab !== 'report' }"
               >
                 Accomplishment Reports
                 <span class="tab-badge">{{ totalReports }}</span>
@@ -149,12 +149,12 @@
                       </div>
                     </td>
                    </tr>
-                  <tr 
-                    v-for="item in paginatedItems" 
-                    :key="item.id"
-                    class="clickable-row"
-                    @click="viewItem(item)"
-                  >
+                    <tr 
+                      v-for="item in paginatedItems" 
+                      :key="item.id"
+                      class="clickable-row"
+                      @click="viewItem(item)"
+                    >
                     <td class="table-cell">
                       <span class="type-badge" :class="item.type === 'design' ? 'type-design' : 'type-report'">
                         {{ item.type === 'design' ? 'Activity Design' : 'Accomplishment Report' }}
@@ -219,7 +219,7 @@ const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
 
 const submissions = ref([]);
 const loading = ref(false);
-const activeTab = ref('designs');
+const activeTab = ref('design');
 
 const filters = ref({
   status: 'all',
@@ -304,12 +304,55 @@ const visiblePages = computed(() => {
 const fetchSubmissions = async () => {
   loading.value = true;
   try {
-    // TODO: Replace with your actual API endpoint
-    // const response = await api.get('submissions');
-    // submissions.value = response.data;
-    
-    // Temporary empty array - remove once database is connected
-    submissions.value = [];
+    const userId = user.value.id;
+    if (!userId) throw new Error('No user ID found');
+
+    const [designsRes, reportsRes] = await Promise.all([
+      api.get(`activity-designs/${userId}`),
+      api.get(`activity-reports/${userId}`)
+    ]);
+
+    const mapStatus = (status) => {
+      const s = (status || '').toLowerCase();
+      if (s === 'revision required') return 'revision';
+      return s;
+    };
+
+    const designs = (designsRes.data.data || []).map(d => {
+      const st = mapStatus(d.status);
+      return {
+        type: 'design',
+        id: d.act_design_id,
+        status: st,
+        title: d.title || d.activity_title || 'Untitled',
+        control: d.control || 'NO CONTROL NUMBER',
+        dateRaw: d.date,
+        date: d.date,
+        formClass: 'badge-purple',
+        formLabel: d.formLabel || 'Activity Design',
+        statusClass: `status-${st.replace(' ', '-')}`,
+        statusText: d.status
+      };
+    });
+
+    const reports = (reportsRes.data.data || []).map(r => {
+      const st = mapStatus(r.status);
+      return {
+        type: 'report',
+        id: r.id,
+        status: st,
+        title: r.title || r.activity_title || 'Untitled',
+        control: r.control || 'NO CONTROL NUMBER',
+        dateRaw: r.date,
+        date: r.date,
+        formClass: 'badge-blue',
+        formLabel: 'Accomplishment Report',
+        statusClass: `status-${st.replace(' ', '-')}`,
+        statusText: r.status
+      };
+    });
+
+    submissions.value = [...designs, ...reports];
     
   } catch (error) {
     console.error('Error fetching submissions:', error);
@@ -339,9 +382,17 @@ const changePage = (page) => {
 
 const viewItem = (item) => {
   if (item.type === 'design') {
-    router.push(`/college/view-design/${item.id}`);
+    if (item.status === 'revision') {
+      router.push(`/college/ad-revision/${item.id}`);
+    } else {
+      router.push(`/college/ad-view/${item.id}`);
+    }
   } else {
-    router.push(`/college/view-report/${item.id}`);
+    if (item.status === 'revision') {
+      router.push(`/college/ar-revision/${item.id}`);
+    } else {
+      router.push(`/college/ar-view/${item.id}`);
+    }
   }
 };
 

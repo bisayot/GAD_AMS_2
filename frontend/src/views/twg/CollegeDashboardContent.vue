@@ -1,6 +1,6 @@
 <template>
     <div class="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
-      <h1 class="text-3xl font-bold text-slate-900">Welcome, (Director) to your Dashboard!</h1>
+      <h1 class="text-3xl font-bold text-slate-900">Welcome, {{ user.username || 'Director' }}!</h1>
       <p class="text-slate-500 mt-2">Manage your GAD programs, monitor activity designs, and oversee budget utilization from here.</p>
     </div><br>
     
@@ -60,7 +60,7 @@
                   </span>
                 </td>
                 <td class="actions-cell text-right">
-                  <button class="view-button">
+                  <button class="view-button" @click="viewSubmission(sub)">
                     <span class="material-symbols-outlined view-icon">visibility</span>
                   </button>
                 </td>
@@ -118,6 +118,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import api from '../../api';
+
+const router = useRouter();
+const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
 
 const metricsStats = ref([
   { label: 'Pending Reviews', value: '0', icon: 'schedule', iconColor: 'text-amber-400', bgClass: 'bg-amber-500/10' },
@@ -129,15 +134,102 @@ const metricsStats = ref([
 const submissions = ref([]);
 const deadlines = ref([]);
 
-const fetchSubmissions = async () => {};
+const getStatusClass = (status) => {
+  const s = (status || '').toLowerCase();
+  if (s === 'approved' || s === 'verified' || s === 'completed') return 'status-approved';
+  if (s === 'pending') return 'status-review';
+  if (s === 'revision required' || s === 'revision') return 'status-revision';
+  return 'status-approved';
+};
+
+const formatStatus = (status) => {
+  if (!status) return 'Unknown';
+  if (status.toLowerCase() === 'revision required') return 'For Revision';
+  return status.charAt(0).toUpperCase() + status.slice(1);
+};
+
+const fetchSubmissions = async () => {
+  try {
+    const [adRes, arRes] = await Promise.all([
+      api.get(`activity-designs/${user.value.id}`),
+      api.get(`activity-reports/${user.value.id}`)
+    ]);
+    
+    let pendingCount = 0;
+    let adCount = 0;
+    let arCount = 0;
+    
+    let allSubmissions = [];
+
+    if (adRes.data.success) {
+      const designs = adRes.data.data;
+      adCount = designs.length;
+      designs.forEach(d => {
+        if (d.status === 'Pending' || d.status === 'Revision Required') pendingCount++;
+        allSubmissions.push({
+          id: d.act_design_id,
+          control: d.control || 'N/A',
+          title: d.title,
+          status: formatStatus(d.status),
+          statusClass: getStatusClass(d.status),
+          type: 'design'
+        });
+      });
+    }
+
+    if (arRes.data.success) {
+      const reports = arRes.data.data;
+      arCount = reports.length;
+      reports.forEach(r => {
+        if (r.status === 'Pending' || r.status === 'Revision Required') pendingCount++;
+        allSubmissions.push({
+          id: r.id,
+          control: r.control || 'N/A',
+          title: r.title,
+          status: formatStatus(r.status),
+          statusClass: getStatusClass(r.status),
+          type: 'report'
+        });
+      });
+    }
+
+    metricsStats.value[0].value = pendingCount.toString();
+    metricsStats.value[1].value = adCount.toString();
+    metricsStats.value[2].value = arCount.toString();
+    
+    allSubmissions.sort((a, b) => b.id - a.id);
+    submissions.value = allSubmissions.slice(0, 5);
+  } catch (error) {
+    console.error("Error fetching submissions for dashboard", error);
+  }
+};
+
 const fetchDeadlines = async () => {};
 
 const loadDashboardData = async () => {
   await Promise.all([fetchSubmissions(), fetchDeadlines()]);
 };
 
+const viewSubmission = (sub) => {
+  if (sub.type === 'design') {
+    if (sub.status.toLowerCase() === 'for revision' || sub.status.toLowerCase() === 'revision required') {
+      router.push(`/college/ad-revision/${sub.id}`);
+    } else {
+      router.push(`/college/ad-view/${sub.id}`);
+    }
+  } else {
+    if (sub.status.toLowerCase() === 'for revision' || sub.status.toLowerCase() === 'revision required') {
+      router.push(`/college/ar-revision/${sub.id}`);
+    } else {
+      router.push(`/college/ar-view/${sub.id}`);
+    }
+  }
+};
+
 onMounted(() => {
-  loadDashboardData();
+  if (user.value && user.value.id) {
+    loadDashboardData();
+  }
 });
 </script>
 

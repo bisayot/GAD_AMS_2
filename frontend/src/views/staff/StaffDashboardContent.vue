@@ -146,21 +146,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import api from '../../api';
 
 const router = useRouter();
-const showNotifications = ref(false);
-
-const toggleNotifications = () => {
-  showNotifications.value = !showNotifications.value;
-};
+const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
 
 const navigateToView = (type, id) => {
   if (type === 'design') {
-    router.push(`/staff/ad-list?id=${id}`);
+    router.push(`/staff/ad-view/${id}`);
   } else {
-    router.push(`/staff/ar-list?id=${id}`);
+    router.push(`/staff/ar-view/${id}`);
   }
 };
 
@@ -180,6 +177,39 @@ const pendingActivities = ref([]);
 const upcomingDeadlines = ref([]);
 const activityLogs = ref([]);
 const notificationItems = ref([]);
+
+onMounted(async () => {
+  if (!user.value.id || user.value.role !== 'gad_staff') {
+    router.push('/login');
+    return;
+  }
+  try {
+    const [designsRes, reportsRes] = await Promise.all([
+      api.get('activity-designs'),
+      api.get('activity-reports')
+    ]);
+
+    const designs = designsRes.data.success ? designsRes.data.data : [];
+    const reports = reportsRes.data.success ? reportsRes.data.data : [];
+
+    // Populate pending activities table
+    const pendingDesigns = designs
+      .filter(d => d.status === 'Pending')
+      .map(d => ({ id: d.act_design_id, type: 'design', typeName: 'Activity Design', title: d.title || d.activity_title, office: d.office, date: d.date || d.start_date }));
+    const pendingReports = reports
+      .filter(r => r.status === 'Pending')
+      .map(r => ({ id: r.id, type: 'report', typeName: 'Acc. Report', title: r.title || r.activity_title, office: r.office, date: r.date || r.start_date }));
+    pendingActivities.value = [...pendingDesigns, ...pendingReports];
+
+    // Update stat cards
+    const totalPending = pendingActivities.value.length;
+    metricsStats.value[0].value = String(totalPending);
+    metricsStats.value[1].value = String(designs.length);
+    metricsStats.value[2].value = String(reports.length);
+  } catch (err) {
+    console.error('Dashboard load error:', err);
+  }
+});
 </script>
 
 <style scoped>

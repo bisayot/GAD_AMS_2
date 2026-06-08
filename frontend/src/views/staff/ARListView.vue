@@ -106,7 +106,7 @@
                     v-else
                     v-for="item in filteredReports" 
                     :key="item.id"
-                    @click="viewDetails(item.id)"
+                    @click="viewDetails(item.id, item.status)"
                     class="table-row"
                   >
                     <td class="table-cell control-cell">
@@ -224,17 +224,37 @@ const statusBadgeClass = (status) => {
   return 'status-badge-pending';
 };
 
-const viewDetails = (id) => {
-  router.push(`/staff/ar-view/${id}`);
+const viewDetails = (id, status) => {
+  if (status === 'Revision Required') {
+    router.push(`/staff/ar-revision/${id}`);
+  } else {
+    router.push(`/staff/ar-view/${id}`);
+  }
 };
 
 const fetchReports = async () => {
   try {
-    // API live connection binding pipeline template placeholder:
-    // const response = await api.get('staff/accomplishment-reports');
-    // accomplishmentReports.value = response.data.data;
+    const response = await api.get('activity-reports');
+    if (response.data.success) {
+      accomplishmentReports.value = response.data.data;
+      officeOptions.value = [...new Set(response.data.data.map(r => r.office).filter(Boolean))];
+
+      // Update stat cards
+      const total = accomplishmentReports.value.length;
+      const pending = accomplishmentReports.value.filter(r => r.status === 'Pending').length;
+      const verified = accomplishmentReports.value.filter(r => r.status === 'Verified').length;
+      const revision = accomplishmentReports.value.filter(r => r.status === 'Revision Required').length;
+      metricsStats.value[0].value = String(total);
+      metricsStats.value[1].value = String(pending);
+      metricsStats.value[2].value = String(verified);
+      metricsStats.value[3].value = String(revision);
+
+      paginationMeta.value.total = total;
+      paginationMeta.value.from = total > 0 ? 1 : 0;
+      paginationMeta.value.to = total;
+    }
   } catch (err) {
-    console.error(err);
+    console.error('Failed to fetch accomplishment reports:', err);
   }
 };
 

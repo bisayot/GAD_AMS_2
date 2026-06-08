@@ -227,10 +227,18 @@ const filteredUnits = computed(() => {
 const fetchTWGSubmissions = async (page = 1) => {
   try {
     // Staged to fetch live data records matching your endpoint framework
-    // const response = await api.get(`admin/twg-submissions?page=${page}&per_page=${perPage.value}`);
-    // twgUnits.value = response.data.data;
-    // paginationMeta.value = response.data.meta;
-    // currentPage.value = page;
+    const response = await api.get(`admin/twg-submissions?page=${page}&per_page=${perPage.value}`);
+    twgUnits.value = response.data.data.map(unit => ({
+      ...unit,
+      name: unit.username, // mapping to match UI expectation
+      code: `UNIT-${unit.id}` // fake code since we don't have unit code in db
+    }));
+    paginationMeta.value = response.data.meta;
+    currentPage.value = page;
+
+    metricsStats.value[0].value = response.data.meta.total || 0;
+    metricsStats.value[2].value = response.data.meta.total_designs || 0;
+    metricsStats.value[3].value = response.data.meta.total_reports || 0;
   } catch (err) {
     console.error('Error parsing operational submissions context registry:', err);
   }

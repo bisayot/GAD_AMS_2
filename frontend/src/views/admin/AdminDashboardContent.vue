@@ -148,16 +148,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import api from '../../api';
 
 const router = useRouter();
 
 const navigateToView = (type, id) => {
   if (type === 'design') {
-    router.push(`/staff/ad-list?id=${id}`);
+    router.push(`/admin/ad-review/${id}`);
   } else {
-    router.push(`/staff/ar-list?id=${id}`);
+    router.push(`/admin/ar-review/${id}`);
   }
 };
 
@@ -171,6 +172,57 @@ const metricsStats = ref([
 const pendingActivities = ref([]);
 const upcomingDeadlines = ref([]);
 const activityLogs = ref([]);
+
+const fetchStats = async () => {
+  try {
+    const [designsRes, reportsRes] = await Promise.all([
+      api.get('activity-designs'),
+      api.get('activity-reports')
+    ]);
+    
+    if (designsRes.data.success) {
+      const pendingDesigns = designsRes.data.data.filter(d => d.status === 'Pending').length;
+      metricsStats.value[0].value = pendingDesigns.toString();
+      
+      // Also update pending activities list
+      const pDesigns = designsRes.data.data
+        .filter(d => d.status === 'Pending')
+        .slice(0, 3)
+        .map(d => ({
+          id: d.act_design_id,
+          type: 'design',
+          title: d.title,
+          badgeText: 'Activity Design',
+          timeAgo: 'Pending Review'
+        }));
+      pendingActivities.value = pDesigns;
+    }
+    
+    if (reportsRes.data.success) {
+      const pendingReports = reportsRes.data.data.filter(r => r.status === 'Pending').length;
+      metricsStats.value[1].value = pendingReports.toString();
+      
+      const pReports = reportsRes.data.data
+        .filter(r => r.status === 'Pending')
+        .slice(0, 3)
+        .map(r => ({
+          id: r.id || r.acc_report_id,
+          type: 'report',
+          title: r.title,
+          badgeText: 'Accomplishment Report',
+          timeAgo: 'Pending Verification'
+        }));
+      
+      pendingActivities.value = [...pendingActivities.value, ...pReports].slice(0, 4);
+    }
+  } catch (err) {
+    console.error('Error fetching dashboard stats:', err);
+  }
+};
+
+onMounted(() => {
+  fetchStats();
+});
 </script>
 
 <style scoped>

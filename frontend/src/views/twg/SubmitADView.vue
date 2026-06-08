@@ -164,6 +164,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import Swal from 'sweetalert2';
 import api from '../../api';
 
 const router = useRouter();
@@ -217,12 +218,23 @@ const submitActivityDesign = async () => {
     });
 
     if (response.data.success) {
-      alert('Activity Design submitted successfully!');
-      router.push('/college/dashboard');
+      Swal.fire({
+        icon: 'success',
+        title: 'Submitted Successfully!',
+        text: 'Activity Design submitted successfully!',
+        confirmButtonColor: '#b979cc'
+      }).then(() => {
+        router.push('/college/submitted-list');
+      });
     }
   } catch (error) {
     console.error('Submission error:', error);
-    alert('Failed to submit activity design. Please double check all details.');
+    Swal.fire({
+      icon: 'error',
+      title: 'Submission Failed',
+      text: 'Failed to submit activity design. Please double check all details.',
+      confirmButtonColor: '#b979cc'
+    });
   }
 };
 

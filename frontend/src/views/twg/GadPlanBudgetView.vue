@@ -128,7 +128,7 @@
             <div class="pdf-header-right flex gap-2">
               <a 
                 :href="`/uploads/${selectedYear}-GPB.pdf`" 
-                target="_blank" 
+                target="_self" 
                 class="pdf-btn"
               >
                 <span class="material-symbols-outlined">open_in_new</span>

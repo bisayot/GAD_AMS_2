@@ -105,8 +105,8 @@
                   <tr 
                     v-else
                     v-for="item in filteredDesigns" 
-                    :key="item.id"
-                    @click="viewDetails(item.id)"
+                    :key="item.act_design_id"
+                    @click="viewDetails(item.act_design_id, item.status)"
                     class="table-row"
                   >
                     <td class="table-cell control-cell">
@@ -225,17 +225,37 @@ const statusBadgeClass = (status) => {
   return 'status-badge-pending';
 };
 
-const viewDetails = (id) => {
-  router.push(`/staff/ad-view/${id}`);
+const viewDetails = (id, status) => {
+  if (status === 'Revision Required') {
+    router.push(`/staff/ad-revision/${id}`);
+  } else {
+    router.push(`/staff/ad-view/${id}`);
+  }
 };
 
 const fetchDesigns = async () => {
   try {
-    // API live connection binding pipeline template placeholder:
-    // const response = await api.get('staff/activity-designs');
-    // activityDesigns.value = response.data.data;
+    const response = await api.get('activity-designs');
+    if (response.data.success) {
+      activityDesigns.value = response.data.data;
+      officeOptions.value = [...new Set(response.data.data.map(d => d.office).filter(Boolean))];
+
+      // Update stat cards
+      const total = activityDesigns.value.length;
+      const pending = activityDesigns.value.filter(d => d.status === 'Pending').length;
+      const approved = activityDesigns.value.filter(d => d.status === 'Approved').length;
+      const revision = activityDesigns.value.filter(d => d.status === 'Revision Required').length;
+      metricsStats.value[0].value = String(total);
+      metricsStats.value[1].value = String(pending);
+      metricsStats.value[2].value = String(approved);
+      metricsStats.value[3].value = String(revision);
+
+      paginationMeta.value.total = total;
+      paginationMeta.value.from = total > 0 ? 1 : 0;
+      paginationMeta.value.to = total;
+    }
   } catch (err) {
-    console.error(err);
+    console.error('Failed to fetch activity designs:', err);
   }
 };
 

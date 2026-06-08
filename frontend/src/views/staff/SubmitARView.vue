@@ -27,9 +27,9 @@
                   class="custom-input-field select-arrow-fix"
                 >
                   <option value="" class="dark-option">Select approved activity design...</option>
-                  <option value="OSS-2025-001" class="dark-option">OSS-2025-001</option>
-                  <option value="OSS-2025-002" class="dark-option">OSS-2025-002</option>
-                  <option value="OSS-2025-003" class="dark-option">OSS-2025-003</option>
+                  <option v-for="control in approvedControls" :key="control.control_number" :value="control.control_number" class="dark-option">
+                    {{ control.control_number }} - {{ control.activity_title }}
+                  </option>
                 </select>
               </div>
 
@@ -93,8 +93,9 @@
                   v-model="form.attendees" 
                   required 
                   min="0"
-                  class="custom-input-field"
+                  class="custom-input-field cursor-not-allowed opacity-70"
                   placeholder="0"
+                  readonly
                 >
               </div>
 
@@ -159,8 +160,7 @@
                     ref="fileInput"
                     type="file" 
                     @change="handleFileUpload"
-                    accept=".pdf,.zip" 
-                    multiple 
+                    accept=".pdf" 
                     required 
                     class="hidden"
                   >
@@ -192,8 +192,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import Swal from 'sweetalert2';
 import api from '../../api';
 
 const router = useRouter();
@@ -219,11 +220,44 @@ const form = ref({
   rating: ''
 });
 
+const approvedControls = ref([]);
+
+const fetchApprovedControls = async () => {
+  try {
+    const res = await api.get(`approved-controls/${user.value.id}`);
+    if (res.data.success) {
+      approvedControls.value = res.data.data;
+    }
+  } catch (error) {
+    console.error('Error fetching approved controls:', error);
+  }
+};
+
+watch(() => form.value.control_number, (newVal) => {
+  const selected = approvedControls.value.find(c => c.control_number === newVal);
+  if (selected) {
+    form.value.activity_title = selected.activity_title;
+    form.value.start_date = selected.start_date;
+    form.value.end_date = selected.end_date;
+    form.value.start_time = selected.start_time;
+    form.value.end_time = selected.end_time;
+    form.value.venue = selected.venue;
+  }
+});
+
+watch([() => form.value.male, () => form.value.female], ([newMale, newFemale]) => {
+  const m = parseInt(newMale) || 0;
+  const f = parseInt(newFemale) || 0;
+  form.value.attendees = m + f;
+});
+
 const uploadedFiles = ref([]);
 const fileInput = ref(null);
 
 const handleFileUpload = (event) => {
-  uploadedFiles.value = Array.from(event.target.files);
+  if (event.target.files.length > 0) {
+    uploadedFiles.value = [event.target.files[0]];
+  }
 };
 
 const submitReport = async () => {
@@ -235,19 +269,26 @@ const submitReport = async () => {
     });
     
     uploadedFiles.value.forEach(file => {
-      formData.append('report_files[]', file);
+      formData.append('attachment', file);
     });
     
     formData.append('user_id', user.value.id);
     
-    const response = await api.post('submit-accomplishment', formData, {
+    const response = await api.post('submit-activity-report', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
     });
     
     if (response.data.success) {
-      alert('Accomplishment report submitted successfully!');
+      Swal.fire({
+        icon: 'success',
+        title: 'Submitted Successfully!',
+        text: 'Accomplishment report submitted successfully!',
+        confirmButtonColor: '#b979cc'
+      }).then(() => {
+        router.push('/staff/submitted-list');
+      });
       form.value = {
         activity_title: '',
         control_number: '',
@@ -284,6 +325,8 @@ const handleLogout = async () => {
 onMounted(() => {
   if (!user.value.id) {
     router.push('/login');
+  } else {
+    fetchApprovedControls();
   }
 });
 </script>
