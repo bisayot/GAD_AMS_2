@@ -18,7 +18,7 @@ class FileStorage
      */
     public static function isCloud(): bool
     {
-        return getenv('CI_ENVIRONMENT') === 'production' || getenv('USE_CLOUD_STORAGE') === 'true';
+        return env('CI_ENVIRONMENT') === 'production' || env('USE_CLOUD_STORAGE') === true || env('USE_CLOUD_STORAGE') === 'true';
     }
 
     private static function getClient(): S3Client
@@ -26,17 +26,17 @@ class FileStorage
         return new S3Client([
             'version'     => 'latest',
             'region'      => 'auto',
-            'endpoint'    => getenv('R2_ENDPOINT'),
+            'endpoint'    => env('R2_ENDPOINT'),
             'credentials' => [
-                'key'    => getenv('R2_ACCESS_KEY'),
-                'secret' => getenv('R2_SECRET_KEY'),
+                'key'    => env('R2_ACCESS_KEY'),
+                'secret' => env('R2_SECRET_KEY'),
             ],
         ]);
     }
 
     private static function getBucket(): string
     {
-        return getenv('R2_BUCKET') ?: 'gad-ams';
+        return env('R2_BUCKET') ?: 'gad-ams';
     }
 
     /** Absolute path to the drafts directory (Local) */
