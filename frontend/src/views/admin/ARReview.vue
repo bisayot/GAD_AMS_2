@@ -322,7 +322,7 @@ const pdfFileUrl = ref('');
 
 const previewFile = () => {
   if (!report.value.attachment) return;
-  const base = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+  const base = (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace('/api/', '') : 'https://gad-ams-2-1.onrender.com');
   pdfFileUrl.value = `${base}/api/files/drafts/${report.value.attachment}`;
   isPdfModalOpen.value = true;
 };
@@ -334,7 +334,7 @@ const closePdfModal = () => {
 
 const downloadFile = () => {
   if (!report.value.attachment) return;
-  const base = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+  const base = (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace('/api/', '') : 'https://gad-ams-2-1.onrender.com');
   const link = document.createElement('a');
   link.href = `${base}/api/files/drafts/${report.value.attachment}`;
   link.download = `Accomplishment_Report_${report.value.control || report.value.id}.pdf`;

@@ -203,7 +203,7 @@ const pdfFileUrl = ref('');
 
 const previewFile = (fileName) => {
   if (!fileName) return;
-  const base = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+  const base = (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace('/api/', '') : 'https://gad-ams-2-1.onrender.com');
   const folder = design.value.is_archived ? 'archived' : 'drafts';
   pdfFileUrl.value = `${base}/api/files/${folder}/${fileName}`;
   isPdfModalOpen.value = true;

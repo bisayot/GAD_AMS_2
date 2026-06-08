@@ -201,7 +201,7 @@ const isPdfModalOpen = ref(false);
 const pdfFileUrl = ref('');
 
 const previewFile = () => {
-  const base = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+  const base = (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace('/api/', '') : 'https://gad-ams-2-1.onrender.com');
   const folder = report.value.is_archived ? 'archived' : 'drafts';
   pdfFileUrl.value = `${base}/api/files/${folder}/${report.value.attachment}`;
   isPdfModalOpen.value = true;
@@ -212,7 +212,7 @@ const closePdfModal = () => {
   pdfFileUrl.value = '';
 };
 const downloadFile = () => {
-  const base = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+  const base = (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace('/api/', '') : 'https://gad-ams-2-1.onrender.com');
   const folder = report.value.is_archived ? 'archived' : 'drafts';
   const link = document.createElement('a');
   link.href = `${base}/api/files/${folder}/${report.value.attachment}`;
