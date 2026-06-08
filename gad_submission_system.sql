@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Jun 07, 2026 at 01:36 PM
+-- Generation Time: Jun 08, 2026 at 04:20 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -43,8 +43,16 @@ CREATE TABLE `accomplishment_report` (
   `attachment` varchar(255) NOT NULL,
   `user_id` bigint(20) UNSIGNED NOT NULL,
   `status` varchar(20) DEFAULT 'Pending',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `remarks` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `accomplishment_report`
+--
+
+INSERT INTO `accomplishment_report` (`id`, `control_number`, `activity_title`, `start_date`, `end_date`, `start_time`, `end_time`, `venue`, `attendees`, `male`, `female`, `rating`, `attachment`, `user_id`, `status`, `created_at`, `remarks`) VALUES
+(5, '2026-1757', 'fffffffffff', '2026-06-30', '2026-06-30', '10:01:00', '22:01:00', 'eeeeeeeeeeee', 5555, 232, 222, 80, '1780881411_b4c0cbdd9a615be9e1e1.pdf', 47, 'Pending', '2026-06-08 01:16:51', 'ggggggggg');
 
 -- --------------------------------------------------------
 
@@ -66,8 +74,20 @@ CREATE TABLE `activity_design` (
   `venue` varchar(255) DEFAULT NULL,
   `target_participants` int(11) DEFAULT NULL,
   `proposed_budget` int(8) DEFAULT NULL,
-  `form_type` varchar(255) NOT NULL
+  `form_type` varchar(255) NOT NULL,
+  `remarks` text DEFAULT NULL,
+  `accomplishment_deadline` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `activity_design`
+--
+
+INSERT INTO `activity_design` (`act_design_id`, `activity_title`, `start_date`, `end_date`, `start_time`, `end_time`, `status`, `attachment`, `user_id`, `gpb_id`, `venue`, `target_participants`, `proposed_budget`, `form_type`, `remarks`, `accomplishment_deadline`) VALUES
+(9, 'fffffffffff', '2026-06-23', '2026-06-30', '09:42:00', '21:42:00', 'Pending', '1780840222_79d48772ed4aaa021b5a.pdf', 47, NULL, 'fffffffffff', 232, 26000, 'extension', 'gggggggggggggg', '2026-06-30'),
+(12, 'gggggggg', '2026-06-18', '2026-06-27', '08:37:00', '20:37:00', 'Pending', '1780879050_f9156f8a624361cb0b4f.pdf', 2, NULL, 'gggggggg', 232, 23000, 'inset', 'ggggggggg', '2026-06-30');
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `archived_accomplishment_reports`
@@ -94,6 +114,15 @@ CREATE TABLE `archived_accomplishment_reports` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `archived_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `archived_accomplishment_reports`
+--
+
+INSERT INTO `archived_accomplishment_reports` (`archive_id`, `original_report_id`, `control_number`, `activity_title`, `start_date`, `end_date`, `start_time`, `end_time`, `venue`, `attendees`, `male`, `female`, `rating`, `attachment`, `user_id`, `status`, `remarks`, `created_at`, `archived_at`) VALUES
+(2, 4, '2026-1757', 'fffffffffff', '2026-06-30', '2026-06-30', '10:01:00', '22:01:00', 'eeeeeeeeeeee', 232, 23, 53, 80, '1780879795_8a822a22efd08569525b.pdf', 47, 'Verified', '', '2026-06-08 01:18:15', '2026-06-08 01:18:15'),
+(3, 6, '2026-2013', 'ggggggggg', '2026-06-11', '2026-06-21', '08:44:00', '20:44:00', 'gggggggg', 252, 23, 100, 80, '1780881823_4aff14df538ac15c065b.pdf', 2, 'Verified', '', '2026-06-08 01:53:15', '2026-06-08 01:53:15'),
+(4, 7, '2026-2013', 'ggggggggg', '2026-06-11', '2026-06-21', '08:44:00', '20:44:00', 'gggggggg', 232, 23, 45, 80, '1780883565_9532ea4d52537411c5b1.pdf', 2, 'Verified', '', '2026-06-08 02:15:36', '2026-06-08 02:15:36');
 
 -- --------------------------------------------------------
 
@@ -123,6 +152,14 @@ CREATE TABLE `archived_activity_designs` (
   `archived_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `archived_activity_designs`
+--
+
+INSERT INTO `archived_activity_designs` (`archive_id`, `original_act_design_id`, `activity_title`, `start_date`, `end_date`, `start_time`, `end_time`, `status`, `attachment`, `user_id`, `gpb_id`, `venue`, `target_participants`, `proposed_budget`, `form_type`, `assessment_date`, `accomplishment_deadline`, `remarks`, `archived_at`) VALUES
+(6, 11, 'fffffffffff', '2026-06-30', '2026-06-30', '10:01:00', '22:01:00', 'Approved', '1780840884_af0ae66bb089ba405b24.pdf', 47, NULL, 'eeeeeeeeeeee', 500, 13000, 'inset', '2026-06-07', '2026-06-16', 'fffffffffffffffff', '2026-06-07 14:02:09'),
+(7, 13, 'ggggggggg', '2026-06-11', '2026-06-21', '08:44:00', '20:44:00', 'Approved', '1780879473_0d7ed2514b255160f6b2.pdf', 2, NULL, 'gggggggg', 234, 12000, 'extension', '2026-06-08', '2026-06-30', '', '2026-06-08 00:47:28');
+
 -- --------------------------------------------------------
 
 --
@@ -135,6 +172,14 @@ CREATE TABLE `control_number` (
   `act_design_id` int(11) DEFAULT NULL,
   `user_id` bigint(20) UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `control_number`
+--
+
+INSERT INTO `control_number` (`control_number_id`, `control_number`, `act_design_id`, `user_id`) VALUES
+(9, '2026-1757', 11, NULL),
+(10, '2026-2013', 13, NULL);
 
 -- --------------------------------------------------------
 
@@ -484,31 +529,31 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `accomplishment_report`
 --
 ALTER TABLE `accomplishment_report`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `activity_design`
 --
 ALTER TABLE `activity_design`
-  MODIFY `act_design_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `act_design_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `archived_accomplishment_reports`
 --
 ALTER TABLE `archived_accomplishment_reports`
-  MODIFY `archive_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `archive_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `archived_activity_designs`
 --
 ALTER TABLE `archived_activity_designs`
-  MODIFY `archive_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `archive_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `control_number`
 --
 ALTER TABLE `control_number`
-  MODIFY `control_number_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `control_number_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `gad_plan_budget`
@@ -561,7 +606,6 @@ ALTER TABLE `activity_design`
 -- Constraints for table `control_number`
 --
 ALTER TABLE `control_number`
-  ADD CONSTRAINT `fk_control_activity` FOREIGN KEY (`act_design_id`) REFERENCES `activity_design` (`act_design_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_control_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
