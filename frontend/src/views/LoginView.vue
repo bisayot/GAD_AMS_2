@@ -71,6 +71,9 @@
               <label class="text-sm text-on-surface-variant select-none" for="remember">Remember this device</label>
             </div>
 
+            <!-- Turnstile Widget -->
+            <TurnstileWidget @verify="onTurnstileVerify" />
+
             <!-- CTA -->
             <button 
               :disabled="loading"
@@ -116,6 +119,7 @@ import { ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 // Use the relative path to step up out of the 'views' folder and find api.js
 import api from '../api'; 
+import TurnstileWidget from '../components/TurnstileWidget.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -124,15 +128,26 @@ const password = ref('');
 const loading = ref(false);
 const error = ref('');
 const showPassword = ref(false);
+const turnstileToken = ref('');
+
+const onTurnstileVerify = (token) => {
+  turnstileToken.value = token;
+};
 
 const handleLogin = async () => {
+  if (!turnstileToken.value) {
+    error.value = 'Please complete the security check.';
+    return;
+  }
+
   loading.value = true;
   error.value = '';
   
   try {
     const response = await api.post('login', {
       identity: identity.value,
-      password: password.value
+      password: password.value,
+      turnstile_token: turnstileToken.value
     });
     
     // Store user info in localStorage or a store

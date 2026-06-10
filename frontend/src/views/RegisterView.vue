@@ -60,22 +60,49 @@
                      value="Gender and Development Office" disabled 
                      class="bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface opacity-70 cursor-not-allowed" />
               
-              <div v-else class="space-y-2">
-                <select 
-                  v-model="form.office_unit_id" 
-                  @change="checkNewOffice" 
-                  class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary outline-none transition-all" 
-                  required
-                >
-                  <option value="" disabled>Select your unit</option>
-                  <option v-for="unit in officeUnits" :key="unit.unit_id" :value="unit.unit_id">
-                    {{ unit.unit_name }}
-                  </option>
-                  <option value="add_new" class="font-bold text-primary">+ Add New Office</option>
-                </select>
+              <div v-else class="space-y-2 relative" ref="dropdownRef">
+                <!-- Searchable Combobox -->
+                <div class="relative">
+                  <input 
+                    v-model="officeSearchQuery" 
+                    @focus="isDropdownOpen = true"
+                    @input="isDropdownOpen = true; handleSearchInput()"
+                    placeholder="Search or Select your unit"
+                    class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary outline-none transition-all"
+                    :required="!form.office_unit_id && !isAddingNew"
+                  />
+                  <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+                </div>
                 
-                <input v-if="isAddingNew" v-model="newOfficeName" placeholder="Enter new office name" 
-                       class="w-full bg-surface-container-low border border-primary rounded-lg px-4 py-3 text-on-surface" required />
+                <!-- Dropdown List -->
+                <div v-if="isDropdownOpen" class="absolute z-50 w-full mt-1 bg-surface-container-lowest border border-outline-variant/20 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                  <div 
+                    v-for="unit in filteredOffices" 
+                    :key="unit.unit_id" 
+                    @click="selectOffice(unit)"
+                    class="px-4 py-3 hover:bg-surface-container-low cursor-pointer text-on-surface transition-colors"
+                  >
+                    {{ unit.unit_name }}
+                  </div>
+                  
+                  <div v-if="filteredOffices.length === 0" class="px-4 py-3 text-slate-500 italic text-sm">
+                    No matching offices found.
+                  </div>
+
+                  <div 
+                    @click="selectAddNew"
+                    class="px-4 py-3 font-bold text-primary hover:bg-primary/10 cursor-pointer border-t border-outline-variant/20 transition-colors flex items-center gap-2"
+                  >
+                    <span class="material-symbols-outlined text-sm">add_circle</span>
+                    Add "{{ officeSearchQuery || 'New Office' }}"
+                  </div>
+                </div>
+                
+                <div v-if="isAddingNew" class="mt-2 animate-fade-in">
+                  <label class="text-[10px] uppercase tracking-widest font-label font-bold text-primary mb-1 block">New Office Name</label>
+                  <input v-model="newOfficeName" placeholder="Enter full new office name" 
+                         class="w-full bg-surface-container-low border border-primary/50 focus:border-primary rounded-lg px-4 py-3 text-on-surface outline-none focus:ring-1 focus:ring-primary transition-all" required />
+                </div>
               </div>
             </div>
 
@@ -99,6 +126,9 @@
             </div>
           </div>
 
+          <!-- Turnstile Widget -->
+          <TurnstileWidget @verify="onTurnstileVerify" />
+
           <div class="flex flex-col gap-4 pt-4">
             <button :disabled="loading" class="w-full bg-primary text-white py-4 rounded-full font-bold uppercase transition-all shadow-lg" type="submit">
               {{ loading ? 'Processing...' : 'Register' }}
@@ -114,19 +144,61 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue';
+import { reactive, ref, onMounted, computed, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../api';
+import TurnstileWidget from '../components/TurnstileWidget.vue';
 
 const router = useRouter();
 const loading = ref(false);
 const error = ref('');
 const showPass = ref(false);
 const showConfirmPass = ref(false);
+const turnstileToken = ref('');
+
+const onTurnstileVerify = (token) => {
+  turnstileToken.value = token;
+};
 
 const officeUnits = ref([]);
 const isAddingNew = ref(false);
 const newOfficeName = ref('');
+
+// Combobox logic
+const dropdownRef = ref(null);
+const isDropdownOpen = ref(false);
+const officeSearchQuery = ref('');
+
+const filteredOffices = computed(() => {
+  if (!officeSearchQuery.value) return officeUnits.value;
+  const q = officeSearchQuery.value.toLowerCase();
+  return officeUnits.value.filter(u => u.unit_name.toLowerCase().includes(q));
+});
+
+const handleSearchInput = () => {
+  isAddingNew.value = false;
+  form.office_unit_id = ''; 
+};
+
+const selectOffice = (unit) => {
+  form.office_unit_id = unit.unit_id;
+  officeSearchQuery.value = unit.unit_name;
+  isAddingNew.value = false;
+  isDropdownOpen.value = false;
+};
+
+const selectAddNew = () => {
+  form.office_unit_id = 'add_new';
+  isAddingNew.value = true;
+  newOfficeName.value = officeSearchQuery.value;
+  isDropdownOpen.value = false;
+};
+
+const handleClickOutside = (e) => {
+  if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
+    isDropdownOpen.value = false;
+  }
+};
 
 const form = reactive({
   first_name: '', middle_name: '', last_name: '',
@@ -143,16 +215,23 @@ const fetchOffices = async () => {
   }
 };
 
-const checkNewOffice = (e) => {
-  isAddingNew.value = e.target.value === 'add_new';
-  if (!isAddingNew.value) newOfficeName.value = '';
-};
 
-onMounted(fetchOffices);
+
+onMounted(() => {
+  fetchOffices();
+  document.addEventListener('mousedown', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('mousedown', handleClickOutside);
+});
 
 const handleRegister = async () => {
   if (form.password !== form.confirm_password) {
     return error.value = 'Passwords do not match.';
+  }
+  if (!turnstileToken.value) {
+    return error.value = 'Please complete the security check.';
   }
   
   loading.value = true;
@@ -174,11 +253,15 @@ const handleRegister = async () => {
 
     const payload = {
       fullname: `${form.first_name} ${form.middle_name} ${form.last_name}`.replace(/\s+/g, ' ').trim(),
+      first_name: form.first_name,
+      middle_name: form.middle_name,
+      last_name: form.last_name,
       department: departmentId, 
       email: form.email,
       password: form.password,
       confirm_password: form.confirm_password,
-      user_role: form.user_role
+      user_role: form.user_role,
+      turnstile_token: turnstileToken.value
     };
 
     await api.post('register', payload);

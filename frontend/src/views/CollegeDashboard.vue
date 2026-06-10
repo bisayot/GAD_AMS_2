@@ -12,7 +12,12 @@
     />
 
     <div class="flex-grow flex flex-col lg:ml-64 min-h-screen transition-all duration-300 w-full relative">
-      <header class="h-20 bg-[#1a1a2e] border-b border-purple-900/30 flex items-center px-6 sticky top-0 z-30">
+      <header 
+        :class="[
+          'h-20 bg-[#1a1a2e] border-b border-purple-900/30 flex items-center px-6 sticky top-0 z-30 transition-transform duration-300',
+          isHeaderHidden ? '-translate-y-full' : 'translate-y-0'
+        ]"
+      >
         <button @click="isSidebarOpen = true" class="lg:hidden text-white hover:text-primary transition-colors flex items-center">
           <span class="material-symbols-outlined text-3xl">menu</span>
         </button>
@@ -26,13 +31,25 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../api';
 import DashboardSidebar from '../components/DashboardSidebar.vue';
 
 const router = useRouter();
 const isSidebarOpen = ref(false);
+const isHeaderHidden = ref(false);
+const lastScrollY = ref(0);
+
+const handleScroll = () => {
+  const currentScrollY = window.scrollY;
+  if (currentScrollY > lastScrollY.value && currentScrollY > 50) {
+    isHeaderHidden.value = true;
+  } else {
+    isHeaderHidden.value = false;
+  }
+  lastScrollY.value = currentScrollY;
+};
 
 const collegeMenu = [
   { label: 'New Submission', icon: 'add', href: '/college/submit' },
@@ -61,10 +78,15 @@ const handleLogout = async () => {
 };
 
 onMounted(() => {
+  window.addEventListener('scroll', handleScroll);
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   if (!user.id || user.role !== 'college') {
     router.push('/login');
   }
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
 });
 </script>
 

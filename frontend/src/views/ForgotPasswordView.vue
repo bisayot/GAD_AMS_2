@@ -43,6 +43,9 @@
             </div>
           </div>
 
+          <!-- Turnstile Widget -->
+          <TurnstileWidget @verify="onTurnstileVerify" />
+
           <!-- CTA -->
           <button 
             :disabled="loading"
@@ -68,20 +71,32 @@
 <script setup>
 import { ref } from 'vue';
 import api from '../api'; 
+import TurnstileWidget from '../components/TurnstileWidget.vue';
 
 const email = ref('');
 const loading = ref(false);
 const error = ref('');
 const success = ref('');
+const turnstileToken = ref('');
+
+const onTurnstileVerify = (token) => {
+  turnstileToken.value = token;
+};
 
 const handleForgotPassword = async () => {
+  if (!turnstileToken.value) {
+    error.value = 'Please complete the security check.';
+    return;
+  }
+
   loading.value = true;
   error.value = '';
   success.value = '';
   
   try {
     const response = await api.post('forgot-password', {
-      email: email.value
+      email: email.value,
+      turnstile_token: turnstileToken.value
     });
     
     success.value = response.data?.message || 'If your email is registered, you will receive a reset link shortly.';

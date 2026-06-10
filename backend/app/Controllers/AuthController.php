@@ -14,6 +14,10 @@ class AuthController extends ResourceController
         // Handle JSON or Form-data
         $data = $this->request->getJSON(true) ?: $this->request->getPost();
 
+        if (!$this->verifyTurnstile($data['turnstile_token'] ?? '')) {
+            return $this->fail('Invalid security token. Please refresh the page and try again.');
+        }
+
         $rules = [
             'identity' => 'required',
             'password' => 'required'
@@ -62,6 +66,10 @@ class AuthController extends ResourceController
     {
         $data = $this->request->getJSON(true) ?: $this->request->getPost();
 
+        if (!$this->verifyTurnstile($data['turnstile_token'] ?? '')) {
+            return $this->fail('Invalid security token. Please refresh the page and try again.');
+        }
+
         $rules = [
             'fullname' => 'required',
             'department' => 'required',
@@ -92,11 +100,16 @@ class AuthController extends ResourceController
         if (is_numeric($departmentInput)) {
             $officeId = (int) $departmentInput;
         } else {
-            $office = $db->table('office_units')->where('office_name', $departmentInput)->get()->getRowArray();
+            // Clean the input to prevent redundant entries (spaces, casing)
+            $cleanName = trim($departmentInput);
+            $cleanName = preg_replace('/\s+/', ' ', $cleanName);
+            $cleanName = ucwords(strtolower($cleanName));
+
+            $office = $db->table('office_units')->where('office_name', $cleanName)->get()->getRowArray();
             if ($office) {
                 $officeId = $office['office_id'];
             } else {
-                $db->table('office_units')->insert(['office_name' => $departmentInput]);
+                $db->table('office_units')->insert(['office_name' => $cleanName]);
                 $officeId = $db->insertID();
             }
         }
@@ -125,6 +138,18 @@ class AuthController extends ResourceController
         ];
 
         if ($userModel->insert($userData)) {
+            $newUserId = $userModel->insertID();
+
+            // Save detailed information to user_profiles table
+            $db->table('user_profiles')->insert([
+                'user_id' => $newUserId,
+                'first_name' => $data['first_name'] ?? '',
+                'middle_name' => $data['middle_name'] ?? null,
+                'last_name' => $data['last_name'] ?? '',
+                'user_role' => $data['user_role'] ?? 'Non-TWG',
+                'office_unit_id' => $officeId
+            ]);
+
             return $this->respondCreated(['message' => 'Account created successfully. Please log in.']);
         }
 
@@ -134,6 +159,11 @@ class AuthController extends ResourceController
     public function forgotPassword()
     {
         $data = $this->request->getJSON(true) ?: $this->request->getPost();
+        
+        if (!$this->verifyTurnstile($data['turnstile_token'] ?? '')) {
+            return $this->fail('Invalid security token. Please refresh the page and try again.');
+        }
+
         if (empty($data['email'])) {
             return $this->fail('Email is required');
         }
@@ -248,7 +278,54 @@ class AuthController extends ResourceController
     public function addOffice() {
         $data = $this->request->getJSON(true);
         $db = \Config\Database::connect();
-        $db->table('office_units')->insert(['office_name' => $data['unit_name']]);
+        
+        // Clean the input to prevent redundant entries (spaces, casing)
+        $cleanName = trim($data['unit_name']);
+        $cleanName = preg_replace('/\s+/', ' ', $cleanName);
+        $cleanName = ucwords(strtolower($cleanName));
+
+        // Check if the cleaned name already exists to prevent duplication
+        $existing = $db->table('office_units')->where('office_name', $cleanName)->get()->getRowArray();
+        if ($existing) {
+            return $this->respondCreated(['new_id' => $existing['office_id']]);
+        }
+
+        $db->table('office_units')->insert(['office_name' => $cleanName]);
         return $this->respondCreated(['new_id' => $db->insertID()]);
+    }
+
+    protected function verifyTurnstile($token)
+    {
+        if (empty($token)) return false;
+
+        $secret = env('TURNSTILE_SECRET_KEY');
+        if (empty($secret)) {
+            return false;
+        }
+
+        $url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+        $data = [
+            'secret' => $secret,
+            'response' => $token,
+            'remoteip' => $this->request->getIPAddress()
+        ];
+
+        $options = [
+            'http' => [
+                'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+                'method'  => 'POST',
+                'content' => http_build_query($data)
+            ]
+        ];
+
+        $context  = stream_context_create($options);
+        $result = @file_get_contents($url, false, $context);
+        
+        if ($result === FALSE) {
+            return false;
+        }
+
+        $response = json_decode($result, true);
+        return $response['success'] ?? false;
     }
 }
