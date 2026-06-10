@@ -131,6 +131,97 @@ class AuthController extends ResourceController
         return $this->fail('Unable to create account. Please try again later.');
     }
 
+    public function forgotPassword()
+    {
+        $data = $this->request->getJSON(true) ?: $this->request->getPost();
+        if (empty($data['email'])) {
+            return $this->fail('Email is required');
+        }
+
+        $email = $data['email'];
+        $userModel = new UserModel();
+        $user = $userModel->findByIdentity($email);
+
+        if (!$user) {
+            // For security, don't reveal if email exists or not, just return success
+            return $this->respond(['message' => 'If your email is registered, you will receive a reset link shortly.']);
+        }
+
+        $token = bin2hex(random_bytes(32));
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+        $userModel->update($user['id'], [
+            'reset_token' => hash('sha256', $token),
+            'reset_token_expires_at' => $expiresAt
+        ]);
+
+        $emailService = \Config\Services::email();
+        $emailService->setTo($email);
+        $emailService->setSubject('Password Reset Request');
+
+        $frontendUrl = rtrim(getenv('app.baseURL') ?: 'http://localhost:5173', '/');
+        $resetLink = $frontendUrl . '/reset-password?token=' . $token;
+
+        $message = "
+        <html>
+        <head><title>Password Reset</title></head>
+        <body>
+            <h2>Password Reset Request</h2>
+            <p>You recently requested to reset your password for your GAD AMS account. Click the button below to reset it.</p>
+            <p><a href='{$resetLink}' style='background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Reset Password</a></p>
+            <p>If you did not request a password reset, please ignore this email. This link is only valid for the next hour.</p>
+        </body>
+        </html>
+        ";
+
+        $emailService->setMessage($message);
+
+        if ($emailService->send()) {
+            return $this->respond(['message' => 'If your email is registered, you will receive a reset link shortly.']);
+        } else {
+            $debugger = $emailService->printDebugger(['headers']);
+            log_message('error', 'Email failed to send: ' . $debugger);
+            return $this->fail('Unable to send reset email. Please contact administrator.');
+        }
+    }
+
+    public function resetPassword()
+    {
+        $data = $this->request->getJSON(true) ?: $this->request->getPost();
+        
+        $rules = [
+            'token' => 'required',
+            'password' => 'required|min_length[6]',
+        ];
+
+        if (!$this->validateData($data, $rules)) {
+            return $this->fail($this->validator->getErrors());
+        }
+
+        $tokenHash = hash('sha256', $data['token']);
+        
+        $userModel = new UserModel();
+        $user = $userModel->where('reset_token', $tokenHash)
+                          ->where('reset_token_expires_at >=', date('Y-m-d H:i:s'))
+                          ->first();
+
+        if (!$user) {
+            return $this->fail('Invalid or expired password reset token.');
+        }
+
+        $updateData = [
+            'password' => password_hash($data['password'], PASSWORD_DEFAULT),
+            'reset_token' => null,
+            'reset_token_expires_at' => null
+        ];
+
+        if ($userModel->update($user['id'], $updateData)) {
+            return $this->respond(['message' => 'Password has been successfully reset. You can now log in.']);
+        }
+
+        return $this->fail('Failed to reset password. Please try again.');
+    }
+
     public function logout()
     {
         return $this->respond(['message' => 'Logout successful']);

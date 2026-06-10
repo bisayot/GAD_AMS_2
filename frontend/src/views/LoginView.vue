@@ -44,7 +44,7 @@
             <div class="space-y-2">
               <div class="flex justify-between items-end px-1">
                 <label class="block font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant" for="password">Password</label>
-                <a class="text-primary text-[10px] font-bold uppercase tracking-wider hover:underline underline-offset-4 decoration-2" href="#">Forgot Password?</a>
+                <router-link to="/forgot-password" class="text-primary text-[10px] font-bold uppercase tracking-wider hover:underline underline-offset-4 decoration-2">Forgot Password?</router-link>
               </div>
               <div class="relative group">
                 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline transition-colors group-focus-within:text-primary">lock</span>

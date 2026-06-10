@@ -15,6 +15,10 @@ $routes->group('api', function($routes) {
     $routes->post('login', 'AuthController::login');
     $routes->post('register', 'AuthController::register');
     $routes->get('logout', 'AuthController::logout');
+    $routes->post('forgot-password', 'AuthController::forgotPassword');
+    $routes->post('reset-password', 'AuthController::resetPassword');
+    $routes->options('forgot-password', 'AuthController::handleOptions');
+    $routes->options('reset-password', 'AuthController::handleOptions');
 
     // CORS preflight routes (existing)
     $routes->options('login', 'AuthController::handleOptions');
