@@ -6,7 +6,7 @@ use CodeIgniter\Config\BaseConfig;
 
 class Email extends BaseConfig
 {
-    public string $fromEmail  = 'bisayotduligas@gmail.com';
+    public string $fromEmail  = 'gadims.bsu.bsit@gmail.com';
     public string $fromName   = 'GAD AMS System';
     public string $recipients = '';
 
@@ -28,7 +28,7 @@ class Email extends BaseConfig
     /**
      * SMTP Server Hostname
      */
-    public string $SMTPHost = '';
+    public string $SMTPHost = 'smtp-relay.brevo.com';
 
     /**
      * Which SMTP authentication method to use: login, plain
@@ -97,7 +97,7 @@ class Email extends BaseConfig
     /**
      * Type of mail, either 'text' or 'html'
      */
-    public string $mailType = 'text';
+    public string $mailType = 'html';
 
     /**
      * Character set (utf-8, iso-8859-1, etc.)
