@@ -192,11 +192,10 @@ class AuthController extends ResourceController
             'reset_token_expires_at' => $expiresAt
         ]);
 
-        $emailService = \Config\Services::email();
-        $emailService->setTo($email);
-        $emailService->setSubject('Password Reset Request');
+        $apiKey = getenv('SMTP_PASS') ?: env('SMTP_PASS') ?: env('email.SMTPPass') ?: '';
+        $fromEmail = getenv('FROM_EMAIL') ?: env('FROM_EMAIL') ?: env('email.fromEmail') ?: 'gadims.bsu.bsit@gmail.com';
 
-        $frontendUrl = rtrim(getenv('app.baseURL') ?: 'http://localhost:5173', '/');
+        $frontendUrl = rtrim(getenv('app.baseURL') ?: env('app.baseURL') ?: 'http://localhost:5173', '/');
         $resetLink = $frontendUrl . '/reset-password?token=' . $token;
 
         $message = "
@@ -211,14 +210,40 @@ class AuthController extends ResourceController
         </html>
         ";
 
-        $emailService->setMessage($message);
+        // Render's Free Tier firewall completely blocks native SMTP (Ports 25, 465, 587)
+        // To bypass this, we use Brevo's HTTP REST API over standard Port 443 (HTTPS)
+        $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'accept: application/json',
+            'api-key: ' . $apiKey,
+            'content-type: application/json'
+        ]);
+        
+        $payload = [
+            'sender'      => ['name' => 'GAD AMS System', 'email' => $fromEmail],
+            'to'          => [['email' => $email]],
+            'subject'     => 'Password Reset Request',
+            'htmlContent' => $message
+        ];
+        
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        
+        // Disable SSL verification for maximum compatibility across environments
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
 
-        if ($emailService->send()) {
+        if ($httpCode >= 200 && $httpCode < 300) {
             return $this->respond(['message' => 'If your email is registered, you will receive a reset link shortly.']);
         } else {
-            $debugger = $emailService->printDebugger(['headers']);
-            log_message('error', 'Email failed to send: ' . $debugger);
-            return $this->fail('Unable to send reset email. SMTPHost: [' . $emailService->SMTPHost . '] SMTPUser: [' . $emailService->SMTPUser . '] Debug info: ' . strip_tags($debugger));
+            log_message('error', 'Brevo API Error: ' . $response . ' cURL Error: ' . $curlError);
+            return $this->fail('Unable to send reset email. HTTP Code: ' . $httpCode . ' Error: ' . $response . ' cURL: ' . $curlError);
         }
     }
 
