@@ -56,13 +56,13 @@ class Email extends BaseConfig
 
         // Securely load from environment variables if present. 
         // We check standard uppercase variables first (for Render/Linux), then fallback to dot-notation (for local .env)
-        $this->fromEmail = env('FROM_EMAIL') ?: env('email.fromEmail') ?: '';
-        $this->SMTPHost = env('SMTP_HOST') ?: env('email.SMTPHost') ?: 'smtp-relay.brevo.com';
-        $this->SMTPUser = env('SMTP_USER') ?: env('email.SMTPUser') ?: '';
-        $this->SMTPPass = env('SMTP_PASS') ?: env('email.SMTPPass') ?: '';
-        $this->SMTPPort = (int) (env('SMTP_PORT') ?: env('email.SMTPPort') ?: 587);
-        $this->SMTPCrypto = env('SMTP_CRYPTO') ?: env('email.SMTPCrypto') ?: 'tls';
-        $this->mailType = env('MAIL_TYPE') ?: env('email.mailType') ?: 'html';
+        $this->fromEmail = env('FROM_EMAIL') ?: env('email.fromEmail') ?: $this->fromEmail;
+        $this->SMTPHost = env('SMTP_HOST') ?: env('email.SMTPHost') ?: $this->SMTPHost;
+        $this->SMTPUser = env('SMTP_USER') ?: env('email.SMTPUser') ?: $this->SMTPUser;
+        $this->SMTPPass = env('SMTP_PASS') ?: env('email.SMTPPass') ?: $this->SMTPPass;
+        $this->SMTPPort = (int) (env('SMTP_PORT') ?: env('email.SMTPPort') ?: $this->SMTPPort);
+        $this->SMTPCrypto = env('SMTP_CRYPTO') ?: env('email.SMTPCrypto') ?: $this->SMTPCrypto;
+        $this->mailType = env('MAIL_TYPE') ?: env('email.mailType') ?: $this->mailType;
     }
 
     /**
