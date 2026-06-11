@@ -55,14 +55,14 @@ class Email extends BaseConfig
         parent::__construct();
 
         // Securely load from environment variables if present. 
-        // We check standard uppercase variables first (for Render/Linux), then fallback to dot-notation (for local .env)
-        $this->fromEmail = env('FROM_EMAIL') ?: env('email.fromEmail') ?: $this->fromEmail;
-        $this->SMTPHost = env('SMTP_HOST') ?: env('email.SMTPHost') ?: $this->SMTPHost;
-        $this->SMTPUser = env('SMTP_USER') ?: env('email.SMTPUser') ?: $this->SMTPUser;
-        $this->SMTPPass = env('SMTP_PASS') ?: env('email.SMTPPass') ?: $this->SMTPPass;
-        $this->SMTPPort = (int) (env('SMTP_PORT') ?: env('email.SMTPPort') ?: $this->SMTPPort);
-        $this->SMTPCrypto = env('SMTP_CRYPTO') ?: env('email.SMTPCrypto') ?: $this->SMTPCrypto;
-        $this->mailType = env('MAIL_TYPE') ?: env('email.mailType') ?: $this->mailType;
+        // We check standard uppercase variables first (for Render/Linux) using native getenv()
+        $this->fromEmail  = getenv('FROM_EMAIL') ?: env('FROM_EMAIL') ?: env('email.fromEmail') ?: $this->fromEmail;
+        $this->SMTPHost   = getenv('SMTP_HOST') ?: env('SMTP_HOST') ?: env('email.SMTPHost') ?: $this->SMTPHost;
+        $this->SMTPUser   = getenv('SMTP_USER') ?: env('SMTP_USER') ?: env('email.SMTPUser') ?: $this->SMTPUser;
+        $this->SMTPPass   = getenv('SMTP_PASS') ?: env('SMTP_PASS') ?: env('email.SMTPPass') ?: $this->SMTPPass;
+        $this->SMTPPort   = (int) (getenv('SMTP_PORT') ?: env('SMTP_PORT') ?: env('email.SMTPPort') ?: $this->SMTPPort);
+        $this->SMTPCrypto = getenv('SMTP_CRYPTO') ?: env('SMTP_CRYPTO') ?: env('email.SMTPCrypto') ?: $this->SMTPCrypto;
+        $this->mailType   = getenv('MAIL_TYPE') ?: env('MAIL_TYPE') ?: env('email.mailType') ?: $this->mailType;
     }
 
     /**
