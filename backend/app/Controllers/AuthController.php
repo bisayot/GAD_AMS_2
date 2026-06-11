@@ -196,7 +196,7 @@ class AuthController extends ResourceController
         $apiKey = getenv('BREVO_API_KEY') ?: env('BREVO_API_KEY') ?: getenv('SMTP_PASS') ?: env('SMTP_PASS') ?: env('email.SMTPPass') ?: '';
         $fromEmail = getenv('FROM_EMAIL') ?: env('FROM_EMAIL') ?: env('email.fromEmail') ?: 'gadims.bsu.bsit@gmail.com';
 
-        $frontendUrl = rtrim(getenv('app.baseURL') ?: env('app.baseURL') ?: 'http://localhost:5173', '/');
+        $frontendUrl = rtrim(getenv('FRONTEND_URL') ?: env('FRONTEND_URL') ?: getenv('app.baseURL') ?: env('app.baseURL') ?: 'http://localhost:5173', '/');
         $resetLink = $frontendUrl . '/reset-password?token=' . $token;
 
         $message = "
