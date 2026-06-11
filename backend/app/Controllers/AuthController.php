@@ -218,7 +218,7 @@ class AuthController extends ResourceController
         } else {
             $debugger = $emailService->printDebugger(['headers']);
             log_message('error', 'Email failed to send: ' . $debugger);
-            return $this->fail('Unable to send reset email. Please contact administrator.');
+            return $this->fail('Unable to send reset email. Debug info: ' . strip_tags($debugger));
         }
     }
 
