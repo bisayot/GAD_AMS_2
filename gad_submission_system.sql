@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Jun 10, 2026 at 08:13 AM
+-- Generation Time: Jun 10, 2026 at 09:04 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -547,6 +547,62 @@ CREATE TABLE `user_profiles` (
   `user_role` enum('Director','Staff','TWG','Non-TWG') DEFAULT NULL,
   `office_unit_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user_profiles`
+--
+
+INSERT INTO `user_profiles` (`user_id`, `first_name`, `middle_name`, `last_name`, `user_role`, `office_unit_id`) VALUES
+(1, '', NULL, '', 'Director', 1),
+(2, '', NULL, '', 'TWG', 2),
+(3, '', NULL, '', 'TWG', 3),
+(4, '', NULL, '', 'TWG', 4),
+(5, '', NULL, '', 'TWG', 5),
+(6, '', NULL, '', 'TWG', 6),
+(7, '', NULL, '', 'TWG', 7),
+(8, '', NULL, '', 'TWG', 8),
+(9, '', NULL, '', 'TWG', 9),
+(10, '', NULL, '', 'TWG', 10),
+(11, '', NULL, '', 'TWG', 11),
+(12, '', NULL, '', 'TWG', 12),
+(13, '', NULL, '', 'TWG', 13),
+(14, '', NULL, '', 'TWG', 14),
+(15, '', NULL, '', 'TWG', 15),
+(16, '', NULL, '', 'TWG', 16),
+(17, '', NULL, '', 'TWG', 17),
+(18, '', NULL, '', 'TWG', 18),
+(19, '', NULL, '', 'TWG', 19),
+(20, '', NULL, '', 'TWG', 20),
+(21, '', NULL, '', 'TWG', 21),
+(22, '', NULL, '', 'TWG', 22),
+(23, '', NULL, '', 'TWG', 23),
+(24, '', NULL, '', 'TWG', 24),
+(25, '', NULL, '', 'TWG', 25),
+(26, '', NULL, '', 'TWG', 26),
+(27, '', NULL, '', 'TWG', 27),
+(28, '', NULL, '', 'TWG', 28),
+(29, '', NULL, '', 'TWG', 29),
+(30, '', NULL, '', 'TWG', 30),
+(31, '', NULL, '', 'TWG', 31),
+(32, '', NULL, '', 'TWG', 32),
+(33, '', NULL, '', 'TWG', 33),
+(34, '', NULL, '', 'TWG', 34),
+(35, '', NULL, '', 'TWG', 35),
+(36, '', NULL, '', 'TWG', 36),
+(37, '', NULL, '', 'TWG', 37),
+(38, '', NULL, '', 'TWG', 38),
+(39, '', NULL, '', 'TWG', 39),
+(40, '', NULL, '', 'TWG', 40),
+(41, '', NULL, '', 'TWG', 41),
+(42, '', NULL, '', 'TWG', 42),
+(43, '', NULL, '', 'TWG', 43),
+(44, '', NULL, '', 'TWG', 44),
+(45, '', NULL, '', 'TWG', 45),
+(46, '', NULL, '', 'TWG', 46),
+(47, 'GAD', 'Staff', 'User', 'Staff', 47),
+(48, 'Joshua', NULL, 'Duligas', 'Staff', 1),
+(49, 'Nicole', 'Sano', 'Elgamo', 'TWG', 32),
+(50, 'Joshua', NULL, 'Santos', 'TWG', 46);
 
 --
 -- Indexes for dumped tables

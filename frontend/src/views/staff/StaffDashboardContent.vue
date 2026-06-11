@@ -1,7 +1,7 @@
 <template>
   <div class="staff-dashboard-content">
   <div class="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
-      <h1 class="text-3xl font-bold text-slate-900">Welcome, (Staff) to your Dashboard!</h1>
+      <h1 class="text-3xl font-bold text-slate-900">Welcome, {{ displayName }} to your Dashboard!</h1>
       <p class="text-slate-500 mt-2">Manage your GAD programs, monitor activity designs, and oversee budget utilization from here.</p>
     </div>
     <section class="stats-section">
@@ -146,12 +146,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../../api';
 
 const router = useRouter();
 const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
+
+const displayName = computed(() => {
+  if (user.value.full_name && user.value.full_name.trim() !== '') {
+    return user.value.full_name;
+  }
+  return '(Staff)';
+});
 
 const navigateToView = (type, id) => {
   if (type === 'design') {

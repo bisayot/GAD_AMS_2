@@ -57,7 +57,8 @@ class AuthController extends ResourceController
             'user' => [
                 'id' => $user['id'],
                 'username' => $user['username'],
-                'role' => $user['role']
+                'role' => $user['role'],
+                'full_name' => $user['full_name']
             ]
         ]);
     }
@@ -310,20 +311,24 @@ class AuthController extends ResourceController
             'remoteip' => $this->request->getIPAddress()
         ];
 
-        $options = [
-            'http' => [
-                'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
-                'method'  => 'POST',
-                'content' => http_build_query($data)
-            ]
-        ];
-
-        $context  = stream_context_create($options);
-        $result = @file_get_contents($url, false, $context);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         
-        if ($result === FALSE) {
+        // This is often required on cloud/shared hosting where CA certificates are outdated
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+        $result = curl_exec($ch);
+        
+        if ($result === false) {
+            log_message('error', 'Turnstile cURL Error: ' . curl_error($ch));
+            curl_close($ch);
             return false;
         }
+        
+        curl_close($ch);
 
         $response = json_decode($result, true);
         return $response['success'] ?? false;

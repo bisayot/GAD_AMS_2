@@ -1,7 +1,7 @@
 <template>
     <div class="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
-      <h1 class="text-3xl font-bold text-slate-900">Welcome, {{ user.username || 'Director' }}!</h1>
-      <p class="text-slate-500 mt-2">Manage your GAD programs, monitor activity designs, and oversee budget utilization from here.</p>
+      <h1 class="text-3xl font-bold text-slate-900">Welcome, {{ displayName }}!</h1>
+      <p class="text-slate-500 mt-2">Manage your college's GAD programs, submit activity designs, and upload accomplishment reports.</p>
     </div><br>
     
   <div class="dashboard-grid">
@@ -117,12 +117,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../../api';
 
 const router = useRouter();
-const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
+const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+const displayName = computed(() => {
+  if (user.full_name && user.full_name.trim() !== '') {
+    return user.full_name;
+  }
+  return '(TWG)';
+});
 
 const metricsStats = ref([
   { label: 'Pending Reviews', value: '0', icon: 'schedule', iconColor: 'text-amber-400', bgClass: 'bg-amber-500/10' },
