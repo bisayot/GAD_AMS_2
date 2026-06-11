@@ -192,7 +192,8 @@ class AuthController extends ResourceController
             'reset_token_expires_at' => $expiresAt
         ]);
 
-        $apiKey = getenv('SMTP_PASS') ?: env('SMTP_PASS') ?: env('email.SMTPPass') ?: '';
+        // Brevo requires an API Key (starts with xkeysib-) for HTTP requests, not an SMTP password
+        $apiKey = getenv('BREVO_API_KEY') ?: env('BREVO_API_KEY') ?: getenv('SMTP_PASS') ?: env('SMTP_PASS') ?: env('email.SMTPPass') ?: '';
         $fromEmail = getenv('FROM_EMAIL') ?: env('FROM_EMAIL') ?: env('email.fromEmail') ?: 'gadims.bsu.bsit@gmail.com';
 
         $frontendUrl = rtrim(getenv('app.baseURL') ?: env('app.baseURL') ?: 'http://localhost:5173', '/');
