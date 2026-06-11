@@ -14,8 +14,10 @@ class AuthController extends ResourceController
         // Handle JSON or Form-data
         $data = $this->request->getJSON(true) ?: $this->request->getPost();
 
-        if (!$this->verifyTurnstile($data['turnstile_token'] ?? '')) {
-            return $this->fail('Invalid security token. Please refresh the page and try again.');
+        $turnstileCheck = $this->verifyTurnstile($data['turnstile_token'] ?? '');
+        if ($turnstileCheck['success'] !== true) {
+            return $this->fail('Invalid security token: ' . ($turnstileCheck['error'] ?? 'Unknown Error') . 
+                (isset($turnstileCheck['cloudflare_response']) ? ' | CF Details: ' . json_encode($turnstileCheck['cloudflare_response']) : ''));
         }
 
         $rules = [
@@ -67,8 +69,10 @@ class AuthController extends ResourceController
     {
         $data = $this->request->getJSON(true) ?: $this->request->getPost();
 
-        if (!$this->verifyTurnstile($data['turnstile_token'] ?? '')) {
-            return $this->fail('Invalid security token. Please refresh the page and try again.');
+        $turnstileCheck = $this->verifyTurnstile($data['turnstile_token'] ?? '');
+        if ($turnstileCheck['success'] !== true) {
+            return $this->fail('Invalid security token: ' . ($turnstileCheck['error'] ?? 'Unknown Error') . 
+                (isset($turnstileCheck['cloudflare_response']) ? ' | CF Details: ' . json_encode($turnstileCheck['cloudflare_response']) : ''));
         }
 
         $rules = [
@@ -161,8 +165,10 @@ class AuthController extends ResourceController
     {
         $data = $this->request->getJSON(true) ?: $this->request->getPost();
         
-        if (!$this->verifyTurnstile($data['turnstile_token'] ?? '')) {
-            return $this->fail('Invalid security token. Please refresh the page and try again.');
+        $turnstileCheck = $this->verifyTurnstile($data['turnstile_token'] ?? '');
+        if ($turnstileCheck['success'] !== true) {
+            return $this->fail('Invalid security token: ' . ($turnstileCheck['error'] ?? 'Unknown Error') . 
+                (isset($turnstileCheck['cloudflare_response']) ? ' | CF Details: ' . json_encode($turnstileCheck['cloudflare_response']) : ''));
         }
 
         if (empty($data['email'])) {
@@ -297,11 +303,11 @@ class AuthController extends ResourceController
 
     protected function verifyTurnstile($token)
     {
-        if (empty($token)) return false;
+        if (empty($token)) return ['success' => false, 'error' => 'Token is empty'];
 
         $secret = env('TURNSTILE_SECRET_KEY');
         if (empty($secret)) {
-            return false;
+            return ['success' => false, 'error' => 'Secret key is missing from backend .env'];
         }
 
         $url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
@@ -316,21 +322,27 @@ class AuthController extends ResourceController
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        
-        // This is often required on cloud/shared hosting where CA certificates are outdated
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
         $result = curl_exec($ch);
         
         if ($result === false) {
-            log_message('error', 'Turnstile cURL Error: ' . curl_error($ch));
+            $error = curl_error($ch);
             curl_close($ch);
-            return false;
+            return ['success' => false, 'error' => 'cURL Error: ' . $error];
         }
         
         curl_close($ch);
 
         $response = json_decode($result, true);
-        return $response['success'] ?? false;
+        if (isset($response['success']) && $response['success'] === true) {
+            return ['success' => true];
+        }
+
+        return [
+            'success' => false, 
+            'error' => 'Cloudflare rejected token', 
+            'cloudflare_response' => $response
+        ];
     }
 }
