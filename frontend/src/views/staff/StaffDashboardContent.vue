@@ -317,6 +317,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  min-width: 0;
 }
 
 .grid-sidebar {
@@ -362,6 +363,7 @@ onMounted(async () => {
   width: 100%;
   text-align: left;
   border-collapse: collapse;
+  min-width: 800px;
 }
 
 .table-header-row {

@@ -127,7 +127,20 @@
           </div>
 
           <!-- Turnstile Widget -->
-          <TurnstileWidget @verify="onTurnstileVerify" />
+          <TurnstileWidget ref="turnstileRef" @verify="onTurnstileVerify" />
+
+          <!-- Privacy Policy Checkbox -->
+          <div class="flex items-start gap-3 pt-2">
+            <div class="flex items-center h-5">
+              <input id="privacy" v-model="form.privacyAccepted" type="checkbox" class="w-4 h-4 bg-surface-container-low border-none rounded text-primary focus:ring-primary" required />
+            </div>
+            <div class="text-sm">
+              <label for="privacy" class="text-on-surface-variant font-medium">
+                I agree to the 
+                <button type="button" @click="showPrivacyModal = true" class="text-primary hover:underline font-bold">Privacy Policy</button>
+              </label>
+            </div>
+          </div>
 
           <div class="flex flex-col gap-4 pt-4">
             <button :disabled="loading" class="w-full bg-primary text-white py-4 rounded-full font-bold uppercase transition-all shadow-lg" type="submit">
@@ -138,6 +151,40 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div v-if="showPrivacyModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
+      <div class="bg-surface-container-lowest rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
+        <div class="p-6 border-b border-outline-variant/20 flex justify-between items-center">
+          <h2 class="text-2xl font-headline font-bold text-primary">Privacy Policy</h2>
+          <button type="button" @click="showPrivacyModal = false" class="text-on-surface-variant hover:text-primary transition-colors">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        
+        <div class="p-6 overflow-y-auto font-body text-on-surface-variant space-y-4 text-left">
+          <p class="font-bold text-on-surface">Data Privacy Act of 2012 (RA 10173) Consent</p>
+          <p>
+            By registering for an account on the Benguet State University Gender and Development (BSU GAD) Portal, you acknowledge and agree to the following terms regarding the collection, use, and processing of your personal data:
+          </p>
+          <ul class="list-disc pl-5 space-y-2">
+            <li><strong>Purpose of Data Collection:</strong> Your personal information (e.g., name, institutional email, office/department, and role) will be collected and processed solely for the purpose of managing user access, facilitating system functionalities, and maintaining official records within the GAD Portal.</li>
+            <li><strong>Data Protection:</strong> We are committed to safeguarding your personal information. Appropriate security measures are in place to prevent unauthorized access, disclosure, modification, or destruction of your data.</li>
+            <li><strong>Data Sharing:</strong> Your personal data will only be accessible to authorized personnel of the BSU GAD Office and system administrators. It will not be shared with third parties without your explicit consent, except as required by law.</li>
+            <li><strong>User Rights:</strong> You have the right to access, correct, or request the deletion of your personal data stored in the portal. You may also withdraw your consent at any time, which may result in the deactivation of your account.</li>
+          </ul>
+          <p>
+            By clicking "I agree," you signify your understanding of this privacy policy and give your explicit consent to the BSU GAD Office to process your personal data in accordance with the aforementioned terms and the provisions of the Data Privacy Act of 2012.
+          </p>
+        </div>
+
+        <div class="p-6 border-t border-outline-variant/20 bg-surface-container-low rounded-b-2xl flex justify-end">
+          <button type="button" @click="acceptPrivacy" class="bg-primary text-white px-6 py-2 rounded-full font-bold uppercase transition-all shadow-md hover:shadow-lg">
+            I Understand & Agree
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -155,6 +202,13 @@ const error = ref('');
 const showPass = ref(false);
 const showConfirmPass = ref(false);
 const turnstileToken = ref('');
+const showPrivacyModal = ref(false);
+const turnstileRef = ref(null);
+
+const acceptPrivacy = () => {
+  form.privacyAccepted = true;
+  showPrivacyModal.value = false;
+};
 
 const onTurnstileVerify = (token) => {
   turnstileToken.value = token;
@@ -203,7 +257,8 @@ const handleClickOutside = (e) => {
 const form = reactive({
   first_name: '', middle_name: '', last_name: '',
   user_role: 'Non-TWG', office_unit_id: '',
-  email: '', password: '', confirm_password: ''
+  email: '', password: '', confirm_password: '',
+  privacyAccepted: false
 });
 
 const fetchOffices = async () => {
@@ -232,6 +287,9 @@ const handleRegister = async () => {
   }
   if (!turnstileToken.value) {
     return error.value = 'Please complete the security check.';
+  }
+  if (!form.privacyAccepted) {
+    return error.value = 'You must agree to the Privacy Policy.';
   }
   
   loading.value = true;
@@ -270,6 +328,8 @@ const handleRegister = async () => {
 
   } catch (err) {
     console.error("Registration Error", err);
+    if (turnstileRef.value) turnstileRef.value.reset();
+    turnstileToken.value = '';
     
     if (err && err.messages) {
       const messages = err.messages;

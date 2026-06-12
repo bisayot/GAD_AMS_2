@@ -272,11 +272,11 @@ onMounted(() => {
 .metric-box { background: rgba(0, 0, 0, 0.3); border-radius: 12px; padding: 16px; text-align: center; border: 1px solid rgba(185, 121, 204, 0.1); }
 .metric-value { font-size: 24px; font-weight: 700; color: white; }
 .metric-label { font-size: 10px; color: #cbd5e1; text-transform: uppercase; margin-top: 4px; }
-.doc-item { display: flex; align-items: center; justify-content: space-between; padding: 16px; background: rgba(0, 0, 0, 0.3); border-radius: 12px; border: 1px solid rgba(185, 121, 204, 0.15); }
+.doc-item { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 16px; background: rgba(0, 0, 0, 0.3); border-radius: 12px; border: 1px solid rgba(185, 121, 204, 0.15); overflow-x: auto; }
 .doc-info { display: flex; align-items: center; gap: 12px; }
 .doc-pdf-icon { font-size: 1.875rem; color: #ef4444; }
-.doc-title { font-size: 13px; font-weight: 700; color: white; }
-.doc-meta { font-size: 11px; color: #cbd5e1; margin-top: 2px; }
+.doc-title { font-size: 13px; font-weight: 700; color: white; white-space: nowrap; }
+.doc-meta { font-size: 11px; color: #cbd5e1; margin-top: 2px; white-space: nowrap; }
 .preview-btn { color: #b979cc; font-size: 11px; padding: 6px 16px; border-radius: 8px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(185, 121, 204, 0.15); font-weight: 700; cursor: pointer; transition: all 0.2s; }
 .preview-btn:hover { border-color: #b979cc; color: white; background: rgba(185, 121, 204, 0.1); }
 .download-btn-icon { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(185, 121, 204, 0.15); color: #cbd5e1; padding: 6px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -309,4 +309,14 @@ onMounted(() => {
 .action-buttons { margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(185, 121, 204, 0.15); }
 .btn-back { width: 100%; padding: 12px; font-size: 11px; font-weight: 800; text-transform: uppercase; color: #cbd5e1; border-radius: 12px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(185, 121, 204, 0.15); cursor: pointer; transition: all 0.2s; }
 .btn-back:hover { color: white; border-color: #b979cc; background: rgba(185, 121, 204, 0.05); }
+
+@media (max-width: 1024px) {
+  .layout-grid { flex-direction: column; padding: 1rem; }
+  .flex-06, .flex-055, .flex-04-sidebar, .flex-045-sidebar { flex: 1 !important; width: 100% !important; max-width: 100% !important; position: relative !important; top: 0 !important; }
+}
+
+@media (max-width: 768px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
+  .info-grid { flex-direction: column !important; gap: 12px !important; }
+}
 </style>

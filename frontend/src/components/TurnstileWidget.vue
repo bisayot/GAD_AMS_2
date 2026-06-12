@@ -42,6 +42,14 @@ onUnmounted(() => {
     window.turnstile.remove(widgetId);
   }
 });
+
+const reset = () => {
+  if (widgetId !== null && window.turnstile) {
+    window.turnstile.reset(widgetId);
+  }
+};
+
+defineExpose({ reset });
 </script>
 
 <style scoped>

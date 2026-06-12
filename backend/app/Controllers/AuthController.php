@@ -53,6 +53,10 @@ class AuthController extends ResourceController
 
         // In a real app, you'd generate a JWT here. 
         // For this demo, we'll just return user info.
+        $db = \Config\Database::connect();
+        $userProfile = $db->table('user_profiles')->where('user_id', $user['id'])->get()->getRowArray();
+        $userRole = $userProfile ? ($userProfile['user_role'] ?? 'Non-TWG') : 'Non-TWG';
+
         return $this->respond([
             'status' => 200,
             'message' => 'Login successful',
@@ -60,6 +64,7 @@ class AuthController extends ResourceController
                 'id' => $user['id'],
                 'username' => $user['username'],
                 'role' => $user['role'],
+                'user_role' => $userRole,
                 'full_name' => $user['full_name']
             ]
         ]);

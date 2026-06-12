@@ -72,7 +72,7 @@
             </div>
 
             <!-- Turnstile Widget -->
-            <TurnstileWidget @verify="onTurnstileVerify" />
+            <TurnstileWidget ref="turnstileRef" @verify="onTurnstileVerify" />
 
             <!-- CTA -->
             <button 
@@ -129,6 +129,7 @@ const loading = ref(false);
 const error = ref('');
 const showPassword = ref(false);
 const turnstileToken = ref('');
+const turnstileRef = ref(null);
 
 const onTurnstileVerify = (token) => {
   turnstileToken.value = token;
@@ -180,6 +181,8 @@ const handleLogin = async () => {
     
   } catch (err) {
     console.error('Login error:', err);
+    if (turnstileRef.value) turnstileRef.value.reset();
+    turnstileToken.value = '';
     
     if (err && err.messages) {
       error.value = err.messages.error || 'Login failed';

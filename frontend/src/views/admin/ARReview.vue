@@ -474,13 +474,13 @@ button { transition: all 0.2s ease-in-out; cursor: pointer; }
 .metric-value { font-size: 24px; font-weight: 700; color: white; }
 .metric-label { font-size: 10px; color: #cbd5e1; text-transform: uppercase; margin-top: 4px; }
 
-.doc-item { display: flex; align-items: center; justify-content: space-between; padding: 16px; background-color: rgba(0, 0, 0, 0.3); border-radius: 12px; border: 1px solid rgba(185, 121, 204, 0.15); }
+.doc-item { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 16px; background: rgba(0, 0, 0, 0.3); border-radius: 12px; border: 1px solid rgba(185, 121, 204, 0.15); overflow-x: auto; }
 .doc-info { display: flex; align-items: center; gap: 12px; }
 .doc-pdf-icon { font-size: 1.875rem; color: #ef4444; }
 .doc-actions { display: flex; gap: 0.5rem; }
 .doc-actions span { font-size: 1.1rem; }
-.doc-title { font-size: 13px; font-weight: 700; color: white; }
-.doc-meta { font-size: 11px; color: #cbd5e1; margin-top: 2px; }
+.doc-title { font-size: 13px; font-weight: 700; color: white; white-space: nowrap; }
+.doc-meta { font-size: 11px; color: #cbd5e1; margin-top: 2px; white-space: nowrap; }
 .preview-btn { color: #b979cc; font-size: 11px; padding: 6px 12px; border-radius: 8px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(185, 121, 204, 0.15); font-weight: 700; cursor: pointer; }
 .preview-btn:hover { border-color: #b979cc; color: white; background: rgba(185, 121, 204, 0.1); }
 
@@ -586,5 +586,15 @@ button { transition: all 0.2s ease-in-out; cursor: pointer; }
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 1024px) {
+  .layout-grid { flex-direction: column; padding: 1rem; }
+  .flex-06, .flex-055, .flex-04-sidebar, .flex-045-sidebar { flex: 1 !important; width: 100% !important; max-width: 100% !important; position: relative !important; top: 0 !important; }
+}
+
+@media (max-width: 768px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
+  .info-grid { flex-direction: column !important; gap: 12px !important; }
 }
 </style>

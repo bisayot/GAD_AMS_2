@@ -14,13 +14,22 @@
     <div class="flex-grow flex flex-col lg:ml-64 min-h-screen transition-all duration-300 w-full relative">
       <header 
         :class="[
-          'h-20 bg-[#1a1a2e] border-b border-purple-900/30 flex items-center px-6 sticky top-0 z-30 transition-transform duration-300',
+          'h-20 bg-[#1a1a2e] border-b border-purple-900/30 flex items-center justify-between px-6 sticky top-0 z-30 transition-transform duration-300',
           isHeaderHidden ? '-translate-y-full' : 'translate-y-0'
         ]"
       >
-        <button @click="isSidebarOpen = true" class="lg:hidden text-white hover:text-primary transition-colors flex items-center">
-          <span class="material-symbols-outlined text-3xl">menu</span>
-        </button>
+        <div class="flex items-center">
+          <button @click="isSidebarOpen = true" class="lg:hidden text-white hover:text-primary transition-colors flex items-center">
+            <span class="material-symbols-outlined text-3xl">menu</span>
+          </button>
+        </div>
+        
+        <div v-if="user.user_role" class="flex items-center gap-3">
+          <div class="px-4 py-1.5 bg-primary/20 border border-primary/50 rounded-full flex items-center gap-2 shadow-sm backdrop-blur-md">
+            <span class="material-symbols-outlined text-primary text-[18px]">badge</span>
+            <span class="text-white text-xs font-bold uppercase tracking-wider">{{ user.user_role }}</span>
+          </div>
+        </div>
       </header>
 
       <main class="flex-grow p-4 md:p-10 w-full overflow-x-hidden">
@@ -40,6 +49,7 @@ const router = useRouter();
 const isSidebarOpen = ref(false);
 const isHeaderHidden = ref(false);
 const lastScrollY = ref(0);
+const user = ref({});
 
 const handleScroll = () => {
   const currentScrollY = window.scrollY;
@@ -80,8 +90,8 @@ const handleLogout = async () => {
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll);
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  if (!user.id || user.role !== 'admin') {
+  user.value = JSON.parse(localStorage.getItem('user') || '{}');
+  if (!user.value.id || user.value.role !== 'admin') {
     router.push('/login');
   }
 });

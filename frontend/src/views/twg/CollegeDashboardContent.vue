@@ -253,10 +253,11 @@ onMounted(() => {
   }
 }
 
-.main-content-area, .sidebar-area {
+.main-content-area, .grid-main {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
+  min-width: 0;
 }
 
 /* Base Card Layout Rules */
@@ -364,6 +365,7 @@ onMounted(() => {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
+  min-width: 800px;
 }
 
 .table-header-row {
