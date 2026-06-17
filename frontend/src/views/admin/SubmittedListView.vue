@@ -103,7 +103,11 @@
                     </td>
                     <td class="table-cell">
                       <div class="unit-name">{{ unit.name }}</div>
-                      <div class="unit-code">{{ unit.code }}</div>
+                      <div class="unit-code">
+                        <span class="role-badge" :class="getBadgeClass(unit.code)">
+                          {{ unit.code }}
+                        </span>
+                      </div>
                     </td>
                     <td class="table-cell table-cell-center table-cell-count">
                       {{ unit.activity_designs_count || 0 }}
@@ -222,7 +226,7 @@ const fetchTWGSubmissions = async (page = 1) => {
     twgUnits.value = response.data.data.map(unit => ({
       ...unit,
       name: unit.username, // mapping to match UI expectation
-      code: `UNIT-${unit.id}` // fake code since we don't have unit code in db
+      code: unit.user_role || 'Non-TWG'
     }));
     paginationMeta.value = response.data.meta;
     currentPage.value = page;
@@ -244,6 +248,15 @@ const changePage = (page) => {
   if (page >= 1 && page <= paginationMeta.value.last_page) {
     fetchTWGSubmissions(page);
   }
+};
+
+
+const getBadgeClass = (code) => {
+  if (!code) return 'badge-nontwg';
+  const c = code.toLowerCase();
+  if (c === 'twg') return 'badge-twg';
+  if (c === 'staff') return 'badge-staff';
+  return 'badge-nontwg';
 };
 
 const viewDetails = (unitId) => {
@@ -627,6 +640,34 @@ onMounted(() => {
   letter-spacing: 0.025em;
   text-transform: uppercase;
   margin-top: 0.125rem;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-twg {
+  background: rgba(153, 13, 209, 0.2);
+  color: #b979cc;
+  border: 1px solid rgba(153, 13, 209, 0.3);
+}
+
+.badge-staff {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.badge-nontwg {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .submission-badge {

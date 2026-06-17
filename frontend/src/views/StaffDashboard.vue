@@ -71,8 +71,6 @@ const staffMenu = [
   { label: 'Mandates', icon: 'gavel', href: '/staff/mandates' },
   { label: 'Report Monitoring', icon: 'description', href: '/staff/reports' },
   { label: 'Budget Monitoring', icon: 'payments', href: '/staff/budget' },
-  { label: 'Budget Allocation', icon: 'account_balance', href: '/staff/budget-allocation' },
-  { label: 'Plan & Budget', icon: 'account_balance_wallet', href: '/staff/gad-plan-budget' },
   { label: 'User Manual', icon: 'menu_book', href: '/staff/user-manual' },
   { label: 'Data Privacy Policy', icon: 'privacy_tip', href: '/staff/data-privacy-policy' }
 ];

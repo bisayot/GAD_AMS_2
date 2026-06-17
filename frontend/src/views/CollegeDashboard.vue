@@ -64,13 +64,9 @@ const handleScroll = () => {
 const collegeMenu = [
   { label: 'New Submission', icon: 'add', href: '/college/submit' },
   { label: 'Dashboard', icon: 'dashboard', href: '/college/dashboard' },
-  { label: 'Submit Design', icon: 'add_task', href: '/college/submit-design' },
-  { label: 'Submit Accomplishment', icon: 'fact_check', href: '/college/submit-report' },
   { label: 'Submitted List', icon: 'list', href: '/college/submitted-list' },
-  { label: 'Technical Assist', icon: 'support_agent', href: '/college/tech-assist' },
-  { label: 'Mandates', icon: 'gavel', href: '/college/mandates' },
-  { label: 'Plan & Budget', icon: 'account_balance_wallet', href: '/college/gad-plan-budget' },
   { label: 'Archives', icon: 'archive', href: '/college/archive' },
+  { label: 'Mandates', icon: 'gavel', href: '/college/mandates' },
   { label: 'User Manual', icon: 'menu_book', href: '/college/user-manual' },
   { label: 'Data Privacy Policy', icon: 'privacy_tip', href: '/college/data-privacy-policy' }
 ];

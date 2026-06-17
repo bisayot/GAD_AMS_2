@@ -24,6 +24,8 @@ class AccomplishmentReportModel extends Model // No change needed here, class na
         "start_time",
         "end_time",
         "venue",
+        "venue_id",
+        "assessment_date",
         "attendees",
         "male",
         "female",

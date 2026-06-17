@@ -302,10 +302,16 @@ const visiblePages = computed(() => {
 const fetchArchives = async () => {
   loading.value = true;
   try {
-    const designsResponse = await api.get('archived-designs');
-    const reportsResponse = await api.get('archived-reports');
-    archivedDesigns.value = designsResponse.data;
-    archivedReports.value = reportsResponse.data;
+    const response = await api.get(`archives?user_id=${user.value.id}&role=${user.value.role}`);
+    const allData = (response.data.data || []).map(item => ({
+      ...item,
+      id: item.original_id,
+      dateArchived: item.dateRaw ? new Date(item.dateRaw).toLocaleDateString() : 'N/A',
+      statusText: item.status,
+      statusClass: (item.status === 'Approved' || item.status === 'Verified') ? 'status-approved' : 'status-cancelled'
+    }));
+    archivedDesigns.value = allData.filter(item => item.type === 'design');
+    archivedReports.value = allData.filter(item => item.type === 'report');
   } catch (error) {
     console.error('Error fetching archive records:', error);
   } finally {
@@ -334,9 +340,9 @@ const changePage = (page) => {
 
 const viewItem = (item) => {
   if (item.type === 'design') {
-    router.push(`/admin/design-view/${item.id}`);
+    router.push(`/admin/ad-view/${item.id}`);
   } else {
-    router.push(`/admin/report-view/${item.id}`);
+    router.push(`/admin/ar-view/${item.id}`);
   }
 };
 
@@ -823,24 +829,31 @@ onMounted(() => {
   border: 1px solid #bae6fd;
 }
 
+.status-badge.status-cancelled {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
 .control-number {
   font-family: monospace;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #7e22ce;
-  letter-spacing: 0.03em;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #6b21a8;
+  letter-spacing: 0.05em;
 }
 
 .item-date {
-  font-size: 0.9rem;
-  color: #94a3b8;
-  margin-top: 0.25rem;
+  font-size: 0.95rem;
+  color: #334155;
+  font-weight: 700;
+  margin-top: 0.35rem;
 }
 
 .item-title {
-  font-weight: 600;
-  color: #1e293b;
-  font-size: 0.85rem;
+  font-weight: 800;
+  color: #0f172a;
+  font-size: 1.1rem;
   line-height: 1.4;
 }
 

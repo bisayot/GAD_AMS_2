@@ -72,24 +72,20 @@
               </div>
               <div class="grid-2">
                 <div>
-                  <label class="form-label">Start Date</label>
-                  <input v-model="formData.start_date" type="date" class="modal-input">
+                  <label class="info-label">Date</label>
+                  <p class="info-value-white">{{ formatDate(design.start_date) }} — {{ formatDate(design.end_date) }}</p>
                 </div>
                 <div>
-                  <label class="form-label">End Date</label>
-                  <input v-model="formData.end_date" type="date" class="modal-input">
-                </div>
-                <div>
-                  <label class="form-label">Start Time</label>
-                  <input v-model="formData.start_time" type="time" class="modal-input">
-                </div>
-                <div>
-                  <label class="form-label">End Time</label>
-                  <input v-model="formData.end_time" type="time" class="modal-input">
+                  <label class="info-label">Time</label>
+                  <p class="info-value-white">{{ formatTime(design.start_time) }} to {{ formatTime(design.end_time) }}</p>
                 </div>
                 <div class="full-width-info">
-                  <label class="form-label">Target Venue</label>
-                  <input v-model="formData.venue" type="text" class="modal-input" placeholder="Enter Venue">
+                  <label class="info-label">Venue</label>
+                  <p class="info-value-white">{{ design.venue }}</p>
+                </div>
+                <div class="full-width-info participants-info">
+                  <label class="info-label">Target Participants</label>
+                  <p class="info-value-white">{{ design.target_participants }} individuals</p>
                 </div>
               </div>
             </div>
@@ -97,21 +93,40 @@
             <div class="section-card">
               <div class="section-header-row">
                 <span class="material-symbols-outlined icon-pink">payments</span>
-                <h3 class="section-title">Budget & Participants</h3>
+                <h3 class="section-title">Proposed Budgetary Requirements</h3>
               </div>
-              <div class="grid-2">
-                <div class="metric-box-edit">
-                  <label class="form-label">Proposed Budget (₱)</label>
-                  <input v-model="formData.proposed_budget" type="number" step="0.01" class="modal-input text-center">
+              <div v-if="parsedBudget.length" class="budget-content">
+                <div class="budget-table-wrapper">
+                  <table class="budget-table">
+                    <thead class="budget-table-header">
+                      <tr>
+                        <th class="table-header-cell">Budget Item</th>
+                        <th class="table-header-cell budget-total-header">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody class="budget-table-body">
+                      <tr v-for="(item, idx) in parsedBudget" :key="idx" class="budget-table-row">
+                        <td class="budget-item-name" v-html="formatBudgetName(item.name)"></td>
+                        <td class="budget-item-value-cell budget-value-right">
+                          <span class="budget-item-value">₱{{ formatCurrency(item.total) }}</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                    <tfoot class="budget-table-footer">
+                      <tr>
+                        <td class="grand-total-label">Grand Total (PHP)</td>
+                        <td class="grand-total-value-white budget-value-right">₱{{ formatCurrency(design.proposed_budget) }}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
                 </div>
-                <div class="metric-box-edit">
-                  <label class="form-label">Target Participants</label>
-                  <input v-model="formData.target_participants" type="number" class="modal-input text-center">
-                </div>
+              </div>
+              <div v-else class="empty-budget-notice">
+                No budgetary requirements were specified for this design.
               </div>
             </div>
 
-            <div class="section-card">
+            <div v-if="design.attachment" class="section-card">
               <div class="section-header-row">
                 <span class="material-symbols-outlined icon-pink">description</span>
                 <h3 class="section-title">Supporting Documents</h3>
@@ -120,15 +135,11 @@
                 <div class="doc-info">
                   <span class="material-symbols-outlined doc-pdf-icon">picture_as_pdf</span>
                   <div>
-                    <p class="doc-title" v-if="!newFile">{{ design.attachment || 'No file uploaded' }}</p>
-                    <p class="doc-title" v-else>{{ newFile.name }}</p>
-                    <p class="doc-meta" v-if="design.attachment && !newFile">Current File</p>
+                    <p class="doc-title">Activity_Design_Framework.pdf</p>
+                    <p class="doc-meta">Reference: {{ design.attachment }}</p>
                   </div>
                 </div>
-                <label class="preview-btn cursor-pointer">
-                  <span>Change File</span>
-                  <input type="file" @change="handleFileChange" class="hidden" accept=".pdf,.doc,.docx">
-                </label>
+                <button @click="previewFile(design.attachment)" class="preview-btn">👁️ Preview</button>
               </div>
             </div>
           </div>
@@ -168,7 +179,29 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+
+const formatBudgetName = (name) => {
+  if (!name) return '';
+  return name.replace(/(\([^)]+\))/g, '<span class="budget-item-subtext">$1</span>');
+};
+
+const parsedBudget = computed(() => {
+  const d = design.value;
+  if (!d || !d.act_design_id) return [];
+  const items = [
+    { name: 'Meals and Snacks (AM/PM)', total: d.meals_and_snacks },
+    { name: 'Function Room/Venue', total: d.function_room_venue },
+    { name: 'Accommodation', total: d.accommodation },
+    { name: 'Equipment Rental', total: d.equipment_rental },
+    { name: 'Professional Fee/Honoria', total: d.professional_fee_honoria },
+    { name: 'Token/s', total: d.tokens },
+    { name: 'Materials and Supplies', total: d.materials_and_supplies },
+    { name: 'Transportation', total: d.transportation }
+  ];
+  return items.filter(item => Number(item.total) > 0);
+});
+
+import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../../api';
 import Swal from 'sweetalert2';

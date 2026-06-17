@@ -2,8 +2,8 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1:3306
--- Generation Time: Jun 10, 2026 at 09:04 AM
+-- Host: 127.0.0.1
+-- Generation Time: Jun 17, 2026 at 05:46 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,60 @@ SET time_zone = "+00:00";
 --
 -- Database: `gad_submission_system`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `accomplishment_budget_items`
+--
+
+CREATE TABLE `accomplishment_budget_items` (
+  `item_id` int(11) NOT NULL,
+  `accomplishment_report_id` int(11) NOT NULL,
+  `meals_and_snacks` decimal(15,2) DEFAULT 0.00,
+  `function_room_venue` decimal(15,2) DEFAULT 0.00,
+  `accommodation` decimal(15,2) DEFAULT 0.00,
+  `equipment_rental` decimal(15,2) DEFAULT 0.00,
+  `professional_fee_honoria` decimal(15,2) DEFAULT 0.00,
+  `tokens` decimal(15,2) DEFAULT 0.00,
+  `materials_and_supplies` decimal(15,2) DEFAULT 0.00,
+  `transportation` decimal(15,2) DEFAULT 0.00
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `accomplishment_budget_items`
+--
+
+INSERT INTO `accomplishment_budget_items` (`item_id`, `accomplishment_report_id`, `meals_and_snacks`, `function_room_venue`, `accommodation`, `equipment_rental`, `professional_fee_honoria`, `tokens`, `materials_and_supplies`, `transportation`) VALUES
+(1, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00),
+(2, 14, 3200.00, 4200.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00),
+(3, 15, 3200.00, 4500.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `accomplishment_evaluation_results`
+--
+
+CREATE TABLE `accomplishment_evaluation_results` (
+  `evaluation_id` int(11) NOT NULL,
+  `accomplishment_report_id` int(11) NOT NULL,
+  `time_management` decimal(4,2) DEFAULT 0.00,
+  `orderliness_and_program_flow` decimal(4,2) DEFAULT 0.00,
+  `appropriateness_of_venue` decimal(4,2) DEFAULT 0.00,
+  `sound_system_and_hall_preparation` decimal(4,2) DEFAULT 0.00,
+  `restrooms` decimal(4,2) DEFAULT 0.00,
+  `food_and_drinks` decimal(4,2) DEFAULT 0.00
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `accomplishment_evaluation_results`
+--
+
+INSERT INTO `accomplishment_evaluation_results` (`evaluation_id`, `accomplishment_report_id`, `time_management`, `orderliness_and_program_flow`, `appropriateness_of_venue`, `sound_system_and_hall_preparation`, `restrooms`, `food_and_drinks`) VALUES
+(1, 0, 5.00, 5.00, 0.00, 5.00, 0.00, 5.00),
+(2, 14, 5.00, 5.00, 0.00, 5.00, 0.00, 5.00),
+(3, 15, 5.00, 5.00, 5.00, 5.00, 5.00, 4.00);
 
 -- --------------------------------------------------------
 
@@ -45,17 +99,53 @@ CREATE TABLE `accomplishment_report` (
   `user_id` bigint(20) UNSIGNED NOT NULL,
   `status` varchar(20) DEFAULT 'Pending',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `remarks` text DEFAULT NULL
+  `remarks` text DEFAULT NULL,
+  `venue_id` int(11) DEFAULT NULL,
+  `assessment_date` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `accomplishment_report`
 --
 
-INSERT INTO `accomplishment_report` (`id`, `control_number`, `act_design_id`, `activity_title`, `start_date`, `end_date`, `start_time`, `end_time`, `venue`, `attendees`, `male`, `female`, `rating`, `attachment`, `user_id`, `status`, `created_at`, `remarks`) VALUES
-(9, '2026-8762', 16, 'college_test1', '2026-06-08', '2026-06-30', '11:46:00', '23:51:00', 'fdsddd', 130, 60, 70, 90, '1780890784_31957b14780d7435b0e4.pdf', 2, 'Revision Required', '2026-06-08 03:53:04', 'dddd'),
-(10, '2026-3773', 19, 'dsvsfvs', '2026-06-09', '2026-06-23', '05:59:00', '17:59:00', 'fvsdvsdv', 110, 60, 50, 80, '1780918977_a44942b1dec8f11ef7a0.pdf', 2, 'Pending', '2026-06-08 11:42:57', NULL),
-(12, '2026-4689', 22, 'testing', '2026-06-09', '2026-06-30', '08:59:00', '20:59:00', 'bsu gym', 100, 50, 50, 80, '1780971449_b7856fb7733bce5a006f.pdf', 2, 'Pending', '2026-06-09 02:17:29', NULL);
+INSERT INTO `accomplishment_report` (`id`, `control_number`, `act_design_id`, `activity_title`, `start_date`, `end_date`, `start_time`, `end_time`, `venue`, `attendees`, `male`, `female`, `rating`, `attachment`, `user_id`, `status`, `created_at`, `remarks`, `venue_id`, `assessment_date`) VALUES
+(13, '2026-1876', 0, 'dddd', '2026-06-16', '2026-06-19', '07:25:00', '19:25:00', 'RDC Hall', 90, 45, 45, 5, '1781619180_248b55a9d0a3aa7b7071.pdf', 2, 'Pending', '2026-06-16 14:13:00', NULL, NULL, NULL),
+(14, '2026-2678', 26, 'adcsdsd', '2026-06-16', '2026-07-07', '08:02:00', '20:02:00', 'RDC Hall', 1264, 564, 700, 5, '1781655350_6fe7667119ff7e305e58.pdf', 2, 'Revision Required', '2026-06-17 00:15:50', 'dddddddddddddddddddddddd', NULL, NULL),
+(15, '2026-7498', 31, 'ggggggg', '2026-06-24', '2026-06-30', '09:32:00', '21:32:00', 'BSU Covered Court', 90, 45, 45, 5, '1781657085_14af68d2b31c365f450d.pdf', 2, 'Pending', '2026-06-17 00:44:45', NULL, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `activity_budget_items`
+--
+
+CREATE TABLE `activity_budget_items` (
+  `item_id` int(11) NOT NULL,
+  `act_design_id` int(11) NOT NULL,
+  `meals_and_snacks` decimal(15,2) DEFAULT 0.00,
+  `function_room_venue` decimal(15,2) DEFAULT 0.00,
+  `accommodation` decimal(15,2) DEFAULT 0.00,
+  `equipment_rental` decimal(15,2) DEFAULT 0.00,
+  `professional_fee_honoria` decimal(15,2) DEFAULT 0.00,
+  `tokens` decimal(15,2) DEFAULT 0.00,
+  `materials_and_supplies` decimal(15,2) DEFAULT 0.00,
+  `transportation` decimal(15,2) DEFAULT 0.00
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `activity_budget_items`
+--
+
+INSERT INTO `activity_budget_items` (`item_id`, `act_design_id`, `meals_and_snacks`, `function_room_venue`, `accommodation`, `equipment_rental`, `professional_fee_honoria`, `tokens`, `materials_and_supplies`, `transportation`) VALUES
+(1, 23, 3200.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00),
+(2, 24, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00),
+(3, 25, 3200.00, 3200.00, 3200.00, 0.00, 0.00, 0.00, 0.00, 0.00),
+(4, 26, 3200.00, 4200.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00),
+(5, 27, 3200.00, 3200.00, 3200.00, 0.00, 0.00, 0.00, 0.00, 0.00),
+(6, 28, 3200.00, 3200.00, 3200.00, 0.00, 0.00, 0.00, 0.00, 0.00),
+(7, 29, 4500.00, 4500.00, 4500.00, 0.00, 0.00, 0.00, 0.00, 0.00),
+(8, 30, 4500.00, 4500.00, 4500.00, 0.00, 0.00, 0.00, 0.00, 0.00),
+(9, 31, 3200.00, 4500.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00);
 
 -- --------------------------------------------------------
 
@@ -79,16 +169,21 @@ CREATE TABLE `activity_design` (
   `proposed_budget` int(8) DEFAULT NULL,
   `form_type` varchar(255) NOT NULL,
   `remarks` text DEFAULT NULL,
-  `accomplishment_deadline` date DEFAULT NULL
+  `accomplishment_deadline` date DEFAULT NULL,
+  `venue_id` int(11) DEFAULT NULL,
+  `assessment_date` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `activity_design`
 --
 
-INSERT INTO `activity_design` (`act_design_id`, `activity_title`, `start_date`, `end_date`, `start_time`, `end_time`, `status`, `attachment`, `user_id`, `gpb_id`, `venue`, `target_participants`, `proposed_budget`, `form_type`, `remarks`, `accomplishment_deadline`) VALUES
-(15, 'staff_test2', '2026-06-08', '2026-06-30', '11:45:00', '23:45:00', 'Revision Required', '1780890347_b13bd8848c4e27f886b0.pdf', 47, NULL, 'fffffdddd', 232, 13000, 'extension', 'gggggg', '2026-06-24'),
-(17, 'college_test2', '2026-06-08', '2026-06-30', '11:47:00', '23:47:00', 'Revision Required', '1780890455_5decf7eb19f70a55167e.pdf', 2, NULL, 'ddddd', 232, 13000, 'extension', 'gg', '2026-06-17');
+INSERT INTO `activity_design` (`act_design_id`, `activity_title`, `start_date`, `end_date`, `start_time`, `end_time`, `status`, `attachment`, `user_id`, `gpb_id`, `venue`, `target_participants`, `proposed_budget`, `form_type`, `remarks`, `accomplishment_deadline`, `venue_id`, `assessment_date`) VALUES
+(23, 'sdvsdvs', '2026-06-16', '2026-06-30', '07:11:00', '19:11:00', 'Pending', '1781608284_54e3b499863ef57370c3.pdf', 2, NULL, NULL, 525, 3200, 'inset', NULL, NULL, 1, NULL),
+(25, 'ggggg', '2026-06-16', '2026-06-30', '07:54:00', '19:54:00', 'Pending', '1781610911_766b00e2efeb8701a2e7.pdf', 2, NULL, 'BSU Covered Court', 888, 9600, 'extension', 'dddddddddddd', '2026-06-30', 2, NULL),
+(27, 'ggggg', '2026-06-16', '2026-06-30', '07:54:00', '19:54:00', 'Pending', '1781612972_e3c552acb36ed649aedb.pdf', 2, NULL, NULL, 677, 9600, 'extension', NULL, NULL, 2, NULL),
+(28, 'ggggg', '2026-06-16', '2026-06-30', '07:54:00', '19:54:00', 'Pending', '1781612999_8fb99456fba666f17807.pdf', 2, NULL, NULL, 667, 9600, 'extension', NULL, NULL, 2, NULL),
+(30, 'gggggggfffffffff', '2026-06-12', '2026-06-30', '08:40:00', '20:40:00', 'Pending', '1781613624_b9185e6a7fb7ec63c6c0.pdf', 47, NULL, NULL, 433, 13500, 'extension', NULL, NULL, 3, NULL);
 
 -- --------------------------------------------------------
 
@@ -116,16 +211,10 @@ CREATE TABLE `archived_accomplishment_reports` (
   `status` varchar(20) DEFAULT 'Completed',
   `remarks` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `archived_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `archived_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `venue_id` int(11) DEFAULT NULL,
+  `assessment_date` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `archived_accomplishment_reports`
---
-
-INSERT INTO `archived_accomplishment_reports` (`archive_id`, `original_report_id`, `control_number`, `act_design_id`, `activity_title`, `start_date`, `end_date`, `start_time`, `end_time`, `venue`, `attendees`, `male`, `female`, `rating`, `attachment`, `user_id`, `status`, `remarks`, `created_at`, `archived_at`) VALUES
-(5, 8, '2026-4175', 14, 'staff_test1', '2026-06-08', '2026-06-30', '11:44:00', '23:44:00', 'fffffffff', 100, 50, 50, 80, '1780890748_850081fa70c434fffbf6.pdf', 47, 'Verified', '', '2026-06-08 03:53:24', '2026-06-08 03:53:24'),
-(6, 11, '2026-4689', 22, 'testing', '2026-06-09', '2026-06-30', '08:59:00', '20:59:00', 'bsu gym', 100, 50, 50, 80, '1780967346_0ceb7e021658ba20ca57.pdf', 2, 'Verified', '', '2026-06-09 01:09:56', '2026-06-09 01:09:56');
 
 -- --------------------------------------------------------
 
@@ -152,21 +241,19 @@ CREATE TABLE `archived_activity_designs` (
   `assessment_date` date DEFAULT NULL,
   `accomplishment_deadline` date DEFAULT NULL,
   `remarks` text DEFAULT NULL,
-  `archived_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `archived_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `venue_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `archived_activity_designs`
 --
 
-INSERT INTO `archived_activity_designs` (`archive_id`, `original_act_design_id`, `activity_title`, `start_date`, `end_date`, `start_time`, `end_time`, `status`, `attachment`, `user_id`, `gpb_id`, `venue`, `target_participants`, `proposed_budget`, `form_type`, `assessment_date`, `accomplishment_deadline`, `remarks`, `archived_at`) VALUES
-(8, 16, 'college_test1', '2026-06-08', '2026-06-30', '11:46:00', '23:51:00', 'Approved', '1780890412_ebb231565339317c52b9.pdf', 2, NULL, 'fdsddd', 232, 13000, 'inset', '2026-06-08', '2026-06-10', '', '2026-06-08 03:49:20'),
-(9, 14, 'staff_test1', '2026-06-08', '2026-06-30', '11:44:00', '23:44:00', 'Approved', '1780890306_673dd78a3ab976d6c70d.pdf', 47, NULL, 'fffffffff', 232, 23000, 'inset', '2026-06-08', '2026-06-24', '', '2026-06-08 03:49:40'),
-(10, 19, 'dsvsfvs', '2026-06-09', '2026-06-23', '05:59:00', '17:59:00', 'Approved', '1780912773_eac60799c04a41a4d523.pdf', 2, NULL, 'fvsdvsdv', 243, 14000, 'extension', '2026-06-08', '2026-06-09', '', '2026-06-08 10:00:16'),
-(11, 18, 'sdsdfdsfsdf', '2026-06-08', '2026-06-30', '05:58:00', '17:58:00', 'Approved', '1780912734_88b69729d449d51da571.pdf', 47, NULL, 'vsdvsd', 232, 13000, 'extension', '2026-06-08', '2026-06-10', '', '2026-06-08 11:42:13'),
-(12, 21, 'lorem ipsum', '2026-06-10', '2026-06-30', '08:15:00', '12:15:00', 'Approved', '1780964207_ca773519bfdd688e2b93.pdf', 49, NULL, 'CIS', 50, 2000, 'inset', '2026-06-09', '2026-07-01', '', '2026-06-09 00:18:10'),
-(13, 22, 'testing', '2026-06-09', '2026-06-30', '08:59:00', '20:59:00', 'Approved', '1780966845_364944019014c44c6b03.pdf', 2, NULL, 'bsu gym', 232, 13000, 'inset', '2026-06-09', '2026-06-30', '', '2026-06-09 01:01:55'),
-(14, 20, 'dvsdvsv', '2026-06-08', '2026-06-30', '07:06:00', '19:06:00', 'Approved', '1780916799_a4a12d8afb5eee23e622.pdf', 2, NULL, 'sdvsvsdv', 243, 12000, 'employee', '2026-06-09', '2026-06-17', '', '2026-06-09 02:12:31');
+INSERT INTO `archived_activity_designs` (`archive_id`, `original_act_design_id`, `activity_title`, `start_date`, `end_date`, `start_time`, `end_time`, `status`, `attachment`, `user_id`, `gpb_id`, `venue`, `target_participants`, `proposed_budget`, `form_type`, `assessment_date`, `accomplishment_deadline`, `remarks`, `archived_at`, `venue_id`) VALUES
+(15, 24, 'dddd', '2026-06-16', '2026-06-19', '07:25:00', '19:25:00', 'Approved', '1781609133_dc58add08579e0ea4e6f.pdf', 2, NULL, NULL, 524, 0, 'inset', '2026-06-16', '2026-06-17', '', '2026-06-16 11:56:37', 3),
+(16, 26, 'adcsdsd', '2026-06-16', '2026-07-07', '08:02:00', '20:02:00', 'Approved', '1781611360_42ed0748fcbd9b16ca99.pdf', 2, NULL, NULL, 544, 7400, 'extension', '2026-06-16', '2026-06-18', '', '2026-06-16 12:03:15', 3),
+(17, 29, 'dddddddddddd', '2026-06-17', '2026-06-24', '08:39:00', '20:39:00', 'Approved', '1781613579_c04caa6c419f0211d337.pdf', 47, NULL, NULL, 434, 13500, 'extension', '2026-06-16', '2026-06-17', '', '2026-06-16 12:41:34', 2),
+(18, 31, 'ggggggg', '2026-06-24', '2026-06-30', '09:32:00', '21:32:00', 'Approved', '1781616752_6882e2fea02a7479b6b0.pdf', 2, NULL, NULL, 342, 7700, 'extension', '2026-06-16', '2026-06-30', '', '2026-06-16 13:32:46', 2);
 
 -- --------------------------------------------------------
 
@@ -186,13 +273,10 @@ CREATE TABLE `control_number` (
 --
 
 INSERT INTO `control_number` (`control_number_id`, `control_number`, `act_design_id`, `user_id`) VALUES
-(11, '2026-8762', 16, NULL),
-(12, '2026-4175', 14, NULL),
-(13, '2026-3773', 19, NULL),
-(14, '2026-3796', 18, NULL),
-(15, '2026-4793', 21, NULL),
-(16, '2026-4689', 22, NULL),
-(17, '2026-4213', 20, NULL);
+(18, '2026-1876', 24, NULL),
+(19, '2026-2678', 26, NULL),
+(20, '2026-4520', 29, NULL),
+(21, '2026-7498', 31, NULL);
 
 -- --------------------------------------------------------
 
@@ -482,7 +566,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `email`, `email_verified_at`, `password`, `reset_token`, `reset_token_expires_at`, `role`, `full_name`, `student_id`, `office_id`, `year_level`, `user_acronym`, `remember_token`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 'Gender And Development', 'bisayotduligas@gmail.com', NULL, '$2y$10$ic9teY43ya4Jdx66v2qWWOXPUJWX5B4ngiphbYRxx5oiPofZiod6u', 'e5b5c04c11e60c4cb96d53a9982fbd9aa4d67eeeda8155175f94cb8f610dce70', '2026-06-10 06:38:01', 'admin', NULL, NULL, 1, NULL, 'GAD', NULL, NULL, '2026-05-25 11:58:10', '2026-06-10 05:38:01'),
+(1, 'Gender And Development', 'gad.office@bsu.edu.ph', NULL, '$2y$10$a9XVQgTdygySA0E7XCNf4euNdZmuXjqGxSvUbQEzd5X7qiFmPNae6', NULL, NULL, 'admin', NULL, NULL, 1, NULL, 'GAD', NULL, NULL, '2026-05-25 11:58:10', '2026-06-16 05:47:42'),
 (2, 'College of Agriculture', 'ca@bsu.edu.ph', NULL, '$2y$12$CNLb7UPOnZpF2yZRY0lwSeykT0VWruAa6R753JUJR3bGr2OCvUyei', NULL, NULL, 'college', NULL, NULL, 2, NULL, 'CA', NULL, NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10'),
 (3, 'Registrar\'s Office BSU Buguias Campus', 'buguias.registrar@bsu.edu.ph', NULL, '$2y$12$l7EFqawcRIOIN9O.LGwQ..4PpoSt5sbaRziIQVMbNsOJbF7b/3Lpq', NULL, NULL, 'college', NULL, NULL, 3, NULL, 'Buguias-RO', NULL, NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10'),
 (4, 'Human Resources and Management Office BSU Bokod Campus', 'bokod.hrmo@bsu.edu.ph', NULL, '$2y$12$l7EFqawcRIOIN9O.LGwQ..4PpoSt5sbaRziIQVMbNsOJbF7b/3Lpq', NULL, NULL, 'college', NULL, NULL, 4, NULL, NULL, 'Bokod-HRMO', NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10'),
@@ -604,9 +688,56 @@ INSERT INTO `user_profiles` (`user_id`, `first_name`, `middle_name`, `last_name`
 (49, 'Nicole', 'Sano', 'Elgamo', 'TWG', 32),
 (50, 'Joshua', NULL, 'Santos', 'TWG', 46);
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `venues`
+--
+
+CREATE TABLE `venues` (
+  `venue_id` int(11) NOT NULL,
+  `venue_name` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `venues`
+--
+
+INSERT INTO `venues` (`venue_id`, `venue_name`) VALUES
+(1, 'BSU Gymnasium'),
+(2, 'BSU Covered Court'),
+(3, 'RDC Hall'),
+(4, 'VP AdFin Hall'),
+(5, 'International Dorm Hall'),
+(6, 'IRO Hall'),
+(7, 'Gladiola Center'),
+(8, 'RSDC Executive Hall'),
+(9, 'CTE DSG Hall'),
+(10, 'CHET Hall'),
+(11, 'CHK Function Hall'),
+(12, 'Carnation Hall'),
+(13, 'Everlasting Hall'),
+(14, 'Solibao Hall'),
+(15, 'Igorota Hall'),
+(16, 'Dimas Hall, IHFSA'),
+(17, 'OSS Social Hall'),
+(18, 'Main Auditorium');
+
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `accomplishment_budget_items`
+--
+ALTER TABLE `accomplishment_budget_items`
+  ADD PRIMARY KEY (`item_id`);
+
+--
+-- Indexes for table `accomplishment_evaluation_results`
+--
+ALTER TABLE `accomplishment_evaluation_results`
+  ADD PRIMARY KEY (`evaluation_id`);
 
 --
 -- Indexes for table `accomplishment_report`
@@ -615,6 +746,12 @@ ALTER TABLE `accomplishment_report`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_report_user` (`user_id`),
   ADD KEY `idx_ar_control_number` (`control_number`);
+
+--
+-- Indexes for table `activity_budget_items`
+--
+ALTER TABLE `activity_budget_items`
+  ADD PRIMARY KEY (`item_id`);
 
 --
 -- Indexes for table `activity_design`
@@ -704,20 +841,44 @@ ALTER TABLE `user_profiles`
   ADD PRIMARY KEY (`user_id`);
 
 --
+-- Indexes for table `venues`
+--
+ALTER TABLE `venues`
+  ADD PRIMARY KEY (`venue_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `accomplishment_budget_items`
+--
+ALTER TABLE `accomplishment_budget_items`
+  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `accomplishment_evaluation_results`
+--
+ALTER TABLE `accomplishment_evaluation_results`
+  MODIFY `evaluation_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `accomplishment_report`
 --
 ALTER TABLE `accomplishment_report`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- AUTO_INCREMENT for table `activity_budget_items`
+--
+ALTER TABLE `activity_budget_items`
+  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `activity_design`
 --
 ALTER TABLE `activity_design`
-  MODIFY `act_design_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `act_design_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `archived_accomplishment_reports`
@@ -729,13 +890,13 @@ ALTER TABLE `archived_accomplishment_reports`
 -- AUTO_INCREMENT for table `archived_activity_designs`
 --
 ALTER TABLE `archived_activity_designs`
-  MODIFY `archive_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `archive_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `control_number`
 --
 ALTER TABLE `control_number`
-  MODIFY `control_number_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `control_number_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `gad_plan_budget`
@@ -772,6 +933,12 @@ ALTER TABLE `system_logs`
 --
 ALTER TABLE `users`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
+
+--
+-- AUTO_INCREMENT for table `venues`
+--
+ALTER TABLE `venues`
+  MODIFY `venue_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- Constraints for dumped tables

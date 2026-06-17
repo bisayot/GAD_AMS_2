@@ -103,7 +103,11 @@
                     </td>
                     <td class="table-cell">
                       <div class="unit-name">{{ unit.name }}</div>
-                      <div class="unit-code">{{ unit.code }}</div>
+                      <div class="unit-code">
+                        <span class="role-badge" :class="getBadgeClass(unit.code)">
+                          {{ unit.code }}
+                        </span>
+                      </div>
                     </td>
                     <td class="table-cell table-cell-center table-cell-count">
                       {{ unit.activity_designs_count || 0 }}
@@ -217,34 +221,21 @@ const filteredUnits = computed(() => {
 
 const fetchTWGSubmissions = async (page = 1) => {
   try {
-    const response = await api.get('admin/twg-submissions');
-    if (response.data.success) {
-      twgUnits.value = response.data.data.map(u => ({
-        ...u,
-        name: u.username,
-        code: u.role
-      }));
-      const meta = response.data.meta;
-      paginationMeta.value = {
-        total: meta.total,
-        from: meta.total > 0 ? 1 : 0,
-        to: meta.total,
-        last_page: meta.last_page || 1
-      };
-      currentPage.value = page;
+    // Staged to fetch live data records matching your endpoint framework
+    const response = await api.get(`admin/twg-submissions?page=${page}&per_page=${perPage.value}`);
+    twgUnits.value = response.data.data.map(unit => ({
+      ...unit,
+      name: unit.username, // mapping to match UI expectation
+      code: unit.user_role || 'Non-TWG'
+    }));
+    paginationMeta.value = response.data.meta;
+    currentPage.value = page;
 
-      // Update stat cards
-      const totalDesigns = meta.total_designs;
-      const totalReports = meta.total_reports;
-      const withSubs = twgUnits.value.filter(u => u.total_submissions > 0).length;
-      const noSubs = twgUnits.value.filter(u => u.total_submissions === 0).length;
-      metricsStats.value[0].value = String(withSubs);
-      metricsStats.value[1].value = String(noSubs);
-      metricsStats.value[2].value = String(totalDesigns);
-      metricsStats.value[3].value = String(totalReports);
-    }
+    metricsStats.value[0].value = response.data.meta.total || 0;
+    metricsStats.value[2].value = response.data.meta.total_designs || 0;
+    metricsStats.value[3].value = response.data.meta.total_reports || 0;
   } catch (err) {
-    console.error('Error fetching TWG submissions:', err);
+    console.error('Error parsing operational submissions context registry:', err);
   }
 };
 
@@ -257,6 +248,15 @@ const changePage = (page) => {
   if (page >= 1 && page <= paginationMeta.value.last_page) {
     fetchTWGSubmissions(page);
   }
+};
+
+
+const getBadgeClass = (code) => {
+  if (!code) return 'badge-nontwg';
+  const c = code.toLowerCase();
+  if (c === 'twg') return 'badge-twg';
+  if (c === 'staff') return 'badge-staff';
+  return 'badge-nontwg';
 };
 
 const viewDetails = (unitId) => {
@@ -640,6 +640,34 @@ onMounted(() => {
   letter-spacing: 0.025em;
   text-transform: uppercase;
   margin-top: 0.125rem;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-twg {
+  background: rgba(153, 13, 209, 0.2);
+  color: #b979cc;
+  border: 1px solid rgba(153, 13, 209, 0.3);
+}
+
+.badge-staff {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.badge-nontwg {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .submission-badge {

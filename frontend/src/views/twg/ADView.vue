@@ -70,16 +70,20 @@
               </div>
               <div class="grid-2">
                 <div>
-                  <label class="info-label">Implementation Period</label>
-                  <p class="text-sm-light">{{ formatDate(design.start_date) }} — {{ formatDate(design.end_date) }}</p>
+                  <label class="info-label">Date</label>
+                  <p class="info-value-white">{{ formatDate(design.start_date) }} — {{ formatDate(design.end_date) }}</p>
                 </div>
                 <div>
-                  <label class="info-label">Proposed Time</label>
-                  <p class="text-sm-light">{{ formatTime(design.start_time) }} to {{ formatTime(design.end_time) }}</p>
+                  <label class="info-label">Time</label>
+                  <p class="info-value-white">{{ formatTime(design.start_time) }} to {{ formatTime(design.end_time) }}</p>
                 </div>
                 <div class="full-width-info">
-                  <label class="info-label">Target Venue</label>
-                  <p class="text-sm-light mt-1">{{ design.venue }}</p>
+                  <label class="info-label">Venue</label>
+                  <p class="info-value-white">{{ design.venue }}</p>
+                </div>
+                <div class="full-width-info participants-info">
+                  <label class="info-label">Target Participants</label>
+                  <p class="info-value-white">{{ design.target_participants }} individuals</p>
                 </div>
               </div>
             </div>
@@ -87,17 +91,36 @@
             <div class="section-card">
               <div class="section-header-row">
                 <span class="material-symbols-outlined icon-pink">payments</span>
-                <h3 class="section-title">Budget & Participants</h3>
+                <h3 class="section-title">Proposed Budgetary Requirements</h3>
               </div>
-              <div class="grid-2">
-                <div class="metric-box">
-                  <p class="metric-value">₱{{ formatCurrency(design.proposed_budget) }}</p>
-                  <p class="metric-label">Total Proposed Budget</p>
+              <div v-if="parsedBudget.length" class="budget-content">
+                <div class="budget-table-wrapper">
+                  <table class="budget-table">
+                    <thead class="budget-table-header">
+                      <tr>
+                        <th class="table-header-cell">Budget Item</th>
+                        <th class="table-header-cell budget-total-header">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody class="budget-table-body">
+                      <tr v-for="(item, idx) in parsedBudget" :key="idx" class="budget-table-row">
+                        <td class="budget-item-name" v-html="formatBudgetName(item.name)"></td>
+                        <td class="budget-item-value-cell budget-value-right">
+                          <span class="budget-item-value">₱{{ formatCurrency(item.total) }}</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                    <tfoot class="budget-table-footer">
+                      <tr>
+                        <td class="grand-total-label">Grand Total (PHP)</td>
+                        <td class="grand-total-value-white budget-value-right">₱{{ formatCurrency(design.proposed_budget) }}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
                 </div>
-                <div class="metric-box">
-                  <p class="metric-value">{{ design.target_participants }}</p>
-                  <p class="metric-label">Expected Participants</p>
-                </div>
+              </div>
+              <div v-else class="empty-budget-notice">
+                No budgetary requirements were specified for this design.
               </div>
             </div>
 
@@ -148,7 +171,7 @@
 
               <div class="action-buttons">
                 <button @click="router.back()" class="btn-back">
-                  ← Back to Archive
+                  ← Back
                 </button>
               </div>
             </div>
@@ -163,7 +186,29 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+
+const formatBudgetName = (name) => {
+  if (!name) return '';
+  return name.replace(/(\([^)]+\))/g, '<span class="budget-item-subtext">$1</span>');
+};
+
+const parsedBudget = computed(() => {
+  const d = design.value;
+  if (!d || !d.act_design_id) return [];
+  const items = [
+    { name: 'Meals and Snacks (AM/PM)', total: d.meals_and_snacks },
+    { name: 'Function Room/Venue', total: d.function_room_venue },
+    { name: 'Accommodation', total: d.accommodation },
+    { name: 'Equipment Rental', total: d.equipment_rental },
+    { name: 'Professional Fee/Honoria', total: d.professional_fee_honoria },
+    { name: 'Token/s', total: d.tokens },
+    { name: 'Materials and Supplies', total: d.materials_and_supplies },
+    { name: 'Transportation', total: d.transportation }
+  ];
+  return items.filter(item => Number(item.total) > 0);
+});
+
+import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../../api';
 import PdfPreviewModal from '../../components/PdfPreviewModal.vue';

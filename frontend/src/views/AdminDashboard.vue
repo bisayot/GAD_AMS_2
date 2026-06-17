@@ -63,13 +63,11 @@ const handleScroll = () => {
 
 const adminMenu = [
   { label: 'Dashboard', icon: 'dashboard', href: '/admin/dashboard' },
-  { label: 'Annual Reports', icon: 'description', href: '/admin/annual-report' },
   { label: 'Submitted List', icon: 'folder', href: '/admin/submitted-list' },
   { label: 'Activity Design List', icon: 'description', href: '/admin/ad-list' },
   { label: 'Accomplishment Report List', icon: 'description', href: '/admin/ar-list' },
-  { label: 'Plan & Budget', icon: 'account_balance_wallet', href: '/admin/gad-plan-budget' },
-  { label: 'Mandates Management', icon: 'account_balance', href: '/admin/mandates' },
   { label: 'Archive', icon: 'archive', href: '/admin/archive' },
+  { label: 'Mandates Management', icon: 'account_balance', href: '/admin/mandates' },
   { label: 'Report Monitoring', icon: 'bar_chart', href: '/admin/reports' },
   { label: 'Budget Monitoring', icon: 'account_balance_wallet', href: '/admin/budget' },
   { label: 'User Manual', icon: 'help', href: '/admin/user-manual' },

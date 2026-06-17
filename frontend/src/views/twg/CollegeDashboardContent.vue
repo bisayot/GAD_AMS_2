@@ -122,11 +122,11 @@ import { useRouter } from 'vue-router';
 import api from '../../api';
 
 const router = useRouter();
-const user = JSON.parse(localStorage.getItem('user') || '{}');
+const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
 
 const displayName = computed(() => {
-  if (user.full_name && user.full_name.trim() !== '') {
-    return user.full_name;
+  if (user.value.full_name && user.value.full_name.trim() !== '') {
+    return user.value.full_name;
   }
   return '(TWG)';
 });
@@ -157,9 +157,10 @@ const formatStatus = (status) => {
 
 const fetchSubmissions = async () => {
   try {
-    const [adRes, arRes] = await Promise.all([
+    const [adRes, arRes, archiveRes] = await Promise.all([
       api.get(`activity-designs/${user.value.id}`),
-      api.get(`activity-reports/${user.value.id}`)
+      api.get(`activity-reports/${user.value.id}`),
+      api.get('archives')
     ]);
     
     let pendingCount = 0;
@@ -197,6 +198,14 @@ const fetchSubmissions = async () => {
           statusClass: getStatusClass(r.status),
           type: 'report'
         });
+      });
+    }
+
+    if (archiveRes.data && archiveRes.data.success) {
+      const archives = archiveRes.data.data || [];
+      archives.forEach(item => {
+        if (item.type === 'design') adCount++;
+        else if (item.type === 'report') arCount++;
       });
     }
 
@@ -258,6 +267,12 @@ onMounted(() => {
   flex-direction: column;
   gap: 1.5rem;
   min-width: 0;
+}
+
+.sidebar-area {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 /* Base Card Layout Rules */

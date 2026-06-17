@@ -19,9 +19,10 @@ class ActivityDesignController extends BaseController
             "end_date"            => "required",
             "start_time"          => "required",
             "end_time"            => "required",
-            "venue"               => "required",
+            "venue_id"            => "required|numeric",
             "target_participants" => "required|numeric",
             "proposed_budget"     => "required|numeric",
+            "budget_items"        => "required",
             "user_id"             => "required",
             "design_file"         => "uploaded[design_file]|max_size[design_file,10240]|ext_in[design_file,pdf]",
         ];
@@ -33,7 +34,7 @@ class ActivityDesignController extends BaseController
             "end_date"            => ["required" => "End date is required"],
             "start_time"          => ["required" => "Start time is required"],
             "end_time"            => ["required" => "End time is required"],
-            "venue"               => ["required" => "Venue is required"],
+            "venue_id"            => ["required" => "Venue is required", "numeric" => "Invalid venue format"],
             "target_participants" => [
                 "required" => "Target participants is required",
                 "numeric"  => "Target participants must be a number",
@@ -42,6 +43,7 @@ class ActivityDesignController extends BaseController
                 "required" => "Proposed budget is required",
                 "numeric"  => "Proposed budget must be a numeric value",
             ],
+            "budget_items"        => ["required" => "Budget items breakdown is required"],
             "user_id"             => ["required" => "User identification is missing"],
             "design_file"         => [
                 "uploaded" => "Design file was not uploaded correctly",
@@ -69,7 +71,7 @@ class ActivityDesignController extends BaseController
                 "end_date"            => $this->request->getPost("end_date"),
                 "start_time"          => $this->request->getPost("start_time"),
                 "end_time"            => $this->request->getPost("end_time"),
-                "venue"               => $this->request->getPost("venue"),
+                "venue_id"            => $this->request->getPost("venue_id"),
                 "target_participants" => $this->request->getPost("target_participants"),
                 "proposed_budget"     => $this->request->getPost("proposed_budget"),
                 "user_id"             => $this->request->getPost("user_id"),
@@ -82,6 +84,19 @@ class ActivityDesignController extends BaseController
             }
 
             if ($activityDesignModel->insert($data)) {
+                $actDesignId = $activityDesignModel->getInsertID();
+
+                // Save budget items
+                $budgetItemsStr = $this->request->getPost("budget_items");
+                if ($budgetItemsStr) {
+                    $budgetItems = json_decode($budgetItemsStr, true);
+                    if (is_array($budgetItems)) {
+                        $budgetItemsModel = new \App\Models\ActivityBudgetItemsModel();
+                        $budgetItems['act_design_id'] = $actDesignId;
+                        $budgetItemsModel->insert($budgetItems);
+                    }
+                }
+
                 return $this->response->setJSON([
                     "success" => true,
                     "message" => "Data saved successfully"
@@ -112,20 +127,13 @@ class ActivityDesignController extends BaseController
             ->join('control_number as cn', 'cn.act_design_id = ad.act_design_id', 'left')
             ->get()->getResultArray();
 
-        $archived = $db->table('archived_activity_designs as aad')
-            ->select('aad.original_act_design_id as act_design_id, aad.status, cn.control_number as control, users.username as office, users.full_name as submitter_name, aad.activity_title as title, aad.form_type as formLabel, aad.start_date as date')
-            ->join('users', 'users.id = aad.user_id', 'left')
-            ->join('control_number as cn', 'cn.act_design_id = aad.original_act_design_id', 'left')
-            ->get()->getResultArray();
-
-        $designs = array_merge($active, $archived);
-        usort($designs, function($a, $b) {
+        usort($active, function($a, $b) {
             return $b['act_design_id'] <=> $a['act_design_id'];
         });
 
         return $this->response->setJSON([
             'success' => true,
-            'data'    => $designs
+            'data'    => $active
         ]);
     }
 
@@ -145,21 +153,13 @@ class ActivityDesignController extends BaseController
             ->where('ad.user_id', $userId)
             ->get()->getResultArray();
 
-        $archived = $db->table('archived_activity_designs as aad')
-            ->select('aad.original_act_design_id as act_design_id, aad.status, cn.control_number as control, users.username as office, users.full_name as submitter_name, aad.activity_title as title, aad.form_type as formLabel, aad.start_date as date')
-            ->join('users', 'users.id = aad.user_id', 'left')
-            ->join('control_number as cn', 'cn.act_design_id = aad.original_act_design_id', 'left')
-            ->where('aad.user_id', $userId)
-            ->get()->getResultArray();
-
-        $designs = array_merge($active, $archived);
-        usort($designs, function($a, $b) {
+        usort($active, function($a, $b) {
             return $b['act_design_id'] <=> $a['act_design_id'];
         });
 
         return $this->response->setJSON([
             'success' => true,
-            'data'    => $designs
+            'data'    => $active
         ]);
     }
 
@@ -171,9 +171,10 @@ class ActivityDesignController extends BaseController
 
         $activityDesignModel = new ActivityDesignModel();
         $design = $activityDesignModel
-            ->select('activity_design.*, control_number.control_number as control, users.username as office, users.full_name as submitter_name, activity_design.start_date as date')
+            ->select('activity_design.*, control_number.control_number as control, users.username as office, users.full_name as submitter_name, activity_design.start_date as date, venues.venue_name as venue')
             ->join('users', 'users.id = activity_design.user_id', 'left')
             ->join('control_number', 'control_number.act_design_id = activity_design.act_design_id', 'left')
+            ->join('venues', 'venues.venue_id = activity_design.venue_id', 'left')
             ->where('activity_design.act_design_id', $id)
             ->first();
 
@@ -181,9 +182,10 @@ class ActivityDesignController extends BaseController
             // Try searching in archive fallback
             $db = \Config\Database::connect();
             $design = $db->table('archived_activity_designs as aad')
-                ->select('aad.*, aad.original_act_design_id as act_design_id, aad.activity_title as title, aad.form_type as formLabel, users.username as office, users.full_name as submitter_name, aad.start_date as date')
+                ->select('aad.*, aad.original_act_design_id as act_design_id, aad.activity_title as title, aad.form_type as formLabel, users.username as office, users.full_name as submitter_name, aad.start_date as date, venues.venue_name as venue')
                 ->join('users', 'users.id = aad.user_id', 'left')
                 ->join('control_number as cn', 'cn.act_design_id = aad.original_act_design_id', 'left')
+                ->join('venues', 'venues.venue_id = aad.venue_id', 'left')
                 ->select('COALESCE(cn.control_number, "N/A") as control')
                 ->where('aad.original_act_design_id', $id)
                 ->get()->getRowArray();
@@ -196,6 +198,13 @@ class ActivityDesignController extends BaseController
             $design['is_archived'] = false;
         }
 
+        // Fetch budget items
+        $budgetModel = new \App\Models\ActivityBudgetItemsModel();
+        $budget = $budgetModel->where('act_design_id', $design['act_design_id'])->first();
+        if ($budget) {
+            $design = array_merge($design, $budget);
+        }
+
         return $this->response->setJSON(['success' => true, 'data' => $design]);
     }
 
@@ -205,11 +214,12 @@ class ActivityDesignController extends BaseController
         
         // Fetch users (excluding admin) and use subqueries to count submissions per user
         $users = $db->table('users')
-            ->select('id, username, role')
+            ->select('users.id, users.username, users.role, COALESCE(user_profiles.user_role, "Non-TWG") as user_role')
+            ->join('user_profiles', 'user_profiles.user_id = users.id', 'left')
             ->select('( (SELECT COUNT(*) FROM activity_design WHERE activity_design.user_id = users.id) + (SELECT COUNT(*) FROM archived_activity_designs WHERE archived_activity_designs.user_id = users.id) ) as activity_designs_count')
             ->select('( (SELECT COUNT(*) FROM accomplishment_report WHERE accomplishment_report.user_id = users.id) + (SELECT COUNT(*) FROM archived_accomplishment_reports WHERE archived_accomplishment_reports.user_id = users.id) ) as accomplishment_reports_count')
-            ->where('role !=', 'admin')
-            ->orderBy('id', 'ASC')
+            ->where('users.role !=', 'admin')
+            ->orderBy('users.id', 'ASC')
             ->get()
             ->getResultArray();
 
@@ -379,7 +389,7 @@ class ActivityDesignController extends BaseController
             'attachment'               => $item['attachment'],
             'user_id'                  => $item['user_id'],
             'gpb_id'                   => $item['gpb_id'] ?? null,
-            'venue'                    => $item['venue'],
+            'venue_id'                 => $item['venue_id'],
             'target_participants'      => $item['target_participants'],
             'proposed_budget'          => $item['proposed_budget'],
             'form_type'                => $item['form_type'],

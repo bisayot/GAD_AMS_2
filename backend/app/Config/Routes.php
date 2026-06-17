@@ -86,6 +86,8 @@ $routes->group('api', function($routes) {
     // ----------------------------------------------------------------
     $routes->options('archives', 'ArchiveController::index');
     $routes->get('archives', 'ArchiveController::index');
+    $routes->get('offices', 'OfficeController::index');
+    $routes->get('venues', 'VenueController::index');
     $routes->post('archive-design/(:num)', 'ArchiveController::archiveDesign/$1');
     $routes->post('archive-report/(:num)', 'ArchiveController::archiveReport/$1');
 

@@ -191,13 +191,25 @@ onMounted(async () => {
     return;
   }
   try {
-    const [designsRes, reportsRes] = await Promise.all([
+    const [designsRes, reportsRes, archiveRes] = await Promise.all([
       api.get('activity-designs'),
-      api.get('activity-reports')
+      api.get('activity-reports'),
+      api.get('archives')
     ]);
 
     const designs = designsRes.data.success ? designsRes.data.data : [];
     const reports = reportsRes.data.success ? reportsRes.data.data : [];
+    
+    let adCount = designs.length;
+    let arCount = reports.length;
+
+    if (archiveRes.data && archiveRes.data.success) {
+      const archives = archiveRes.data.data || [];
+      archives.forEach(item => {
+        if (item.type === 'design') adCount++;
+        else if (item.type === 'report') arCount++;
+      });
+    }
 
     // Populate pending activities table
     const pendingDesigns = designs
@@ -211,8 +223,8 @@ onMounted(async () => {
     // Update stat cards
     const totalPending = pendingActivities.value.length;
     metricsStats.value[0].value = String(totalPending);
-    metricsStats.value[1].value = String(designs.length);
-    metricsStats.value[2].value = String(reports.length);
+    metricsStats.value[1].value = String(adCount);
+    metricsStats.value[2].value = String(arCount);
   } catch (err) {
     console.error('Dashboard load error:', err);
   }

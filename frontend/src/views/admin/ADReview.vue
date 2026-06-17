@@ -30,12 +30,13 @@
         <section class="flex-06 glass-card">
           <div class="report-header">
             <div class="meta-header">
-            <!-- <div class="status-badge-review">
-              <div class="status-dot-pulse"></div>
-              <span class="status-text">Under Review</span>
-            </div> -->
-            <span class="control-number">{{ design.control || 'PENDING ASSIGNMENT' }}</span>
-          </div>
+              <div class="status-badge-wrapper">
+                <div class="status-badge-view" :class="getStatusClass(design.status)">
+                  <span class="status-text">{{ formatStatus(design.status) }}</span>
+                </div>
+                <span class="control-number">{{ design.control || 'PENDING ASSIGNMENT' }}</span>
+              </div>
+            </div>
 
             <h2 class="report-title">{{ design.activity_title }}</h2>
 
@@ -71,22 +72,20 @@
               </div>
               <div class="grid-2">
                 <div>
-                  <label class="info-label">Implementation Period</label>
-                  <p class="text-sm-light" style="color: #fff;">
-                    {{ formatDate(design.start_date) }} — {{ formatDate(design.end_date) }}
-                  </p>
+                  <label class="info-label">Date</label>
+                  <p class="info-value-white">{{ formatDate(design.start_date) }} — {{ formatDate(design.end_date) }}</p>
                 </div>
                 <div>
-                  <label class="info-label">Proposed Time</label>
-                  <p class="text-sm-light" style="color: #fff;">
-                    {{ formatTime(design.start_time) }} to {{ formatTime(design.end_time) }}
-                  </p>
+                  <label class="info-label">Time</label>
+                  <p class="info-value-white">{{ formatTime(design.start_time) }} to {{ formatTime(design.end_time) }}</p>
                 </div>
                 <div class="full-width-info">
-                  <label class="info-label">Target Venue</label>
-                  <p class="text-sm-light mt-1" style="color: #fff;">
-                    {{ design.venue }}
-                  </p>
+                  <label class="info-label">Venue</label>
+                  <p class="info-value-white">{{ design.venue }}</p>
+                </div>
+                <div class="full-width-info participants-info">
+                  <label class="info-label">Target Participants</label>
+                  <p class="info-value-white">{{ design.target_participants }} individuals</p>
                 </div>
               </div>
             </div>
@@ -94,17 +93,36 @@
             <div class="section-card">
               <div class="section-header-row">
                 <span class="material-symbols-outlined icon-pink">payments</span>
-                <h3 class="section-title">Budget & Participants</h3>
+                <h3 class="section-title">Proposed Budgetary Requirements</h3>
               </div>
-              <div class="grid-2">
-                <div class="metric-box">
-                  <p class="metric-value">₱{{ formatCurrency(design.proposed_budget) }}</p>
-                  <p class="metric-label">Total Proposed Budget</p>
+              <div v-if="parsedBudget.length" class="budget-content">
+                <div class="budget-table-wrapper">
+                  <table class="budget-table">
+                    <thead class="budget-table-header">
+                      <tr>
+                        <th class="table-header-cell">Budget Item</th>
+                        <th class="table-header-cell budget-total-header">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody class="budget-table-body">
+                      <tr v-for="(item, idx) in parsedBudget" :key="idx" class="budget-table-row">
+                        <td class="budget-item-name" v-html="formatBudgetName(item.name)"></td>
+                        <td class="budget-item-value-cell budget-value-right">
+                          <span class="budget-item-value">₱{{ formatCurrency(item.total) }}</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                    <tfoot class="budget-table-footer">
+                      <tr>
+                        <td class="grand-total-label">Grand Total (PHP)</td>
+                        <td class="grand-total-value-white budget-value-right">₱{{ formatCurrency(design.proposed_budget) }}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
                 </div>
-                <div class="metric-box">
-                  <p class="metric-value">{{ design.target_participants }}</p>
-                  <p class="metric-label">Expected Participants</p>
-                </div>
+              </div>
+              <div v-else class="empty-budget-notice">
+                No budgetary requirements were specified for this design.
               </div>
             </div>
 
@@ -121,9 +139,7 @@
                     <p class="doc-meta">Reference: {{ design.attachment }}</p>
                   </div>
                 </div>
-                <button @click="previewFile(design.attachment)" class="preview-btn">
-                  👁️ Preview
-                </button>
+                <button @click="previewFile(design.attachment)" class="preview-btn">👁️ Preview</button>
               </div>
             </div>
           </div>
@@ -268,7 +284,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import api from '../../api';
@@ -434,6 +450,23 @@ const formatFormType = (type) => {
   return map[type] || type;
 };
 
+const getStatusClass = (status) => {
+  const s = (status || '').toLowerCase();
+  if (s === 'pending') return 'pending';
+  if (s === 'approved') return 'approved';
+  if (s === 'completed' || s === 'archived') return 'completed';
+  if (s === 'cancelled') return 'cancelled';
+  if (s === 'Revision' || s === 'revision') return 'revision';
+  return 'completed';
+};
+
+const formatStatus = (status) => {
+  if (!status) return 'Unknown';
+  const s = status.toLowerCase();
+  if (s === 'revision') return 'For Revision';
+  return status.charAt(0).toUpperCase() + status.slice(1);
+};
+
 const formatDate = (date) => {
   if (!date) return '---';
   return new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -447,9 +480,32 @@ const formatTime = (time) => {
   return `${h}:${minutes} ${period}`;
 };
 
+const parsedBudget = computed(() => {
+  const d = design.value;
+  if (!d || !d.act_design_id) return [];
+
+  const items = [
+    { name: 'Meals and Snacks (AM/PM)', total: d.meals_and_snacks },
+    { name: 'Function Room/Venue', total: d.function_room_venue },
+    { name: 'Accommodation', total: d.accommodation },
+    { name: 'Equipment Rental', total: d.equipment_rental },
+    { name: 'Professional Fee/Honoria', total: d.professional_fee_honoria },
+    { name: 'Token/s', total: d.tokens },
+    { name: 'Materials and Supplies', total: d.materials_and_supplies },
+    { name: 'Transportation', total: d.transportation }
+  ];
+
+  return items.filter(item => Number(item.total) > 0);
+});
+
 const formatCurrency = (amount) => {
   if (!amount) return '0.00';
   return parseFloat(amount).toLocaleString(undefined, { minimumFractionDigits: 2 });
+};
+
+const formatBudgetName = (name) => {
+  if (!name) return '';
+  return name.replace(/(\(.*?\))/g, '<span class="budget-item-subtext">$1</span>');
 };
 
 const isPdfModalOpen = ref(false);
@@ -468,7 +524,7 @@ const closePdfModal = () => {
 };
 
 onMounted(() => {
-  if (!user.value.id || user.value.role !== 'admin') {
+  if (!user.value.id || (user.value.role !== 'admin' && user.value.role !== 'director')) {
     router.push('/login');
   } else {
     fetchDesignDetails();
@@ -512,19 +568,12 @@ button { transition: all 0.2s ease-in-out; cursor: pointer; }
 .report-body > * + * { margin-top: 1.5rem; }
 .assessment-form { display: flex; flex-direction: column; gap: 1rem; }
 
-.status-badge-review {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background-color: rgba(236, 210, 36, 0.15);
-  color: #ecd224;
-  padding: 4px 12px;
-  border-radius: 9999px;
-  border: 1px solid rgba(236, 210, 36, 0.3);
-}
-.status-dot-pulse { width: 8px; height: 8px; background-color: #ecd224; border-radius: 9999px; animation: pulse 2s infinite; }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-.status-text { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; }
+.status-badge-view { padding: 4px 12px; border-radius: 9999px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; }
+.status-badge-view.completed { background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
+.status-badge-view.cancelled { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.status-badge-view.pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+.status-badge-view.approved { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+.status-badge-view.revision { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
 
 .control-number { font-size: 11px; font-weight: 700; color: #b979cc; text-transform: uppercase; margin-left: 12px; font-family: monospace; }
 .report-title { font-family: 'Times New Roman', serif; font-size: 26px; color: white; line-height: 1.25; margin-bottom: 16px; margin-top: 16px; }
@@ -555,6 +604,8 @@ button { transition: all 0.2s ease-in-out; cursor: pointer; }
 .doc-meta { font-size: 11px; color: #cbd5e1; margin-top: 2px; white-space: nowrap; }
 .preview-btn { color: #b979cc; font-size: 11px; padding: 6px 12px; border-radius: 8px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(185, 121, 204, 0.15); font-weight: 700; }
 .preview-btn:hover { border-color: #b979cc; color: white; background: rgba(185, 121, 204, 0.1); }
+
+
 
 .assessment-card-custom {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -600,6 +651,7 @@ button { transition: all 0.2s ease-in-out; cursor: pointer; }
 .btn-back { display: block; width: 100%; padding: 12px; font-size: 11px; color: #cbd5e1; text-align: center; border-radius: 12px; background: transparent; border: 1px solid rgba(185, 121, 204, 0.15); margin-top: 8px; }
 .btn-back:hover { color: white; border-color: #b979cc; background: rgba(185, 121, 204, 0.05); }
 
+
 /* Modals */
 .revision-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; display: none; }
 .revision-modal.show { display: flex; }
@@ -637,4 +689,76 @@ button { transition: all 0.2s ease-in-out; cursor: pointer; }
   .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
   .info-grid { flex-direction: column !important; gap: 12px !important; }
 }
+.budget-table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.budget-table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+
+.budget-table-header {
+  background-color: rgba(255, 255, 255, 0.05);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #b979cc;
+}
+
+.table-header-cell {
+  padding: 10px 16px;
+  font-weight: 700;
+}
+
+.budget-table-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.budget-item-name {
+  padding: 12px 16px;
+  color: #b979cc;
+  line-height: 1.25;
+  font-size: 13px;
+}
+
+.budget-item-subtext {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+.budget-item-value-cell {
+  color: white;
+  padding: 8px 16px;
+  font-size: 12px;
+}
+
+.budget-table-footer {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.grand-total-label {
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #b979cc;
+  text-align: right;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.grand-total-value-white {
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+}
+
 </style>

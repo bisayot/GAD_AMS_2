@@ -25,7 +25,7 @@ class AccomplishmentReportController extends BaseController
             "female"         => "required|integer",
             "rating"         => "required|numeric",
             "user_id"        => "required",
-            "attachment"     => "uploaded[attachment]|max_size[attachment,10240]|ext_in[attachment,pdf]",
+            "attachment"     => "uploaded[attachment]|max_size[attachment,10240]|ext_in[attachment,pdf,doc,docx]",
         ];
 
         if (!$this->validate($rules)) {
@@ -68,12 +68,38 @@ class AccomplishmentReportController extends BaseController
                 throw new \Exception("User ID is missing. Please log in again.");
             }
 
+
             if ($accomplishmentReportModel->insert($data)) {
+                $reportId = $accomplishmentReportModel->getInsertID();
+
+                // Save budget items
+                $budgetItemsJson = $this->request->getPost('budget_items');
+                if (!empty($budgetItemsJson)) {
+                    $budgetData = json_decode($budgetItemsJson, true);
+                    if (is_array($budgetData)) {
+                        $budgetData['accomplishment_report_id'] = $reportId;
+                        $budgetModel = new \App\Models\AccomplishmentBudgetItemsModel();
+                        $budgetModel->insert($budgetData);
+                    }
+                }
+
+                // Save evaluation results
+                $evalItemsJson = $this->request->getPost('evaluation_results');
+                if (!empty($evalItemsJson)) {
+                    $evalData = json_decode($evalItemsJson, true);
+                    if (is_array($evalData)) {
+                        $evalData['accomplishment_report_id'] = $reportId;
+                        $evalModel = new \App\Models\AccomplishmentEvaluationResultsModel();
+                        $evalModel->insert($evalData);
+                    }
+                }
+
                 return $this->response->setJSON([
                     "success" => true,
                     "message" => "Data saved successfully"
                 ]);
             }
+
 
             return $this->response->setJSON([
                 "success" => false,
@@ -149,7 +175,36 @@ class AccomplishmentReportController extends BaseController
             $report['is_archived'] = false;
         }
 
+
+        if ($report) {
+            $budgetModel = new \App\Models\AccomplishmentBudgetItemsModel();
+            $report['budget_items'] = $budgetModel->where('accomplishment_report_id', $id)->findAll();
+            
+
+
+            $evalModel = new \App\Models\AccomplishmentEvaluationResultsModel();
+            $report['evaluation_results'] = $evalModel->where('accomplishment_report_id', $id)->findAll();
+
+            $controlNumber = $report['control'] ?? $report['control_number'] ?? null;
+            if ($controlNumber) {
+                $db = \Config\Database::connect();
+                $ad = $db->table('archived_activity_designs as aad')
+                    ->select('aad.*, venues.venue_name')
+                    ->join('control_number as cn', 'cn.act_design_id = aad.original_act_design_id', 'left')
+                    ->join('venues', 'venues.venue_id = aad.venue_id', 'left')
+                    ->where('cn.control_number', $controlNumber)
+                    ->get()->getRowArray();
+                
+                if ($ad) {
+                    $adBudgetModel = new \App\Models\ActivityBudgetItemsModel();
+                    $ad['budget_items'] = $adBudgetModel->where('act_design_id', $ad['original_act_design_id'])->findAll();
+                    $report['activity_design'] = $ad;
+                }
+            }
+        }
+
         return $this->response->setJSON(['success' => true, 'data' => $report]);
+
     }
 
     public function getUserReports($userId = null)

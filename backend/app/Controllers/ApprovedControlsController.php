@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\ApprovedControlModel;
+use App\Models\ActivityBudgetItemsModel;
 use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\Controller;
 
@@ -20,6 +21,17 @@ class ApprovedControlsController extends Controller
     {
         $model = new ApprovedControlModel();
         $controls = $model->getApprovedControlsWithActivityDetails($userId);
+
+        // Fetch budget items for each activity design
+        $budgetModel = new ActivityBudgetItemsModel();
+        foreach ($controls as &$control) {
+            if (!empty($control['original_act_design_id'])) {
+                $budgetItems = $budgetModel->where('act_design_id', $control['original_act_design_id'])->findAll();
+                $control['budget_items'] = $budgetItems;
+            } else {
+                $control['budget_items'] = [];
+            }
+        }
 
         return $this->respond([
             'success' => true,
