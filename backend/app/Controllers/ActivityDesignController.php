@@ -122,7 +122,7 @@ class ActivityDesignController extends BaseController
         $db = \Config\Database::connect();
         
         $active = $db->table('activity_design as ad')
-            ->select('ad.act_design_id, ad.status, cn.control_number as control, users.username as office, users.full_name as submitter_name, ad.activity_title as title, ad.form_type as formLabel, ad.start_date as date')
+            ->select('ad.act_design_id, ad.status, cn.control_number as control, users.username as office, users.full_name as submitter_name, ad.activity_title as title, ad.form_type as formLabel, ad.start_date as date, ad.end_date')
             ->join('users', 'users.id = ad.user_id', 'left')
             ->join('control_number as cn', 'cn.act_design_id = ad.act_design_id', 'left')
             ->get()->getResultArray();
@@ -147,7 +147,7 @@ class ActivityDesignController extends BaseController
         $db = \Config\Database::connect();
         
         $active = $db->table('activity_design as ad')
-            ->select('ad.act_design_id, ad.status, cn.control_number as control, users.username as office, users.full_name as submitter_name, ad.activity_title as title, ad.form_type as formLabel, ad.start_date as date')
+            ->select('ad.act_design_id, ad.status, cn.control_number as control, users.username as office, users.full_name as submitter_name, ad.activity_title as title, ad.form_type as formLabel, ad.start_date as date, ad.end_date')
             ->join('users', 'users.id = ad.user_id', 'left')
             ->join('control_number as cn', 'cn.act_design_id = ad.act_design_id', 'left')
             ->where('ad.user_id', $userId)
@@ -315,6 +315,26 @@ class ActivityDesignController extends BaseController
         // 4. Execute Update
         try {
             if ($model->update($id, $updateData)) {
+
+                // Update or Insert budget items
+                $budgetItemsStr = $this->request->getPost("budget_items");
+                if ($budgetItemsStr) {
+                    $budgetItems = json_decode($budgetItemsStr, true);
+                    if (is_array($budgetItems)) {
+                        $budgetItemsModel = new \App\Models\ActivityBudgetItemsModel();
+                        $existingBudget = $budgetItemsModel->where('act_design_id', $id)->first();
+                        
+                        // We use the primary key if it exists, otherwise insert
+                        if ($existingBudget) {
+                            $primaryKey = $budgetItemsModel->primaryKey;
+                            $budgetItemsModel->update($existingBudget[$primaryKey], $budgetItems);
+                        } else {
+                            $budgetItems['act_design_id'] = $id;
+                            $budgetItemsModel->insert($budgetItems);
+                        }
+                    }
+                }
+
                 return $this->response->setJSON([
                     'success' => true,
                     'message' => 'Activity Design updated and resubmitted successfully.'

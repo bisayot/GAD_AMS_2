@@ -101,7 +101,7 @@
                     </div>
                   </div>
                   <div class="doc-actions">
-                    <button type="button" @click="previewFile(existingReport.activity_design.attachment, 'archived')" class="preview-btn">👁️ Preview</button>
+                    <button type="button" @click="previewFile(existingReport.activity_design.attachment, 'archived')" class="preview-btn">Preview</button>
                     <button type="button" @click="downloadFile(existingReport.activity_design.attachment, 'archived', 'Activity_Design')" class="download-btn-icon">
                       <span class="material-symbols-outlined">download</span>
                     </button>
@@ -515,55 +515,75 @@ const removeFile = (index) => {
 };
 
 const submitReport = async () => {
+  if (uploadedFiles.value.length === 0) {
+    const confirm = await Swal.fire({
+      title: 'No new file selected',
+      text: 'Are you sure you want to resubmit without changing the document upload?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#b979cc',
+      cancelButtonColor: '#ef4444',
+      confirmButtonText: 'Yes, proceed'
+    });
+    if (!confirm.isConfirmed) return;
+  }
+
   try {
     const formData = new FormData();
     
-    
-      formData.append('venue_id', form.value.venue);
+    formData.append('venue_id', form.value.venue);
 
-      const budgetMap = {"Meals and Snacks (AM/PM)":"meals_and_snacks","Function Room/Venue":"function_room_venue","Accommodation":"accommodation","Equipment Rental":"equipment_rental","Professional Fee/Honoria":"professional_fee_honoria","Token/s":"tokens","Materials and Supplies":"materials_and_supplies","Transportation":"transportation"};
-      const budgetObj = {};
-      const bObj = (r.budget_items && r.budget_items.length > 0) ? r.budget_items[0] : r;
-      form.value.budget_items.forEach(item => {
-        const dbKey = budgetMapping[item.name];
-        if (dbKey && bObj[dbKey] !== undefined && bObj[dbKey] !== null) {
-          item.total = bObj[dbKey];
-        }
-      });
-      formData.append('budget_items', JSON.stringify(budgetObj));
+    const budgetMap = {
+      "Meals and Snacks (AM/PM)": "meals_and_snacks",
+      "Function Room/Venue": "function_room_venue",
+      "Accommodation": "accommodation",
+      "Equipment Rental": "equipment_rental",
+      "Professional Fee/Honoria": "professional_fee_honoria",
+      "Token/s": "tokens",
+      "Materials and Supplies": "materials_and_supplies",
+      "Transportation": "transportation"
+    };
+    const budgetObj = {};
+    form.value.budget_items.forEach(item => {
+      const dbKey = budgetMap[item.name];
+      if (dbKey) {
+        budgetObj[dbKey] = Number(item.total) || 0;
+      }
+    });
+    formData.append('budget_items', JSON.stringify(budgetObj));
 
-      const evalMap = {
-        "Time Management": "time_management",
-        "Orderliness and Program Flow": "orderliness_and_program_flow",
-        "Appropriateness of the Venue": "appropriateness_of_venue",
-        "Sound System and Hall Preparation": "sound_system_and_hall_preparation",
-        "Restroom/s": "restrooms",
-        "Food and Drinks": "food_and_drinks"
-      };
-      const evalObj = {};
-      const eObj = (r.evaluation_results && r.evaluation_results.length > 0) ? r.evaluation_results[0] : r;
-      form.value.evaluation_items.forEach(item => {
-        const dbKey = evalMapping[item.area];
-        if (dbKey && eObj[dbKey] !== undefined && eObj[dbKey] !== null) {
-          item.rating = eObj[dbKey];
-        }
-      });
-      formData.append('evaluation_results', JSON.stringify(evalObj));
+    const evalMap = {
+      "Time Management": "time_management",
+      "Orderliness and Program Flow": "orderliness_and_program_flow",
+      "Appropriateness of the Venue": "appropriateness_of_venue",
+      "Sound System and Hall Preparation": "sound_system_and_hall_preparation",
+      "Restroom/s": "restrooms",
+      "Food and Drinks": "food_and_drinks"
+    };
+    const evalObj = {};
+    form.value.evaluation_items.forEach(item => {
+      const dbKey = evalMap[item.area];
+      if (dbKey) {
+        evalObj[dbKey] = Number(item.rating) || 0;
+      }
+    });
+    formData.append('evaluation_results', JSON.stringify(evalObj));
 
-      Object.keys(form.value).forEach(key => {
-        if (key !== 'budget_items' && key !== 'evaluation_items' && key !== 'venue') {
-          formData.append(key, form.value[key]);
-        }
-      });
-    
+    Object.keys(form.value).forEach(key => {
+      if (key !== 'budget_items' && key !== 'evaluation_items' && key !== 'venue') {
+        formData.append(key, form.value[key]);
+      }
+    });
     
     uploadedFiles.value.forEach(file => {
       formData.append('attachment', file);
     });
     
     formData.append('user_id', user.value.id);
+    formData.append('status', 'Pending');
     
-    const response = await api.post('submit-activity-report', formData, {
+    const id = route.params.id;
+    const response = await api.post(`update-report/${id}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -635,6 +655,28 @@ const handleLogout = async () => {
 
 
 const existingReport = ref(null);
+
+const isPdfModalOpen = ref(false);
+const pdfFileUrl = ref('');
+
+const closePdfModal = () => {
+  isPdfModalOpen.value = false;
+};
+
+const previewFile = (filename, folder) => {
+  if (!filename) return;
+  const base = (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace('/api/', '') : 'https://gad-ams-2-1.onrender.com');
+  pdfFileUrl.value = `${base}/api/files/${folder}/${filename}`;
+  isPdfModalOpen.value = true;
+};
+
+const downloadFile = (filename, folder, prefix) => {
+  if (!filename) return;
+  const base = (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace('/api/', '') : 'https://gad-ams-2-1.onrender.com');
+  const url = `${base}/api/files/${folder}/${filename}`;
+  window.open(url, '_blank');
+};
+
 
 
 

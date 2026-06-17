@@ -92,9 +92,9 @@
           <div class="schedule-header">
             <h4 class="schedule-title">Schedule & Deadlines</h4>
             <div class="calendar-nav">
-              <span class="calendar-nav-btn">◀</span>
-              <span class="calendar-label">CALENDAR</span>
-              <span class="calendar-nav-btn">▶</span>
+              <span class="calendar-nav-btn" @click="prevMonth">◀</span>
+              <span class="calendar-label">{{ currentMonthYear }}</span>
+              <span class="calendar-nav-btn" @click="nextMonth">▶</span>
             </div>
           </div>
           
@@ -102,11 +102,17 @@
             <span v-for="day in ['S', 'M', 'T', 'W', 'T', 'F', 'S']" :key="day">{{ day }}</span>
           </div>
           <div class="calendar-dates">
-            <span class="date-cell date-cell-past">1</span>
-            <span v-for="date in 23" :key="date" class="date-cell">
-              <span class="date-number">{{ date + 1 }}</span>
+            <span v-for="(day, idx) in calendarDays" :key="idx" 
+                  class="date-cell" 
+                  :class="{ 
+                    'date-cell-past': day.isPast, 
+                    'date-cell-future': day.isFuture,
+                    'date-cell-today': day.isToday && !day.isRevision && !day.isARDue,
+                    'date-cell-revision': day.isRevision,
+                    'date-cell-ardue': day.isARDue
+                  }">
+              <span v-if="!day.blank" class="date-number">{{ day.date }}</span>
             </span>
-            <span v-for="blankDay in 7" :key="'b-' + blankDay" class="date-cell date-cell-future">{{ 24 + blankDay }}</span>
           </div>
 
           <div class="deadlines-section">
@@ -120,7 +126,7 @@
                   <div class="deadline-dot"></div>
                   <p class="deadline-title">{{ deadline.title }}</p>
                 </div>
-                <span class="deadline-badge">{{ deadline.badgeText }}</span>
+                <span class="deadline-badge" :class="deadline.badgeClass || 'badge-default'">{{ deadline.badgeText }}</span>
               </div>
             </div>
           </div>
@@ -162,6 +168,79 @@ const displayName = computed(() => {
   return '(Director)';
 });
 
+const calendarBaseDate = ref(new Date());
+
+const prevMonth = () => {
+  const d = new Date(calendarBaseDate.value);
+  d.setMonth(d.getMonth() - 1);
+  calendarBaseDate.value = d;
+};
+
+const nextMonth = () => {
+  const d = new Date(calendarBaseDate.value);
+  d.setMonth(d.getMonth() + 1);
+  calendarBaseDate.value = d;
+};
+
+const currentMonthYear = computed(() => {
+  return calendarBaseDate.value.toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase();
+});
+
+const calendarDays = computed(() => {
+  const currentDate = calendarBaseDate.value;
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  
+  const days = [];
+  
+  const prevMonthDays = new Date(year, month, 0).getDate();
+  for (let i = 0; i < firstDay; i++) {
+    days.push({ date: prevMonthDays - firstDay + i + 1, blank: true, isPast: true });
+  }
+  
+  const today = new Date();
+  for (let i = 1; i <= daysInMonth; i++) {
+    const d = new Date(year, month, i);
+    d.setHours(0,0,0,0);
+    
+    let isRevision = false;
+    let isARDue = false;
+    
+    upcomingDeadlines.value.forEach(dl => {
+       if (dl.badgeText.includes('Revision')) {
+          if (d.getTime() === new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()) {
+             isRevision = true;
+          }
+       } else if (dl.badgeText.includes('AR Due')) {
+          const dlDate = new Date(dl.sortDate);
+          dlDate.setHours(0,0,0,0);
+          if (d.getTime() === dlDate.getTime()) {
+             isARDue = true;
+          }
+       }
+    });
+    
+    days.push({
+      date: i,
+      blank: false,
+      isToday: d.getTime() === new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime(),
+      isRevision,
+      isARDue
+    });
+  }
+  
+  const remaining = 42 - days.length; 
+  for(let i=1; i<=remaining; i++) {
+     if (days.length % 7 === 0 && remaining < 7) break;
+     days.push({ date: i, blank: true, isFuture: true });
+  }
+  
+  return days;
+});
+
 const navigateToView = (type, id) => {
   if (type === 'design') {
     router.push(`/admin/ad-review/${id}`);
@@ -183,9 +262,10 @@ const activityLogs = ref([]);
 
 const fetchStats = async () => {
   try {
-    const [designsRes, reportsRes] = await Promise.all([
+    const [designsRes, reportsRes, archiveRes] = await Promise.all([
       api.get('activity-designs'),
-      api.get('activity-reports')
+      api.get('activity-reports'),
+      api.get('archives')
     ]);
     
     if (designsRes.data.success) {
@@ -225,6 +305,86 @@ const fetchStats = async () => {
       
       pendingActivities.value = [...pendingActivities.value, ...pReports].slice(0, 4);
     }
+
+    // Calculate Upcoming Deadlines
+    const dl = [];
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    const formatDays = (targetDateStr) => {
+      if (!targetDateStr) return 'ASAP';
+      const target = new Date(targetDateStr);
+      target.setHours(0,0,0,0);
+      const diffTime = target - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays < 0) return 'Overdue';
+      if (diffDays === 0) return 'Today';
+      if (diffDays === 1) return 'Tomorrow';
+      return `In ${diffDays} days`;
+    };
+
+    const designs = designsRes.data.success ? designsRes.data.data : [];
+    const reports = reportsRes.data.success ? reportsRes.data.data : [];
+
+    if (archiveRes.data && archiveRes.data.success) {
+      const archives = archiveRes.data.data || [];
+      archives.forEach(item => {
+        if (item.type === 'design' && (item.status || '').toLowerCase() === 'approved') {
+          designs.push({
+             act_design_id: item.original_id,
+             status: item.status,
+             control: item.control,
+             title: item.title,
+             end_date: item.end_date
+          });
+        }
+      });
+    }
+
+    designs.forEach(d => {
+      const status = (d.status || '').toLowerCase();
+      if (status === 'revision required' || status === 'for revision') {
+         dl.push({
+           id: 'ad_rev_' + d.act_design_id,
+           title: d.title || d.activity_title,
+           badgeText: 'AD Revision',
+           badgeClass: 'badge-revision',
+           sortDate: new Date(0)
+         });
+      }
+      
+      if (status === 'approved') {
+         const hasReport = reports.some(r => r.act_design_id === d.act_design_id || (r.control_number && r.control_number === d.control) || (r.control && r.control === d.control));
+         if (!hasReport && d.end_date) {
+            const arDeadline = new Date(d.end_date);
+            arDeadline.setDate(arDeadline.getDate() + 3);
+            dl.push({
+               id: 'ar_due_' + d.act_design_id,
+               title: d.title || d.activity_title,
+               badgeText: 'AR Due ' + formatDays(arDeadline),
+               badgeClass: 'badge-submission',
+               sortDate: arDeadline
+            });
+         }
+      }
+    });
+
+    reports.forEach(r => {
+      const status = (r.status || '').toLowerCase();
+      if (status === 'revision required' || status === 'for revision') {
+         dl.push({
+           id: 'ar_rev_' + r.id,
+           title: r.title || r.activity_title,
+           badgeText: 'AR Revision',
+           badgeClass: 'badge-revision',
+           sortDate: new Date(0)
+         });
+      }
+    });
+
+    dl.sort((a, b) => a.sortDate - b.sortDate);
+    upcomingDeadlines.value = dl.slice(0, 5);
+
   } catch (err) {
     console.error('Error fetching dashboard stats:', err);
   }
@@ -619,9 +779,29 @@ onMounted(() => {
   color: white;
 }
 
-.date-cell-past,
+.date-cell-past {
+  color: rgba(255, 255, 255, 0.2);
+}
+
 .date-cell-future {
-  color: #cbd5e1;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.date-cell-revision {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #fff;
+}
+
+.date-cell-ardue {
+  background: rgba(234, 179, 8, 0.2);
+  border: 1px solid rgba(234, 179, 8, 0.5);
+  color: #fff;
+}
+
+.date-cell-today {
+  border: 1px solid rgba(147, 51, 234, 0.5);
+  color: #c084fc;
 }
 
 .date-number {
@@ -702,11 +882,24 @@ onMounted(() => {
   font-weight: 700;
   padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
-  background: rgba(0, 0, 0, 0.25);
-  color: #cbd5e1;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   flex-shrink: 0;
+}
+
+.badge-revision {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.badge-submission {
+  background: rgba(234, 179, 8, 0.15);
+  color: #facc15;
+}
+
+.badge-default {
+  background: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
 }
 
 .logs-title {

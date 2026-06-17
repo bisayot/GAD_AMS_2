@@ -124,6 +124,7 @@ class AccomplishmentReportController extends BaseController
             ->join('users', 'users.id = ar.user_id', 'left')
             ->join('control_number as cn', 'cn.control_number = ar.control_number', 'left')
             ->join('archived_activity_designs as ad', 'ad.original_act_design_id = cn.act_design_id', 'left')
+            ->where('ar.status !=', 'Verified')
             ->get()->getResultArray();
 
         $archived = $db->table('archived_accomplishment_reports as aar')
@@ -131,6 +132,7 @@ class AccomplishmentReportController extends BaseController
             ->join('users', 'users.id = aar.user_id', 'left')
             ->join('control_number as cn', 'cn.control_number = aar.control_number', 'left')
             ->join('archived_activity_designs as ad', 'ad.original_act_design_id = cn.act_design_id', 'left')
+            ->where('aar.status !=', 'Verified')
             ->get()->getResultArray();
 
         $reports = array_merge($active, $archived);
@@ -221,6 +223,7 @@ class AccomplishmentReportController extends BaseController
             ->join('control_number as cn', 'cn.control_number = ar.control_number', 'left')
             ->join('archived_activity_designs as ad', 'ad.original_act_design_id = cn.act_design_id', 'left')
             ->where('ar.user_id', $userId)
+            ->where('ar.status !=', 'Verified')
             ->get()->getResultArray();
 
         $archived = $db->table('archived_accomplishment_reports as aar')
@@ -229,6 +232,7 @@ class AccomplishmentReportController extends BaseController
             ->join('control_number as cn', 'cn.control_number = aar.control_number', 'left')
             ->join('archived_activity_designs as ad', 'ad.original_act_design_id = cn.act_design_id', 'left')
             ->where('aar.user_id', $userId)
+            ->where('aar.status !=', 'Verified')
             ->get()->getResultArray();
 
         $reports = array_merge($active, $archived);
@@ -305,6 +309,39 @@ class AccomplishmentReportController extends BaseController
 
         try {
             if ($model->update($id, $updateData)) {
+                
+                // Update or Insert budget items
+                $budgetItemsJson = $this->request->getPost('budget_items');
+                if (!empty($budgetItemsJson)) {
+                    $budgetData = json_decode($budgetItemsJson, true);
+                    if (is_array($budgetData)) {
+                        $budgetModel = new \App\Models\AccomplishmentBudgetItemsModel();
+                        $existingBudget = $budgetModel->where('accomplishment_report_id', $id)->first();
+                        if ($existingBudget) {
+                            $budgetModel->update($existingBudget['item_id'], $budgetData);
+                        } else {
+                            $budgetData['accomplishment_report_id'] = $id;
+                            $budgetModel->insert($budgetData);
+                        }
+                    }
+                }
+
+                // Update or Insert evaluation results
+                $evalItemsJson = $this->request->getPost('evaluation_results');
+                if (!empty($evalItemsJson)) {
+                    $evalData = json_decode($evalItemsJson, true);
+                    if (is_array($evalData)) {
+                        $evalModel = new \App\Models\AccomplishmentEvaluationResultsModel();
+                        $existingEval = $evalModel->where('accomplishment_report_id', $id)->first();
+                        if ($existingEval) {
+                            $evalModel->update($existingEval['evaluation_id'], $evalData);
+                        } else {
+                            $evalData['accomplishment_report_id'] = $id;
+                            $evalModel->insert($evalData);
+                        }
+                    }
+                }
+
                 return $this->response->setJSON([
                     'success' => true,
                     'message' => 'Accomplishment Report updated and resubmitted successfully.'

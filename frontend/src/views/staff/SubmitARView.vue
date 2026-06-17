@@ -135,6 +135,7 @@
                       <input 
                         type="date" 
                         v-model="form.start_date" 
+                        :min="todayDate"
                         required 
                         class="custom-input-field code-icon-calendar"
                       >
@@ -144,6 +145,7 @@
                       <input 
                         type="date" 
                         v-model="form.end_date" 
+                        :min="todayDate"
                         required 
                         class="custom-input-field code-icon-calendar"
                       >
@@ -381,9 +383,16 @@ const route = useRoute();
 const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
 
 const menuItems = computed(() => {
-  if (route.path.includes('/college')) return collegeMenu;
+  if (route.path.includes('/staff')) return staffMenu;
   return [];
 });
+
+const getTodayDate = () => {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().split('T')[0];
+};
+const todayDate = ref(getTodayDate());
 
 const venues = ref([]);
 const customVenue = ref('');

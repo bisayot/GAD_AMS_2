@@ -41,6 +41,10 @@
             <h2 class="report-title">{{ design.activity_title }}</h2>
 
           <div class="info-grid">
+            <div class="info-item" style="grid-column: span 2;">
+              <span class="info-label">Activity Title</span>
+              <span class="info-value-white">{{ design.activity_title }}</span>
+            </div>
             <div class="info-item">
               <span class="info-label">Submitted By</span>
               <span class="info-value-purple">{{ design.submitter_name || '' }}</span>
@@ -72,12 +76,20 @@
               </div>
               <div class="grid-2">
                 <div>
-                  <label class="info-label">Date</label>
-                  <p class="info-value-white">{{ formatDate(design.start_date) }} — {{ formatDate(design.end_date) }}</p>
+                  <label class="info-label">Start Date</label>
+                  <p class="info-value-white">{{ formatDate(design.start_date) }}</p>
                 </div>
                 <div>
-                  <label class="info-label">Time</label>
-                  <p class="info-value-white">{{ formatTime(design.start_time) }} to {{ formatTime(design.end_time) }}</p>
+                  <label class="info-label">End Date</label>
+                  <p class="info-value-white">{{ formatDate(design.end_date) }}</p>
+                </div>
+                <div>
+                  <label class="info-label">Start Time</label>
+                  <p class="info-value-white">{{ formatTime(design.start_time) }}</p>
+                </div>
+                <div>
+                  <label class="info-label">End Time</label>
+                  <p class="info-value-white">{{ formatTime(design.end_time) }}</p>
                 </div>
                 <div class="full-width-info">
                   <label class="info-label">Venue</label>
@@ -139,7 +151,7 @@
                     <p class="doc-meta">Reference: {{ design.attachment }}</p>
                   </div>
                 </div>
-                <button @click="previewFile(design.attachment)" class="preview-btn">👁️ Preview</button>
+                <button @click="previewFile(design.attachment)" class="preview-btn">Preview</button>
               </div>
             </div>
           </div>
@@ -165,11 +177,12 @@
               </div>
 
               <div>
-                <label class="form-label">Date of Assessment</label>
+                <label class="form-label">End Date of Assessment</label>
                 <input 
                   v-model="assessmentDate"
                   type="date" 
-                  class="modal-input"
+                  class="modal-input disabled-input"
+                  readonly
                 >
               </div>
 
@@ -179,6 +192,7 @@
                   v-model="accomplishmentDeadline"
                   type="date" 
                   class="modal-input"
+                  :min="minAccomplishmentDeadline"
                 >
               </div>
 
@@ -237,7 +251,7 @@
 
           <div class="form-group">
             <label>Revision Deadline</label>
-            <input type="date" v-model="revisionDeadline" class="modal-input">
+            <input type="date" v-model="revisionDeadline" :min="todayDate" class="modal-input">
             <p class="input-hint">Proponent must resubmit by this date.</p>
           </div>
         </div>
@@ -301,7 +315,7 @@ const error = ref(null);
 
 const assessmentRemarks = ref('');
 const controlNumber = ref('');
-const assessmentDate = ref(new Date().toISOString().split('T')[0]);
+const assessmentDate = ref('');
 const accomplishmentDeadline = ref('');
 
 const showRevisionModal = ref(false);
@@ -309,6 +323,27 @@ const revisionRemarks = ref('');
 const revisionDeadline = ref('');
 const showCancelModal = ref(false);
 const cancelReason = ref('');
+
+const getTodayDate = () => {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().split('T')[0];
+};
+const todayDate = ref(getTodayDate());
+
+const minAccomplishmentDeadline = computed(() => {
+  if (!assessmentDate.value) return todayDate.value;
+  const minDate = new Date(assessmentDate.value);
+  let addedDays = 0;
+  while (addedDays < 3) {
+    minDate.setDate(minDate.getDate() + 1);
+    const dayOfWeek = minDate.getDay();
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Skip Sunday(0) and Saturday(6)
+      addedDays++;
+    }
+  }
+  return minDate.toISOString().split('T')[0];
+});
 
 const fetchDesignDetails = async () => {
   loading.value = true;
@@ -324,6 +359,17 @@ const fetchDesignDetails = async () => {
         const year = new Date().getFullYear();
         const randomNum = Math.floor(Math.random() * 9000) + 1000;
         controlNumber.value = `${year}-${randomNum}`;
+      }
+      
+      if (design.value.end_date) {
+        assessmentDate.value = design.value.end_date.split(' ')[0];
+      } else {
+        assessmentDate.value = todayDate.value;
+      }
+      
+      // Auto-set accomplishment deadline to 5 working days after
+      if (!accomplishmentDeadline.value) {
+        accomplishmentDeadline.value = minAccomplishmentDeadline.value;
       }
     } else {
       error.value = "Activity design not found.";
@@ -670,6 +716,7 @@ button { transition: all 0.2s ease-in-out; cursor: pointer; }
 .modal-textarea { width: 100%; padding: 14px 18px; border: 1px solid rgba(185, 121, 204, 0.2); background: rgba(0, 0, 0, 0.4); color: white; border-radius: 14px; font-size: 13px; font-family: inherit; }
 .modal-input { width: 100%; padding: 12px 18px; border: 1px solid rgba(185, 121, 204, 0.2); background: rgba(0, 0, 0, 0.4); color: white; border-radius: 12px; font-size: 13px; }
 .modal-input:focus { outline: none; border-color: #b979cc; }
+.disabled-input { opacity: 0.6; cursor: not-allowed; }
 .input-hint { font-size: 9px; color: #cbd5e1; opacity: 0.6; margin-top: 8px; }
 
 .btn-send { background: linear-gradient(135deg, #990dd1 0%, #b979cc 100%); color: white; border: none; padding: 14px 28px; border-radius: 14px; font-weight: 800; font-size: 12px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; gap: 10px; }
@@ -759,6 +806,123 @@ button { transition: all 0.2s ease-in-out; cursor: pointer; }
   font-size: 14px;
   font-weight: 700;
   color: white;
+}
+
+
+
+/* CREATIVE BUDGET TABLE STYLES */
+.budget-table-wrapper {
+  overflow: hidden;
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
+  border: 1px solid rgba(185, 121, 204, 0.25);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.budget-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+
+.budget-table-header {
+  background: linear-gradient(90deg, rgba(185, 121, 204, 0.2) 0%, rgba(185, 121, 204, 0.05) 100%);
+}
+
+.table-header-cell {
+  padding: 16px 20px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #e2e8f0;
+  border-bottom: 2px solid rgba(185, 121, 204, 0.4);
+}
+
+.budget-total-header {
+  text-align: right;
+}
+
+.budget-table-row {
+  transition: all 0.3s ease;
+}
+
+.budget-table-row:hover {
+  background: rgba(185, 121, 204, 0.1);
+  transform: scale(1.002);
+}
+
+.budget-table-row td {
+  border-bottom: 1px solid rgba(185, 121, 204, 0.1);
+}
+
+.budget-table-row:last-child td {
+  border-bottom: none;
+}
+
+.budget-item-name {
+  padding: 16px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.budget-item-subtext {
+  display: inline-block;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 8px;
+  font-weight: 400;
+  background: rgba(0,0,0,0.2);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.budget-item-value-cell {
+  padding: 16px 20px;
+  text-align: right;
+}
+
+.budget-item-value {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, rgba(185, 121, 204, 0.2) 0%, rgba(153, 13, 209, 0.2) 100%);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(185, 121, 204, 0.3);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.budget-table-footer {
+  background: linear-gradient(90deg, rgba(0,0,0,0.4) 0%, rgba(185, 121, 204, 0.15) 100%);
+}
+
+.budget-table-footer td {
+  border-top: 2px solid rgba(185, 121, 204, 0.4);
+}
+
+.grand-total-label {
+  padding: 20px;
+  font-size: 13px;
+  font-weight: 900;
+  color: #b979cc;
+  text-align: right;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.grand-total-value-white {
+  padding: 20px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 18px;
+  font-weight: 900;
+  color: #fff;
+  text-align: right;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 </style>

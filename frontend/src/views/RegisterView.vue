@@ -107,8 +107,10 @@
             </div>
 
             <div class="flex flex-col gap-2 md:col-span-2">
-              <label class="text-xs uppercase tracking-widest font-label font-bold text-slate-500">Institutional Email <span class="text-red-500">*</span></label>
-              <input v-model="form.email" type="email" placeholder="name@bsu.edu.ph" class="bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface" required />
+              <label class="text-xs uppercase tracking-widest font-label font-bold text-slate-500">
+                {{ form.user_role !== 'Non-TWG' ? 'Institutional Email' : 'Email Address' }} <span class="text-red-500">*</span>
+              </label>
+              <input v-model="form.email" type="email" :placeholder="form.user_role !== 'Non-TWG' ? 'name@bsu.edu.ph' : 'name@example.com'" class="bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface" required />
             </div>
             <div class="flex flex-col gap-2">
               <label class="text-xs uppercase tracking-widest font-label font-bold text-slate-500">Password <span class="text-red-500">*</span></label>
@@ -282,6 +284,9 @@ onUnmounted(() => {
 });
 
 const handleRegister = async () => {
+  if (form.user_role !== 'Non-TWG' && !form.email.toLowerCase().endsWith('@bsu.edu.ph')) {
+    return error.value = 'This role requires a valid institutional email (@bsu.edu.ph).';
+  }
   if (form.password !== form.confirm_password) {
     return error.value = 'Passwords do not match.';
   }

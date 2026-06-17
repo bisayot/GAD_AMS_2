@@ -108,7 +108,7 @@
                   </div>
                 </div>
                 <div class="doc-actions">
-                  <button @click="previewFile(report.activity_design.attachment, 'archived')" class="preview-btn">👁️ Preview</button>
+                  <button @click="previewFile(report.activity_design.attachment, 'archived')" class="preview-btn">Preview</button>
                   <button @click="downloadFile(report.activity_design.attachment, 'archived', 'Activity_Design')" class="download-btn-icon">
                     <span class="material-symbols-outlined">download</span>
                   </button>
@@ -259,7 +259,7 @@
                   </div>
                 </div>
                 <div class="doc-actions">
-                  <button @click="previewFile(report.attachment, report.is_archived ? 'archived' : 'drafts')" class="preview-btn">👁️ Preview</button>
+                  <button @click="previewFile(report.attachment, report.is_archived ? 'archived' : 'drafts')" class="preview-btn">Preview</button>
                   <button @click="downloadFile(report.attachment, report.is_archived ? 'archived' : 'drafts', 'Accomplishment_Report')" class="download-btn-icon">
                     <span class="material-symbols-outlined">download</span>
                   </button>
@@ -357,6 +357,10 @@ const getStatusClass = (status) => {
 const isPdfModalOpen = ref(false);
 const pdfFileUrl = ref('');
 
+const closePdfModal = () => {
+  isPdfModalOpen.value = false;
+};
+
 
 import { computed } from 'vue';
 
@@ -448,10 +452,8 @@ const previewFile = (filename, folder) => {
 const downloadFile = (filename, folder, prefix) => {
   if (!filename) return;
   const base = (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace('/api/', '') : 'https://gad-ams-2-1.onrender.com');
-  const link = document.createElement('a');
-  link.href = `${base}/api/files/${folder}/${filename}`;
-  link.download = `${prefix}_${report.value.control || report.value.id}.pdf`;
-  link.click();
+  const url = `${base}/api/files/${folder}/${filename}`;
+  window.open(url, '_blank');
 };
 
 

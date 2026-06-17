@@ -72,20 +72,28 @@
               </div>
               <div class="grid-2">
                 <div>
-                  <label class="info-label">Date</label>
-                  <p class="info-value-white">{{ formatDate(design.start_date) }} — {{ formatDate(design.end_date) }}</p>
+                  <label class="form-label">Start Date</label>
+                  <input type="date" v-model="formData.start_date" class="modal-input code-icon-calendar" />
                 </div>
                 <div>
-                  <label class="info-label">Time</label>
-                  <p class="info-value-white">{{ formatTime(design.start_time) }} to {{ formatTime(design.end_time) }}</p>
+                  <label class="form-label">End Date</label>
+                  <input type="date" v-model="formData.end_date" class="modal-input code-icon-calendar" />
+                </div>
+                <div>
+                  <label class="form-label">Start Time</label>
+                  <input type="time" v-model="formData.start_time" class="modal-input code-icon-clock" />
+                </div>
+                <div>
+                  <label class="form-label">End Time</label>
+                  <input type="time" v-model="formData.end_time" class="modal-input code-icon-clock" />
                 </div>
                 <div class="full-width-info">
-                  <label class="info-label">Venue</label>
-                  <p class="info-value-white">{{ design.venue }}</p>
+                  <label class="form-label">Venue</label>
+                  <input type="text" v-model="formData.venue" class="modal-input" placeholder="Enter venue..." />
                 </div>
                 <div class="full-width-info participants-info">
-                  <label class="info-label">Target Participants</label>
-                  <p class="info-value-white">{{ design.target_participants }} individuals</p>
+                  <label class="form-label">Target Participants</label>
+                  <input type="number" v-model="formData.target_participants" class="modal-input" placeholder="Number of participants" />
                 </div>
               </div>
             </div>
@@ -95,7 +103,7 @@
                 <span class="material-symbols-outlined icon-pink">payments</span>
                 <h3 class="section-title">Proposed Budgetary Requirements</h3>
               </div>
-              <div v-if="parsedBudget.length" class="budget-content">
+              <div class="budget-content">
                 <div class="budget-table-wrapper">
                   <table class="budget-table">
                     <thead class="budget-table-header">
@@ -105,41 +113,51 @@
                       </tr>
                     </thead>
                     <tbody class="budget-table-body">
-                      <tr v-for="(item, idx) in parsedBudget" :key="idx" class="budget-table-row">
-                        <td class="budget-item-name" v-html="formatBudgetName(item.name)"></td>
-                        <td class="budget-item-value-cell budget-value-right">
-                          <span class="budget-item-value">₱{{ formatCurrency(item.total) }}</span>
-                        </td>
-                      </tr>
+                      <tr class="budget-table-row"><td class="budget-item-name">Meals and Snacks (AM/PM)</td><td class="budget-item-value-cell budget-value-right"><div class="budget-input-wrapper"><span class="currency-symbol">₱</span><input type="number" v-model="budgetItems.meals_and_snacks" class="budget-input" min="0" step="0.01"></div></td></tr>
+                      <tr class="budget-table-row"><td class="budget-item-name">Function Room/Venue</td><td class="budget-item-value-cell budget-value-right"><div class="budget-input-wrapper"><span class="currency-symbol">₱</span><input type="number" v-model="budgetItems.function_room_venue" class="budget-input" min="0" step="0.01"></div></td></tr>
+                      <tr class="budget-table-row"><td class="budget-item-name">Accommodation</td><td class="budget-item-value-cell budget-value-right"><div class="budget-input-wrapper"><span class="currency-symbol">₱</span><input type="number" v-model="budgetItems.accommodation" class="budget-input" min="0" step="0.01"></div></td></tr>
+                      <tr class="budget-table-row"><td class="budget-item-name">Equipment Rental</td><td class="budget-item-value-cell budget-value-right"><div class="budget-input-wrapper"><span class="currency-symbol">₱</span><input type="number" v-model="budgetItems.equipment_rental" class="budget-input" min="0" step="0.01"></div></td></tr>
+                      <tr class="budget-table-row"><td class="budget-item-name">Professional Fee/Honoria</td><td class="budget-item-value-cell budget-value-right"><div class="budget-input-wrapper"><span class="currency-symbol">₱</span><input type="number" v-model="budgetItems.professional_fee_honoria" class="budget-input" min="0" step="0.01"></div></td></tr>
+                      <tr class="budget-table-row"><td class="budget-item-name">Token/s</td><td class="budget-item-value-cell budget-value-right"><div class="budget-input-wrapper"><span class="currency-symbol">₱</span><input type="number" v-model="budgetItems.tokens" class="budget-input" min="0" step="0.01"></div></td></tr>
+                      <tr class="budget-table-row"><td class="budget-item-name">Materials and Supplies</td><td class="budget-item-value-cell budget-value-right"><div class="budget-input-wrapper"><span class="currency-symbol">₱</span><input type="number" v-model="budgetItems.materials_and_supplies" class="budget-input" min="0" step="0.01"></div></td></tr>
+                      <tr class="budget-table-row"><td class="budget-item-name">Transportation</td><td class="budget-item-value-cell budget-value-right"><div class="budget-input-wrapper"><span class="currency-symbol">₱</span><input type="number" v-model="budgetItems.transportation" class="budget-input" min="0" step="0.01"></div></td></tr>
                     </tbody>
                     <tfoot class="budget-table-footer">
                       <tr>
                         <td class="grand-total-label">Grand Total (PHP)</td>
-                        <td class="grand-total-value-white budget-value-right">₱{{ formatCurrency(design.proposed_budget) }}</td>
+                        <td class="grand-total-value-white budget-value-right">₱{{ formatCurrency(computedTotalBudget) }}</td>
                       </tr>
                     </tfoot>
                   </table>
                 </div>
               </div>
-              <div v-else class="empty-budget-notice">
-                No budgetary requirements were specified for this design.
-              </div>
+
             </div>
 
-            <div v-if="design.attachment" class="section-card">
+            <div class="section-card">
               <div class="section-header-row">
                 <span class="material-symbols-outlined icon-pink">description</span>
                 <h3 class="section-title">Supporting Documents</h3>
               </div>
-              <div class="doc-item">
+              <div v-if="design.attachment" class="doc-item mb-4">
                 <div class="doc-info">
                   <span class="material-symbols-outlined doc-pdf-icon">picture_as_pdf</span>
                   <div>
-                    <p class="doc-title">Activity_Design_Framework.pdf</p>
+                    <p class="doc-title">Current File</p>
                     <p class="doc-meta">Reference: {{ design.attachment }}</p>
                   </div>
                 </div>
-                <button @click="previewFile(design.attachment)" class="preview-btn">👁️ Preview</button>
+                <button @click="previewFile(design.attachment)" class="preview-btn">Preview</button>
+              </div>
+              <div class="doc-item" style="margin-top: 16px;">
+                <div class="doc-info" style="width: 100%; align-items: flex-start;">
+                  <span class="material-symbols-outlined doc-pdf-icon" style="color: #b979cc; margin-top: 4px;">upload_file</span>
+                  <div style="width: 100%;">
+                    <p class="doc-title">Upload New Activity Design (PDF)</p>
+                    <p class="input-hint" style="margin-top: 4px; color: #ffffff; font-size: 11px;">Uploading a new file will replace the current document.</p>
+                    <input type="file" accept="application/pdf" @change="handleFileChange" class="modal-input" style="padding: 10px; margin-top: 12px; background: rgba(0,0,0,0.2);" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -179,6 +197,32 @@
 </template>
 
 <script setup>
+
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
+
+const formatTime = (timeString) => {
+  if (!timeString) return '';
+  const [hours, minutes] = timeString.split(':');
+  const d = new Date();
+  d.setHours(hours, minutes, 0);
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+};
+
+const formatCurrency = (amount) => {
+  if (!amount) return '0.00';
+  return Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
+const previewFile = (filename) => {
+  if (!filename) return;
+  const baseUrl = api.defaults.baseURL.replace(/\/$/, '');
+  window.open(`${baseUrl}/files/drafts/${filename}`, '_blank');
+};
 
 const formatBudgetName = (name) => {
   if (!name) return '';
@@ -229,6 +273,22 @@ const formData = ref({
   target_participants: 0
 });
 
+const budgetItems = ref({
+  meals_and_snacks: 0,
+  function_room_venue: 0,
+  accommodation: 0,
+  equipment_rental: 0,
+  professional_fee_honoria: 0,
+  tokens: 0,
+  materials_and_supplies: 0,
+  transportation: 0
+});
+
+const computedTotalBudget = computed(() => {
+  return Object.values(budgetItems.value).reduce((sum, val) => sum + (parseFloat(val) || 0), 0);
+});
+
+
 const fetchDesignDetails = async () => {
   loading.value = true;
   try {
@@ -249,6 +309,17 @@ const fetchDesignDetails = async () => {
         proposed_budget: design.value.proposed_budget,
         target_participants: design.value.target_participants
       };
+      
+      budgetItems.value = {
+        meals_and_snacks: design.value.meals_and_snacks || 0,
+        function_room_venue: design.value.function_room_venue || 0,
+        accommodation: design.value.accommodation || 0,
+        equipment_rental: design.value.equipment_rental || 0,
+        professional_fee_honoria: design.value.professional_fee_honoria || 0,
+        tokens: design.value.tokens || 0,
+        materials_and_supplies: design.value.materials_and_supplies || 0,
+        transportation: design.value.transportation || 0
+      };
     } else {
       error.value = "Activity design not found.";
     }
@@ -265,6 +336,18 @@ const handleFileChange = (e) => {
 
 const handleUpdate = async () => {
   // Validation removed as requested: user can change 1 or 2 fields freely.
+  if (!newFile.value) {
+    const confirm = await Swal.fire({
+      title: 'No new file selected',
+      text: 'Are you sure you want to resubmit without changing the document upload?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#b979cc',
+      cancelButtonColor: '#ef4444',
+      confirmButtonText: 'Yes, proceed'
+    });
+    if (!confirm.isConfirmed) return;
+  }
 
   submitting.value = true;
   try {
@@ -277,6 +360,8 @@ const handleUpdate = async () => {
     if (newFile.value) {
       submitData.append('attachment', newFile.value);
     }
+    submitData.append('budget_items', JSON.stringify(budgetItems.value));
+    submitData.set('proposed_budget', computedTotalBudget.value);
 
     const response = await api.post(`update-design/${id}`, submitData, {
       headers: { 'Content-Type': 'multipart/form-data' }
@@ -392,4 +477,169 @@ onMounted(() => {
   .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
   .info-grid { flex-direction: column !important; gap: 12px !important; }
 }
+
+
+/* CREATIVE BUDGET TABLE STYLES */
+.budget-table-wrapper {
+  overflow: hidden;
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
+  border: 1px solid rgba(185, 121, 204, 0.25);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.budget-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+
+.budget-table-header {
+  background: linear-gradient(90deg, rgba(185, 121, 204, 0.2) 0%, rgba(185, 121, 204, 0.05) 100%);
+}
+
+.table-header-cell {
+  padding: 16px 20px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #e2e8f0;
+  border-bottom: 2px solid rgba(185, 121, 204, 0.4);
+}
+
+.budget-total-header {
+  text-align: right;
+}
+
+.budget-table-row {
+  transition: all 0.3s ease;
+}
+
+.budget-table-row:hover {
+  background: rgba(185, 121, 204, 0.1);
+  transform: scale(1.002);
+}
+
+.budget-table-row td {
+  border-bottom: 1px solid rgba(185, 121, 204, 0.1);
+}
+
+.budget-table-row:last-child td {
+  border-bottom: none;
+}
+
+.budget-item-name {
+  padding: 16px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.budget-item-subtext {
+  display: inline-block;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 8px;
+  font-weight: 400;
+  background: rgba(0,0,0,0.2);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.budget-item-value-cell {
+  padding: 16px 20px;
+  text-align: right;
+}
+
+.budget-item-value {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, rgba(185, 121, 204, 0.2) 0%, rgba(153, 13, 209, 0.2) 100%);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(185, 121, 204, 0.3);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.budget-table-footer {
+  background: linear-gradient(90deg, rgba(0,0,0,0.4) 0%, rgba(185, 121, 204, 0.15) 100%);
+}
+
+.budget-table-footer td {
+  border-top: 2px solid rgba(185, 121, 204, 0.4);
+}
+
+.grand-total-label {
+  padding: 20px;
+  font-size: 13px;
+  font-weight: 900;
+  color: #b979cc;
+  text-align: right;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.grand-total-value-white {
+  padding: 20px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 18px;
+  font-weight: 900;
+  color: #fff;
+  text-align: right;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.budget-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(185, 121, 204, 0.2);
+  border-radius: 8px;
+  padding: 4px 12px;
+  transition: border-color 0.2s;
+}
+
+.budget-input-wrapper:focus-within {
+  border-color: #b979cc;
+}
+
+.currency-symbol {
+  color: #b979cc;
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+.budget-input {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  width: 100%;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+  text-align: right;
+}
+
+.budget-input:focus {
+  outline: none;
+}
+
+.code-icon-calendar::-webkit-calendar-picker-indicator,
+.code-icon-clock::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.code-icon-calendar::-webkit-calendar-picker-indicator:hover,
+.code-icon-clock::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
 </style>

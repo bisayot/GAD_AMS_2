@@ -76,18 +76,28 @@
       <div class="calendar-card">
         <h3 class="widget-title">Calendar</h3>
         <div class="calendar-container">
+          <div class="calendar-header">
+            <span class="material-symbols-outlined nav-icon" @click="prevMonth">chevron_left</span>
+            <span class="calendar-month">{{ currentMonthYear }}</span>
+            <span class="material-symbols-outlined nav-icon" @click="nextMonth">chevron_right</span>
+          </div>
           <div class="weekdays-grid">
             <span v-for="day in ['S', 'M', 'T', 'W', 'T', 'F', 'S']" :key="day" class="weekday-label">{{ day }}</span>
           </div>
           <div class="dates-grid">
             <div 
-              v-for="n in 31" 
-              :key="n" 
+              v-for="(day, idx) in calendarDays" 
+              :key="idx" 
               class="date-cell"
-              :class="{ 'date-active': n === 18 }"
+              :class="{ 
+                'date-cell-past': day.isPast, 
+                'date-cell-future': day.isFuture,
+                'date-cell-today': day.isToday && !day.isRevision && !day.isARDue,
+                'date-cell-revision': day.isRevision,
+                'date-cell-ardue': day.isARDue
+              }"
             >
-              {{ n }}
-              <span v-if="[20, 22, 25].includes(n)" class="event-indicator"></span>
+              <template v-if="!day.blank">{{ day.date }}</template>
             </div>
           </div>
         </div>
@@ -129,6 +139,79 @@ const displayName = computed(() => {
     return user.value.full_name;
   }
   return '(TWG)';
+});
+
+const calendarBaseDate = ref(new Date());
+
+const prevMonth = () => {
+  const d = new Date(calendarBaseDate.value);
+  d.setMonth(d.getMonth() - 1);
+  calendarBaseDate.value = d;
+};
+
+const nextMonth = () => {
+  const d = new Date(calendarBaseDate.value);
+  d.setMonth(d.getMonth() + 1);
+  calendarBaseDate.value = d;
+};
+
+const currentMonthYear = computed(() => {
+  return calendarBaseDate.value.toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase();
+});
+
+const calendarDays = computed(() => {
+  const currentDate = calendarBaseDate.value;
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  
+  const days = [];
+  
+  const prevMonthDays = new Date(year, month, 0).getDate();
+  for (let i = 0; i < firstDay; i++) {
+    days.push({ date: prevMonthDays - firstDay + i + 1, blank: true, isPast: true });
+  }
+  
+  const today = new Date();
+  for (let i = 1; i <= daysInMonth; i++) {
+    const d = new Date(year, month, i);
+    d.setHours(0,0,0,0);
+    
+    let isRevision = false;
+    let isARDue = false;
+    
+    deadlines.value.forEach(dl => {
+       if (dl.type.includes('Revision')) {
+          if (d.getTime() === new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()) {
+             isRevision = true;
+          }
+       } else if (dl.type.includes('AR Due')) {
+          const dlDate = new Date(dl.sortDate);
+          dlDate.setHours(0,0,0,0);
+          if (d.getTime() === dlDate.getTime()) {
+             isARDue = true;
+          }
+       }
+    });
+    
+    days.push({
+      date: i,
+      blank: false,
+      isToday: d.getTime() === new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime(),
+      isRevision,
+      isARDue
+    });
+  }
+  
+  const remaining = 42 - days.length; 
+  for(let i=1; i<=remaining; i++) {
+     if (days.length % 7 === 0 && remaining < 7) break;
+     days.push({ date: i, blank: true, isFuture: true });
+  }
+  
+  return days;
 });
 
 const metricsStats = ref([
@@ -220,7 +303,100 @@ const fetchSubmissions = async () => {
   }
 };
 
-const fetchDeadlines = async () => {};
+const fetchDeadlines = async () => {
+  try {
+    const [adRes, arRes, archiveRes] = await Promise.all([
+      api.get(`activity-designs/${user.value.id}`),
+      api.get(`activity-reports/${user.value.id}`),
+      api.get(`archives?user_id=${user.value.id}&role=${user.value.role || 'twg'}`)
+    ]);
+    
+    let allDeadlines = [];
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    const formatDays = (targetDateStr) => {
+      if (!targetDateStr) return 'ASAP';
+      const target = new Date(targetDateStr);
+      target.setHours(0,0,0,0);
+      const diffTime = target - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays < 0) return 'Overdue';
+      if (diffDays === 0) return 'Today';
+      if (diffDays === 1) return 'Tomorrow';
+      return `In ${diffDays} days`;
+    };
+
+    const designs = adRes.data.success ? adRes.data.data : [];
+    const reports = arRes.data.success ? arRes.data.data : [];
+
+    if (archiveRes.data && archiveRes.data.success) {
+      const archives = archiveRes.data.data || [];
+      archives.forEach(item => {
+        if (item.type === 'design' && (item.status || '').toLowerCase() === 'approved') {
+          designs.push({
+             act_design_id: item.original_id,
+             status: item.status,
+             control: item.control,
+             title: item.title,
+             end_date: item.end_date
+          });
+        }
+      });
+    }
+
+    designs.forEach(d => {
+      const status = (d.status || '').toLowerCase();
+      if (status === 'revision required' || status === 'for revision') {
+         allDeadlines.push({
+           id: 'ad_rev_' + d.act_design_id,
+           type: 'AD Revision',
+           badgeClass: 'badge-revision',
+           date: 'ASAP',
+           title: d.title || d.activity_title,
+           control: d.control || 'N/A',
+           sortDate: new Date(0)
+         });
+      }
+      if (status === 'approved') {
+         const hasReport = reports.some(r => r.act_design_id === d.act_design_id || (r.control_number && r.control_number === d.control) || (r.control && r.control === d.control));
+         if (!hasReport && d.end_date) {
+            const arDeadline = new Date(d.end_date);
+            arDeadline.setDate(arDeadline.getDate() + 3);
+            allDeadlines.push({
+               id: 'ar_due_' + d.act_design_id,
+               type: 'AR Due',
+               badgeClass: 'badge-submission',
+               date: formatDays(arDeadline),
+               title: d.title || d.activity_title,
+               control: d.control || 'N/A',
+               sortDate: arDeadline
+            });
+         }
+      }
+    });
+
+    reports.forEach(r => {
+      const status = (r.status || '').toLowerCase();
+      if (status === 'revision required' || status === 'for revision') {
+         allDeadlines.push({
+           id: 'ar_rev_' + r.id,
+           type: 'AR Revision',
+           badgeClass: 'badge-revision',
+           date: 'ASAP',
+           title: r.title || r.activity_title,
+           control: r.control || 'N/A',
+           sortDate: new Date(0)
+         });
+      }
+    });
+
+    allDeadlines.sort((a, b) => a.sortDate - b.sortDate);
+    deadlines.value = allDeadlines.slice(0, 5);
+  } catch (err) {
+    console.error('Error fetching deadlines', err);
+  }
+};
 
 const loadDashboardData = async () => {
   await Promise.all([fetchSubmissions(), fetchDeadlines()]);
@@ -493,6 +669,23 @@ onMounted(() => {
   margin-bottom: 1.5rem;
 }
 
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.nav-icon {
+  cursor: pointer;
+  color: #b979cc;
+}
+
+.calendar-month {
+  font-weight: 700;
+  color: #fff;
+}
+
 .weekdays-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -509,41 +702,47 @@ onMounted(() => {
 .dates-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 0.35rem;
+  gap: 0.5rem;
   text-align: center;
 }
 
 .date-cell {
   position: relative;
-  padding: 0.6rem 0;
-  font-size: 0.70rem;
-  font-weight: 600;
+  padding: 0.5rem;
   border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #e2e8f0;
   cursor: pointer;
-  transition: all 0.15s ease;
-  color: #ffffffd2;
+  transition: all 0.2s ease;
 }
 
-.date-cell:hover:not(.date-active) {
-  background-color: rgba(185, 121, 204, 0.15);
+.date-cell:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.date-active {
-  background: linear-gradient(135deg, #990dd1 0%, #b979cc 100%);
-  color: #ffffff;
-  font-weight: 800;
-  box-shadow: 0 4px 12px rgba(153, 13, 209, 0.4);
+.date-cell-past {
+  color: rgba(255, 255, 255, 0.2);
 }
 
-.event-indicator {
-  position: absolute;
-  bottom: 0.25rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0.25rem;
-  height: 0.25rem;
-  background-color: #ef4444;
-  border-radius: 50%;
+.date-cell-future {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.date-cell-revision {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #fff;
+}
+
+.date-cell-ardue {
+  background: rgba(234, 179, 8, 0.2);
+  border: 1px solid rgba(234, 179, 8, 0.5);
+  color: #fff;
+}
+
+.date-cell-today {
+  border: 1px solid rgba(147, 51, 234, 0.5);
+  color: #c084fc;
 }
 
 /* Contextual Target Evaluation Logs */

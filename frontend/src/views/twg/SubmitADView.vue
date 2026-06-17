@@ -22,6 +22,7 @@
                         <option value="inset" class="dark-option">INSET</option>
                         <option value="extension" class="dark-option">Extension Program</option>
                         <option value="employee" class="dark-option">Employee Training</option>
+                        <option value="student" class="dark-option">Student Activity</option>
                       </select>
                     </div>
 
@@ -74,6 +75,7 @@
                       <input 
                         type="date" 
                         v-model="form.start_date" 
+                        :min="todayDate"
                         required 
                         class="custom-input-field code-icon-calendar"
                       >
@@ -83,6 +85,7 @@
                       <input 
                         type="date" 
                         v-model="form.end_date" 
+                        :min="todayDate"
                         required 
                         class="custom-input-field code-icon-calendar"
                       >
@@ -215,6 +218,13 @@ import api from '../../api';
 const router = useRouter();
 const route = useRoute();
 const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
+
+const getTodayDate = () => {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().split('T')[0];
+};
+const todayDate = ref(getTodayDate());
 
 const venues = ref([]);
 const customVenue = ref('');
