@@ -496,8 +496,7 @@ INSERT INTO `office_units` (`office_id`, `office_name`) VALUES
 (11, 'College of Veterinary Medicine'),
 (12, 'Compensarion, Benefits and Other Obligations'),
 (6, 'Disaster Risk Reduction Management'),
-(47, 'gad.staff'),
-(1, 'Gender And Development'),
+(1, 'Gender and Development Office'),
 (20, 'General Services Office'),
 (27, 'Horticulture'),
 (38, 'Human Resource and Management Office'),
@@ -566,7 +565,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `email`, `email_verified_at`, `password`, `reset_token`, `reset_token_expires_at`, `role`, `full_name`, `student_id`, `office_id`, `year_level`, `user_acronym`, `remember_token`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 'Gender And Development', 'gad.office@bsu.edu.ph', NULL, '$2y$10$a9XVQgTdygySA0E7XCNf4euNdZmuXjqGxSvUbQEzd5X7qiFmPNae6', NULL, NULL, 'admin', NULL, NULL, 1, NULL, 'GAD', NULL, NULL, '2026-05-25 11:58:10', '2026-06-16 05:47:42'),
+(1, 'Gender and Development Office', 'gad.office@bsu.edu.ph', NULL, '$2y$10$a9XVQgTdygySA0E7XCNf4euNdZmuXjqGxSvUbQEzd5X7qiFmPNae6', NULL, NULL, 'admin', NULL, NULL, 1, NULL, 'GAD', NULL, NULL, '2026-05-25 11:58:10', '2026-06-16 05:47:42'),
 (2, 'College of Agriculture', 'ca@bsu.edu.ph', NULL, '$2y$12$CNLb7UPOnZpF2yZRY0lwSeykT0VWruAa6R753JUJR3bGr2OCvUyei', NULL, NULL, 'college', NULL, NULL, 2, NULL, 'CA', NULL, NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10'),
 (3, 'Registrar\'s Office BSU Buguias Campus', 'buguias.registrar@bsu.edu.ph', NULL, '$2y$12$l7EFqawcRIOIN9O.LGwQ..4PpoSt5sbaRziIQVMbNsOJbF7b/3Lpq', NULL, NULL, 'college', NULL, NULL, 3, NULL, 'Buguias-RO', NULL, NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10'),
 (4, 'Human Resources and Management Office BSU Bokod Campus', 'bokod.hrmo@bsu.edu.ph', NULL, '$2y$12$l7EFqawcRIOIN9O.LGwQ..4PpoSt5sbaRziIQVMbNsOJbF7b/3Lpq', NULL, NULL, 'college', NULL, NULL, 4, NULL, NULL, 'Bokod-HRMO', NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10'),
@@ -612,7 +611,7 @@ INSERT INTO `users` (`id`, `username`, `email`, `email_verified_at`, `password`,
 (44, 'Open University', 'ou@bsu.edu.ph', NULL, '$2y$12$l7EFqawcRIOIN9O.LGwQ..4PpoSt5sbaRziIQVMbNsOJbF7b/3Lpq', NULL, NULL, 'college', NULL, NULL, 44, NULL, 'OU', NULL, NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10'),
 (45, 'College of Education BSU Bokod Campus', 'bokod.ce@bsu.edu.ph', NULL, '$2y$12$l7EFqawcRIOIN9O.LGwQ..4PpoSt5sbaRziIQVMbNsOJbF7b/3Lpq', NULL, NULL, 'college', NULL, NULL, 45, NULL, 'Bokod-CE', NULL, NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10'),
 (46, 'College of Forestry', 'cf@bsu.edu.ph', NULL, '$2y$12$l7EFqawcRIOIN9O.LGwQ..4PpoSt5sbaRziIQVMbNsOJbF7b/3Lpq', NULL, NULL, 'college', NULL, NULL, 46, NULL, 'CF', NULL, NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10'),
-(47, 'gad.staff', 'gad.staff@bsu.edu.ph', NULL, '$2y$12$fbD/jvk.znEQnBmKq4.ebOojmijHJO/zU7.P7Tzo.zV3FgvP8PzNe', NULL, NULL, 'gad_staff', 'GAD Staff User', NULL, 47, NULL, 'GAD-STAFF', NULL, NULL, '2026-03-26 15:53:56', '2026-06-05 02:30:59'),
+(47, 'gad.staff', 'gad.staff@bsu.edu.ph', NULL, '$2y$12$fbD/jvk.znEQnBmKq4.ebOojmijHJO/zU7.P7Tzo.zV3FgvP8PzNe', NULL, NULL, 'gad_staff', 'GAD Staff User', NULL, 1, NULL, 'GAD-STAFF', NULL, NULL, '2026-03-26 15:53:56', '2026-06-05 02:30:59'),
 (48, 'bisayotduligas', 'bisayotduligas@gmail.com', NULL, '$2y$10$5VtfhFkmlQCKsV6CyFMXluuyIFI3/RWK9biWtB1PXCb4gvLGaDTVW', '0bd0dcc9ada287f21f366eea1f8d44bcab5e681b29a01978a1535f790042571b', '2026-06-10 04:46:35', 'gad_staff', 'Joshua Duligas', NULL, 1, NULL, NULL, NULL, NULL, '2026-06-08 13:06:16', '2026-06-10 03:46:35'),
 (49, 'name', 'name@bsu.edu.ph', NULL, '$2y$10$a2/TkQXIjhLXLWidOrXoQeC0n55RGD6AJPzkobWyHnHr3ii6mHyWy', NULL, NULL, 'college', 'Nicole Sano Elgamo', NULL, 32, NULL, NULL, NULL, NULL, '2026-06-09 00:14:49', '2026-06-09 00:14:49'),
 (50, 'for', 'for@bsu.edu.ph', NULL, '$2y$10$IyOL8u8hQw3mkxKq0iaeQu.AKX9w/tMQ4WeVvNpWLD9fPJWU/xgmm', NULL, NULL, 'college', 'Joshua Santos', NULL, 46, NULL, NULL, NULL, NULL, '2026-06-09 00:38:38', '2026-06-09 00:38:38');
@@ -683,7 +682,7 @@ INSERT INTO `user_profiles` (`user_id`, `first_name`, `middle_name`, `last_name`
 (44, '', NULL, '', 'TWG', 44),
 (45, '', NULL, '', 'TWG', 45),
 (46, '', NULL, '', 'TWG', 46),
-(47, 'GAD', 'Staff', 'User', 'Staff', 47),
+(47, 'GAD', 'Staff', 'User', 'Staff', 1),
 (48, 'Joshua', NULL, 'Duligas', 'Staff', 1),
 (49, 'Nicole', 'Sano', 'Elgamo', 'TWG', 32),
 (50, 'Joshua', NULL, 'Santos', 'TWG', 46);

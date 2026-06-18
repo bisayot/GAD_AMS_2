@@ -237,7 +237,7 @@ const fetchDesigns = async () => {
   try {
     const response = await api.get('activity-designs');
     if (response.data.success) {
-      activityDesigns.value = response.data.data;
+      activityDesigns.value = response.data.data.sort((a, b) => a.act_design_id - b.act_design_id);
       officeOptions.value = [...new Set(response.data.data.map(d => d.office).filter(Boolean))];
 
       // Update stat cards

@@ -66,7 +66,7 @@ const adminMenu = [
   { label: 'Submitted List', icon: 'folder', href: '/admin/submitted-list' },
   { label: 'Activity Design List', icon: 'description', href: '/admin/ad-list' },
   { label: 'Accomplishment Report List', icon: 'description', href: '/admin/ar-list' },
-  { label: 'Archive', icon: 'archive', href: '/admin/archive' },
+  { label: 'Archives', icon: 'archive', href: '/admin/archive' },
   { label: 'Mandates Management', icon: 'account_balance', href: '/admin/mandates' },
   { label: 'Report Monitoring', icon: 'bar_chart', href: '/admin/reports' },
   { label: 'Budget Monitoring', icon: 'account_balance_wallet', href: '/admin/budget' },

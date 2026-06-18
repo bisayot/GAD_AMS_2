@@ -301,12 +301,18 @@ onMounted(async () => {
       });
     }
 
+    // Helper function to check if status is pending or needs revision
+    const isPendingOrRevision = (status) => {
+      const s = (status || '').toLowerCase();
+      return s === 'pending' || s === 'revision required' || s === 'for revision';
+    };
+
     // Populate pending activities table
     const pendingDesigns = designs
-      .filter(d => d.status === 'Pending')
+      .filter(d => isPendingOrRevision(d.status))
       .map(d => ({ id: d.act_design_id, type: 'design', typeName: 'Activity Design', title: d.title || d.activity_title, office: d.office, date: d.date || d.start_date }));
     const pendingReports = reports
-      .filter(r => r.status === 'Pending')
+      .filter(r => isPendingOrRevision(r.status))
       .map(r => ({ id: r.id, type: 'report', typeName: 'Acc. Report', title: r.title || r.activity_title, office: r.office, date: r.date || r.start_date }));
     pendingActivities.value = [...pendingDesigns, ...pendingReports];
 

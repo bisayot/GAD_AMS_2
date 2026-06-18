@@ -17,10 +17,9 @@
         <section class="flex-full glass-card">
           <div class="report-header">
             <div class="meta-header">
-              <!-- <div class="status-badge-review">
-                <div class="status-dot-pulse"></div>
-                <span class="status-text">Under Review</span>
-              </div> -->
+              <div class="status-badge-view" :class="getStatusClass(report.status)">
+                <span class="status-text">{{ formatStatus(report.status) }}</span>
+              </div>
               <span class="control-number">{{ report.control || 'NO CONTROL NUMBER' }}</span>
             </div>
 
@@ -413,6 +412,22 @@ const formatTime = (time) => {
   return `${h}:${minutes} ${period}`;
 };
 
+const formatStatus = (status) => {
+  if (!status) return 'Unknown';
+  if (status.toLowerCase() === 'revision required') return 'For Revision';
+  return status.charAt(0).toUpperCase() + status.slice(1);
+};
+
+const getStatusClass = (status) => {
+  const s = (status || '').toLowerCase();
+  if (s === 'pending') return 'pending';
+  if (s === 'approved') return 'approved';
+  if (s === 'completed' || s === 'archived') return 'completed';
+  if (s === 'cancelled') return 'cancelled';
+  if (s === 'revision required' || s === 'revision') return 'revision';
+  return 'completed';
+};
+
 const handleApprove = async () => {
   const result = await Swal.fire({
     title: 'Are you sure?',
@@ -619,6 +634,12 @@ button { transition: all 0.2s ease-in-out; cursor: pointer; }
 
 .report-header { padding: 2rem; border-bottom: 1px solid rgba(185, 121, 204, 0.15); background: rgba(0, 0, 0, 0.2); }
 .meta-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+.status-badge-view { padding: 4px 12px; border-radius: 9999px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; }
+.status-badge-view.completed { background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
+.status-badge-view.cancelled { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.status-badge-view.pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+.status-badge-view.approved { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+.status-badge-view.revision { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
 .report-body { flex: 1; overflow-y: auto; padding: 2rem; }
 .report-body > * + * { margin-top: 1.5rem; }
 .assessment-form { display: flex; flex-direction: column; gap: 1rem; }

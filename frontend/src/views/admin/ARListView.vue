@@ -236,7 +236,10 @@ const fetchReports = async () => {
   try {
     const response = await api.get('activity-reports');
     if (response.data.success) {
-      accomplishmentReports.value = response.data.data;
+      accomplishmentReports.value = response.data.data.sort((a, b) => {
+        const byDate = new Date(a.date) - new Date(b.date);
+        return byDate !== 0 ? byDate : a.id - b.id;
+      });
       officeOptions.value = [...new Set(response.data.data.map(r => r.office).filter(Boolean))];
       const total = accomplishmentReports.value.length;
       const pending = accomplishmentReports.value.filter(r => r.status === 'Pending').length;

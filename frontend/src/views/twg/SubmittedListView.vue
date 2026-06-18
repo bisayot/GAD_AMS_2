@@ -223,7 +223,7 @@ const activeTab = ref('design');
 
 const filters = ref({
   status: 'all',
-  sort: 'date_desc',
+  sort: 'date_asc',
   search: ''
 });
 
@@ -246,6 +246,21 @@ const filteredItems = computed(() => {
   }
   
   const sorted = [...items];
+  const sortByDateAsc = (a, b) => {
+    if (activeTab.value === 'design') {
+      return a.id - b.id;
+    }
+    const byDate = new Date(a.dateRaw) - new Date(b.dateRaw);
+    return byDate !== 0 ? byDate : a.id - b.id;
+  };
+  const sortByDateDesc = (a, b) => {
+    if (activeTab.value === 'design') {
+      return b.id - a.id;
+    }
+    const byDate = new Date(b.dateRaw) - new Date(a.dateRaw);
+    return byDate !== 0 ? byDate : b.id - a.id;
+  };
+
   switch (filters.value.sort) {
     case 'control_asc':
       sorted.sort((a, b) => a.control.localeCompare(b.control));
@@ -254,10 +269,10 @@ const filteredItems = computed(() => {
       sorted.sort((a, b) => b.control.localeCompare(a.control));
       break;
     case 'date_asc':
-      sorted.sort((a, b) => new Date(a.dateRaw) - new Date(b.dateRaw));
+      sorted.sort(sortByDateAsc);
       break;
     default:
-      sorted.sort((a, b) => new Date(b.dateRaw) - new Date(a.dateRaw));
+      sorted.sort(sortByDateDesc);
   }
   
   return sorted;
@@ -368,7 +383,7 @@ const applyFilters = () => {
 const resetFilters = () => {
   filters.value = {
     status: 'all',
-    sort: 'date_desc',
+    sort: 'date_asc',
     search: ''
   };
   currentPage.value = 1;

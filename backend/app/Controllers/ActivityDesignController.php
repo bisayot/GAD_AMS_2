@@ -122,13 +122,14 @@ class ActivityDesignController extends BaseController
         $db = \Config\Database::connect();
         
         $active = $db->table('activity_design as ad')
-            ->select('ad.act_design_id, ad.status, cn.control_number as control, users.username as office, users.full_name as submitter_name, ad.activity_title as title, ad.form_type as formLabel, ad.start_date as date, ad.end_date')
+            ->select('ad.act_design_id, ad.status, cn.control_number as control, office_units.office_name as office, users.full_name as submitter_name, ad.activity_title as title, ad.form_type as formLabel, ad.start_date as date, ad.end_date')
             ->join('users', 'users.id = ad.user_id', 'left')
+            ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number as cn', 'cn.act_design_id = ad.act_design_id', 'left')
             ->get()->getResultArray();
 
         usort($active, function($a, $b) {
-            return $b['act_design_id'] <=> $a['act_design_id'];
+            return $a['act_design_id'] <=> $b['act_design_id'];
         });
 
         return $this->response->setJSON([
@@ -147,14 +148,15 @@ class ActivityDesignController extends BaseController
         $db = \Config\Database::connect();
         
         $active = $db->table('activity_design as ad')
-            ->select('ad.act_design_id, ad.status, cn.control_number as control, users.username as office, users.full_name as submitter_name, ad.activity_title as title, ad.form_type as formLabel, ad.start_date as date, ad.end_date')
+            ->select('ad.act_design_id, ad.status, cn.control_number as control, office_units.office_name as office, users.full_name as submitter_name, ad.activity_title as title, ad.form_type as formLabel, ad.start_date as date, ad.end_date')
             ->join('users', 'users.id = ad.user_id', 'left')
+            ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number as cn', 'cn.act_design_id = ad.act_design_id', 'left')
             ->where('ad.user_id', $userId)
             ->get()->getResultArray();
 
         usort($active, function($a, $b) {
-            return $b['act_design_id'] <=> $a['act_design_id'];
+            return $a['act_design_id'] <=> $b['act_design_id'];
         });
 
         return $this->response->setJSON([
@@ -171,8 +173,9 @@ class ActivityDesignController extends BaseController
 
         $activityDesignModel = new ActivityDesignModel();
         $design = $activityDesignModel
-            ->select('activity_design.*, control_number.control_number as control, users.username as office, users.full_name as submitter_name, activity_design.start_date as date, venues.venue_name as venue')
+            ->select('activity_design.*, control_number.control_number as control, office_units.office_name as office, users.full_name as submitter_name, activity_design.start_date as date, venues.venue_name as venue')
             ->join('users', 'users.id = activity_design.user_id', 'left')
+            ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number', 'control_number.act_design_id = activity_design.act_design_id', 'left')
             ->join('venues', 'venues.venue_id = activity_design.venue_id', 'left')
             ->where('activity_design.act_design_id', $id)
@@ -182,8 +185,9 @@ class ActivityDesignController extends BaseController
             // Try searching in archive fallback
             $db = \Config\Database::connect();
             $design = $db->table('archived_activity_designs as aad')
-                ->select('aad.*, aad.original_act_design_id as act_design_id, aad.activity_title as title, aad.form_type as formLabel, users.username as office, users.full_name as submitter_name, aad.start_date as date, venues.venue_name as venue')
+                ->select('aad.*, aad.original_act_design_id as act_design_id, aad.activity_title as title, aad.form_type as formLabel, office_units.office_name as office, users.full_name as submitter_name, aad.start_date as date, venues.venue_name as venue')
                 ->join('users', 'users.id = aad.user_id', 'left')
+                ->join('office_units', 'office_units.office_id = users.office_id', 'left')
                 ->join('control_number as cn', 'cn.act_design_id = aad.original_act_design_id', 'left')
                 ->join('venues', 'venues.venue_id = aad.venue_id', 'left')
                 ->select('COALESCE(cn.control_number, "N/A") as control')
@@ -211,36 +215,104 @@ class ActivityDesignController extends BaseController
     public function getTWGSubmissions()
     {
         $db = \Config\Database::connect();
-        
-        // Fetch users (excluding admin) and use subqueries to count submissions per user
+
+        $gadOfficeId = 1;
+        $gadStaffOfficeId = 47;
+
+        $offices = $db->table('office_units')
+            ->select('office_id, office_name')
+            ->where('office_id !=', $gadStaffOfficeId)
+            ->orderBy('office_id', 'ASC')
+            ->get()
+            ->getResultArray();
+
         $users = $db->table('users')
-            ->select('users.id, users.username, users.role, COALESCE(user_profiles.user_role, "Non-TWG") as user_role')
+            ->select('users.office_id, COALESCE(user_profiles.user_role, "Non-TWG") as user_role')
             ->join('user_profiles', 'user_profiles.user_id = users.id', 'left')
             ->select('( (SELECT COUNT(*) FROM activity_design WHERE activity_design.user_id = users.id) + (SELECT COUNT(*) FROM archived_activity_designs WHERE archived_activity_designs.user_id = users.id) ) as activity_designs_count')
             ->select('( (SELECT COUNT(*) FROM accomplishment_report WHERE accomplishment_report.user_id = users.id) + (SELECT COUNT(*) FROM archived_accomplishment_reports WHERE archived_accomplishment_reports.user_id = users.id) ) as accomplishment_reports_count')
             ->where('users.role !=', 'admin')
-            ->orderBy('users.id', 'ASC')
             ->get()
             ->getResultArray();
 
+        $officeStats = [];
+        foreach ($users as $u) {
+            $officeId = (int) ($u['office_id'] ?? 0);
+            if ($officeId === $gadStaffOfficeId) {
+                $officeId = $gadOfficeId;
+            }
+            if ($officeId === 0) {
+                continue;
+            }
+
+            if (! isset($officeStats[$officeId])) {
+                $officeStats[$officeId] = [
+                    'twg_count' => 0,
+                    'nontwg_count' => 0,
+                    'staff_count' => 0,
+                    'activity_designs_count' => 0,
+                    'accomplishment_reports_count' => 0,
+                ];
+            }
+
+            $roleLower = strtolower($u['user_role']);
+            if ($roleLower === 'twg') {
+                $officeStats[$officeId]['twg_count']++;
+            } elseif ($roleLower === 'staff') {
+                $officeStats[$officeId]['staff_count']++;
+            } else {
+                $officeStats[$officeId]['nontwg_count']++;
+            }
+
+            $officeStats[$officeId]['activity_designs_count'] += (int) $u['activity_designs_count'];
+            $officeStats[$officeId]['accomplishment_reports_count'] += (int) $u['accomplishment_reports_count'];
+        }
+
+        $data = [];
         $totalDesigns = 0;
         $totalReports = 0;
-        
-        // Cast counts to integers and calculate totals
-        foreach ($users as &$u) {
-            $u['activity_designs_count'] = (int)$u['activity_designs_count'];
-            $u['accomplishment_reports_count'] = (int)$u['accomplishment_reports_count'];
-            $u['total_submissions'] = $u['activity_designs_count'] + $u['accomplishment_reports_count'];
-            
-            $totalDesigns += $u['activity_designs_count'];
-            $totalReports += $u['accomplishment_reports_count'];
+        $totalTWG = 0;
+        $totalStaff = 0;
+        $totalNonTWG = 0;
+
+        foreach ($offices as $office) {
+            $officeId = (int) $office['office_id'];
+            $stats = $officeStats[$officeId] ?? [
+                'twg_count' => 0,
+                'nontwg_count' => 0,
+                'staff_count' => 0,
+                'activity_designs_count' => 0,
+                'accomplishment_reports_count' => 0,
+            ];
+
+            $totalSubmissions = $stats['activity_designs_count'] + $stats['accomplishment_reports_count'];
+
+            $data[] = [
+                'id' => $officeId,
+                'office_name' => $office['office_name'],
+                'twg_count' => $stats['twg_count'],
+                'nontwg_count' => $stats['nontwg_count'],
+                'staff_count' => $stats['staff_count'],
+                'activity_designs_count' => $stats['activity_designs_count'],
+                'accomplishment_reports_count' => $stats['accomplishment_reports_count'],
+                'total_submissions' => $totalSubmissions,
+            ];
+
+            $totalDesigns += $stats['activity_designs_count'];
+            $totalReports += $stats['accomplishment_reports_count'];
+            $totalTWG += $stats['twg_count'];
+            $totalStaff += $stats['staff_count'];
+            $totalNonTWG += $stats['nontwg_count'];
         }
 
         return $this->response->setJSON([
             'success' => true,
-            'data'    => $users,
+            'data'    => $data,
             'meta'    => [
-                'total' => count($users),
+                'total' => count($data),
+                'total_twg' => $totalTWG,
+                'total_staff' => $totalStaff,
+                'total_nontwg' => $totalNonTWG,
                 'total_designs' => $totalDesigns,
                 'total_reports' => $totalReports,
                 'last_page' => 1
@@ -254,8 +326,9 @@ class ActivityDesignController extends BaseController
 
         // Fetch designs that are 'Approved' or 'Cancelled'
         $designs = $activityDesignModel
-            ->select('activity_design.*, control_number.control_number as control, users.username as office, users.full_name as submitter_name, activity_design.activity_title as title, activity_design.form_type as formLabel, activity_design.start_date as date')
+            ->select('activity_design.*, control_number.control_number as control, office_units.office_name as office, users.full_name as submitter_name, activity_design.activity_title as title, activity_design.form_type as formLabel, activity_design.start_date as date')
             ->join('users', 'users.id = activity_design.user_id', 'left')
+            ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number', 'control_number.act_design_id = activity_design.act_design_id', 'left')
             ->whereIn('activity_design.status', ['Approved', 'Cancelled'])
             ->orderBy('activity_design.act_design_id', 'DESC')

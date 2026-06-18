@@ -243,7 +243,7 @@ const fetchSubmissions = async () => {
     const [adRes, arRes, archiveRes] = await Promise.all([
       api.get(`activity-designs/${user.value.id}`),
       api.get(`activity-reports/${user.value.id}`),
-      api.get('archives')
+      api.get(`archives?user_id=${user.value.id}&role=${user.value.role || 'college'}`)
     ]);
     
     let pendingCount = 0;
@@ -252,11 +252,17 @@ const fetchSubmissions = async () => {
     
     let allSubmissions = [];
 
+    // Helper function to check if status is pending or needs revision
+    const isPendingOrRevision = (status) => {
+      const s = (status || '').toLowerCase();
+      return s === 'pending' || s === 'revision required' || s === 'for revision';
+    };
+
     if (adRes.data.success) {
       const designs = adRes.data.data;
       adCount = designs.length;
       designs.forEach(d => {
-        if (d.status === 'Pending' || d.status === 'Revision Required') pendingCount++;
+        if (isPendingOrRevision(d.status)) pendingCount++;
         allSubmissions.push({
           id: d.act_design_id,
           control: d.control || 'N/A',
@@ -272,7 +278,7 @@ const fetchSubmissions = async () => {
       const reports = arRes.data.data;
       arCount = reports.length;
       reports.forEach(r => {
-        if (r.status === 'Pending' || r.status === 'Revision Required') pendingCount++;
+        if (isPendingOrRevision(r.status)) pendingCount++;
         allSubmissions.push({
           id: r.id,
           control: r.control || 'N/A',

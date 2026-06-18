@@ -304,7 +304,7 @@ const handleRegister = async () => {
     let departmentId = form.office_unit_id;
 
     if (form.user_role === 'Staff' || form.user_role === 'Director') {
-      departmentId = 1; // 1 = Gender And Development office in DB
+      departmentId = 1; // 1 = Gender and Development Office in DB
     } else {
       if (isAddingNew.value && newOfficeName.value) {
         const res = await api.post('add_office', { 

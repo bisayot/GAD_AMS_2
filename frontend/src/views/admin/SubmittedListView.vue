@@ -80,6 +80,9 @@
                   <tr class="table-header-row">
                     <th class="table-header-cell table-header-number">#</th>
                     <th class="table-header-cell">College / Office / Unit</th>
+                    <th class="table-header-cell table-header-center">TWG</th>
+                    <th class="table-header-cell table-header-center">Non-TWG</th>
+                    <th class="table-header-cell table-header-center">Staff</th>
                     <th class="table-header-cell table-header-center">Activity Designs</th>
                     <th class="table-header-cell table-header-center">Accomplishment Reports</th>
                     <th class="table-header-cell table-header-center">Total Status</th>
@@ -87,7 +90,7 @@
                 </thead>
                 <tbody class="table-body">
                   <tr v-if="filteredUnits.length === 0">
-                    <td colspan="5" class="empty-state">
+                    <td colspan="8" class="empty-state">
                       No matching Technical Working Group records or submissions discovered in the repository.
                     </td>
                   </tr>
@@ -103,11 +106,15 @@
                     </td>
                     <td class="table-cell">
                       <div class="unit-name">{{ unit.name }}</div>
-                      <div class="unit-code">
-                        <span class="role-badge" :class="getBadgeClass(unit.code)">
-                          {{ unit.code }}
-                        </span>
-                      </div>
+                    </td>
+                    <td class="table-cell table-cell-center table-cell-count">
+                      {{ unit.twg_count || 0 }}
+                    </td>
+                    <td class="table-cell table-cell-center table-cell-count">
+                      {{ unit.nontwg_count || 0 }}
+                    </td>
+                    <td class="table-cell table-cell-center table-cell-count">
+                      {{ unit.staff_count || 0 }}
                     </td>
                     <td class="table-cell table-cell-center table-cell-count">
                       {{ unit.activity_designs_count || 0 }}
@@ -192,6 +199,37 @@ const paginationMeta = ref({
   last_page: 1
 });
 
+const GAD_OFFICE_ID = 1;
+
+const normalizeSubmissionUnits = (units) => {
+  const gadStaffUnit = units.find(
+    (unit) => (unit.office_name || '').toLowerCase() === 'gad.staff'
+  );
+  const filtered = units.filter(
+    (unit) => (unit.office_name || '').toLowerCase() !== 'gad.staff'
+  );
+
+  if (!gadStaffUnit) {
+    return filtered;
+  }
+
+  return filtered.map((unit) => {
+    if (unit.id !== GAD_OFFICE_ID) {
+      return unit;
+    }
+
+    return {
+      ...unit,
+      twg_count: (unit.twg_count || 0) + (gadStaffUnit.twg_count || 0),
+      nontwg_count: (unit.nontwg_count || 0) + (gadStaffUnit.nontwg_count || 0),
+      staff_count: (unit.staff_count || 0) + (gadStaffUnit.staff_count || 0),
+      activity_designs_count: (unit.activity_designs_count || 0) + (gadStaffUnit.activity_designs_count || 0),
+      accomplishment_reports_count: (unit.accomplishment_reports_count || 0) + (gadStaffUnit.accomplishment_reports_count || 0),
+      total_submissions: (unit.total_submissions || 0) + (gadStaffUnit.total_submissions || 0),
+    };
+  });
+};
+
 const metricsStats = ref([
   { label: 'Total TWGs', value: '0', icon: 'groups', iconColor: 'text-green-400', bgClass: 'bg-green-500/10' },
   { label: 'Total Non-TWG', value: '0', icon: 'person_search', iconColor: 'text-amber-400', bgClass: 'bg-amber-500/10' },
@@ -205,8 +243,7 @@ const filteredUnits = computed(() => {
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     records = records.filter(unit => 
-      unit.name.toLowerCase().includes(query) ||
-      unit.code.toLowerCase().includes(query)
+      unit.name.toLowerCase().includes(query)
     );
   }
 
@@ -223,15 +260,19 @@ const fetchTWGSubmissions = async (page = 1) => {
   try {
     // Staged to fetch live data records matching your endpoint framework
     const response = await api.get(`admin/twg-submissions?page=${page}&per_page=${perPage.value}`);
-    twgUnits.value = response.data.data.map(unit => ({
+    const normalized = normalizeSubmissionUnits(response.data.data);
+    twgUnits.value = normalized.map(unit => ({
       ...unit,
-      name: unit.username, // mapping to match UI expectation
-      code: unit.user_role || 'Non-TWG'
+      name: unit.office_name,
     }));
-    paginationMeta.value = response.data.meta;
+    paginationMeta.value = {
+      ...response.data.meta,
+      total: normalized.length,
+    };
     currentPage.value = page;
 
-    metricsStats.value[0].value = response.data.meta.total || 0;
+    metricsStats.value[0].value = response.data.meta.total_twg || 0;
+    metricsStats.value[1].value = response.data.meta.total_nontwg || 0;
     metricsStats.value[2].value = response.data.meta.total_designs || 0;
     metricsStats.value[3].value = response.data.meta.total_reports || 0;
   } catch (err) {
@@ -248,15 +289,6 @@ const changePage = (page) => {
   if (page >= 1 && page <= paginationMeta.value.last_page) {
     fetchTWGSubmissions(page);
   }
-};
-
-
-const getBadgeClass = (code) => {
-  if (!code) return 'badge-nontwg';
-  const c = code.toLowerCase();
-  if (c === 'twg') return 'badge-twg';
-  if (c === 'staff') return 'badge-staff';
-  return 'badge-nontwg';
 };
 
 const viewDetails = (unitId) => {
@@ -668,6 +700,12 @@ onMounted(() => {
   background: rgba(245, 158, 11, 0.2);
   color: #fbbf24;
   border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-gad-office {
+  background: rgba(236, 72, 153, 0.2);
+  color: #f472b6;
+  border: 1px solid rgba(236, 72, 153, 0.3);
 }
 
 .submission-badge {

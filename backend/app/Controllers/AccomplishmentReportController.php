@@ -120,16 +120,18 @@ class AccomplishmentReportController extends BaseController
         $db = \Config\Database::connect();
 
         $active = $db->table('accomplishment_report as ar')
-            ->select('ar.id, ar.status, cn.control_number as control, ar.activity_title as title, DATE(ar.created_at) as date, users.username as office, users.full_name as submitter_name, ad.form_type as formLabel')
+            ->select('ar.id, ar.status, cn.control_number as control, ar.activity_title as title, DATE(ar.created_at) as date, office_units.office_name as office, users.full_name as submitter_name, ad.form_type as formLabel')
             ->join('users', 'users.id = ar.user_id', 'left')
+            ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number as cn', 'cn.control_number = ar.control_number', 'left')
             ->join('archived_activity_designs as ad', 'ad.original_act_design_id = cn.act_design_id', 'left')
             ->where('ar.status !=', 'Verified')
             ->get()->getResultArray();
 
         $archived = $db->table('archived_accomplishment_reports as aar')
-            ->select('aar.original_report_id as id, aar.status, cn.control_number as control, aar.activity_title as title, DATE(aar.created_at) as date, users.username as office, users.full_name as submitter_name, ad.form_type as formLabel')
+            ->select('aar.original_report_id as id, aar.status, cn.control_number as control, aar.activity_title as title, DATE(aar.created_at) as date, office_units.office_name as office, users.full_name as submitter_name, ad.form_type as formLabel')
             ->join('users', 'users.id = aar.user_id', 'left')
+            ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number as cn', 'cn.control_number = aar.control_number', 'left')
             ->join('archived_activity_designs as ad', 'ad.original_act_design_id = cn.act_design_id', 'left')
             ->where('aar.status !=', 'Verified')
@@ -137,7 +139,8 @@ class AccomplishmentReportController extends BaseController
 
         $reports = array_merge($active, $archived);
         usort($reports, function($a, $b) {
-            return $b['id'] <=> $a['id'];
+            $dateCompare = strcmp($a['date'] ?? '', $b['date'] ?? '');
+            return $dateCompare !== 0 ? $dateCompare : ($a['id'] <=> $b['id']);
         });
 
         return $this->response->setJSON([
@@ -154,8 +157,9 @@ class AccomplishmentReportController extends BaseController
 
         $accomplishmentReportModel = new AccomplishmentReportModel();
         $report = $accomplishmentReportModel
-            ->select('accomplishment_report.*, control_number.control_number as control, DATE(accomplishment_report.created_at) as date, users.username as office, users.full_name as submitter_name, activity_design.form_type as formLabel')
+            ->select('accomplishment_report.*, control_number.control_number as control, DATE(accomplishment_report.created_at) as date, office_units.office_name as office, users.full_name as submitter_name, activity_design.form_type as formLabel')
             ->join('users', 'users.id = accomplishment_report.user_id', 'left')
+            ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number', 'control_number.control_number = accomplishment_report.control_number', 'left')
             ->join('activity_design', 'activity_design.act_design_id = control_number.act_design_id', 'left')
             ->where('accomplishment_report.id', $id)
@@ -164,8 +168,9 @@ class AccomplishmentReportController extends BaseController
         if (!$report) {
             $db = \Config\Database::connect();
             $report = $db->table('archived_accomplishment_reports as aar')
-                ->select('aar.*, aar.original_report_id as id, aar.activity_title as title, DATE(aar.created_at) as date, users.username as office, users.full_name as submitter_name, aar.control_number as control')
+                ->select('aar.*, aar.original_report_id as id, aar.activity_title as title, DATE(aar.created_at) as date, office_units.office_name as office, users.full_name as submitter_name, aar.control_number as control')
                 ->join('users', 'users.id = aar.user_id', 'left')
+                ->join('office_units', 'office_units.office_id = users.office_id', 'left')
                 ->where('aar.original_report_id', $id)
                 ->get()->getRowArray();
 
@@ -218,8 +223,9 @@ class AccomplishmentReportController extends BaseController
         $db = \Config\Database::connect();
 
         $active = $db->table('accomplishment_report as ar')
-            ->select('ar.id, ar.status, cn.control_number as control, ar.activity_title as title, DATE(ar.created_at) as date, users.username as office, users.full_name as submitter_name, ad.form_type as formLabel')
+            ->select('ar.id, ar.status, cn.control_number as control, ar.activity_title as title, DATE(ar.created_at) as date, office_units.office_name as office, users.full_name as submitter_name, ad.form_type as formLabel')
             ->join('users', 'users.id = ar.user_id', 'left')
+            ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number as cn', 'cn.control_number = ar.control_number', 'left')
             ->join('archived_activity_designs as ad', 'ad.original_act_design_id = cn.act_design_id', 'left')
             ->where('ar.user_id', $userId)
@@ -227,8 +233,9 @@ class AccomplishmentReportController extends BaseController
             ->get()->getResultArray();
 
         $archived = $db->table('archived_accomplishment_reports as aar')
-            ->select('aar.original_report_id as id, aar.status, cn.control_number as control, aar.activity_title as title, DATE(aar.created_at) as date, users.username as office, users.full_name as submitter_name, ad.form_type as formLabel')
+            ->select('aar.original_report_id as id, aar.status, cn.control_number as control, aar.activity_title as title, DATE(aar.created_at) as date, office_units.office_name as office, users.full_name as submitter_name, ad.form_type as formLabel')
             ->join('users', 'users.id = aar.user_id', 'left')
+            ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number as cn', 'cn.control_number = aar.control_number', 'left')
             ->join('archived_activity_designs as ad', 'ad.original_act_design_id = cn.act_design_id', 'left')
             ->where('aar.user_id', $userId)
@@ -237,7 +244,8 @@ class AccomplishmentReportController extends BaseController
 
         $reports = array_merge($active, $archived);
         usort($reports, function($a, $b) {
-            return $b['id'] <=> $a['id'];
+            $dateCompare = strcmp($a['date'] ?? '', $b['date'] ?? '');
+            return $dateCompare !== 0 ? $dateCompare : ($a['id'] <=> $b['id']);
         });
 
         return $this->response->setJSON([
@@ -251,8 +259,9 @@ class AccomplishmentReportController extends BaseController
         $accomplishmentReportModel = new AccomplishmentReportModel();
 
         $reports = $accomplishmentReportModel
-            ->select('accomplishment_report.*, control_number.control_number as control, accomplishment_report.activity_title as title, DATE(accomplishment_report.created_at) as date, users.username as office, users.full_name as submitter_name, activity_design.form_type as formLabel')
+            ->select('accomplishment_report.*, control_number.control_number as control, accomplishment_report.activity_title as title, DATE(accomplishment_report.created_at) as date, office_units.office_name as office, users.full_name as submitter_name, activity_design.form_type as formLabel')
             ->join('users', 'users.id = accomplishment_report.user_id', 'left')
+            ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number', 'control_number.control_number = accomplishment_report.control_number', 'left')
             ->join('activity_design', 'activity_design.act_design_id = control_number.act_design_id', 'left')
             ->whereIn('accomplishment_report.status', ['Verified', 'Cancelled'])
