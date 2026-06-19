@@ -64,6 +64,7 @@ const handleScroll = () => {
 const collegeMenu = [
   { label: 'New Submission', icon: 'add', href: '/college/submit' },
   { label: 'Dashboard', icon: 'dashboard', href: '/college/dashboard' },
+  { label: 'Messages', icon: 'mail', href: '/college/messages' },
   { label: 'Submitted List', icon: 'list', href: '/college/submitted-list' },
   { label: 'Archives', icon: 'archive', href: '/college/archive' },
   { label: 'Mandates', icon: 'gavel', href: '/college/mandates' },

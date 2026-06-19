@@ -28,6 +28,8 @@ $routes->group('api', function($routes) {
     $routes->post('add_office', 'AuthController::addOffice');
     $routes->options('office_units', 'AuthController::handleOptions');
     $routes->options('add_office', 'AuthController::handleOptions');
+    $routes->get('users', 'AuthController::getAllUsers');
+    $routes->options('users', 'AuthController::handleOptions');
 
     // ----------------------------------------------------------------
     // CLOUDFLARE R2 STORAGE ROUTE (existing)
@@ -113,6 +115,18 @@ $routes->group('api', function($routes) {
 
     $routes->options('revision-report/(:num)', 'AuthController::handleOptions');
     $routes->post('revision-report/(:num)', 'AccomplishmentReportController::revisionReport/$1');
+
+    // ----------------------------------------------------------------
+    // MESSAGING ROUTES
+    // ----------------------------------------------------------------
+    $routes->options('messages/send', 'AuthController::handleOptions');
+    $routes->post('messages/send', 'MessageController::send');
+    $routes->options('messages/inbox/(:num)', 'AuthController::handleOptions');
+    $routes->get('messages/inbox/(:num)', 'MessageController::getInbox/$1');
+    $routes->options('messages/sent/(:num)', 'AuthController::handleOptions');
+    $routes->get('messages/sent/(:num)', 'MessageController::getSent/$1');
+    $routes->options('messages/read/(:num)', 'AuthController::handleOptions');
+    $routes->post('messages/read/(:num)', 'MessageController::markAsRead/$1');
 
     // ----------------------------------------------------------------
     // FILE SERVING ROUTES (serve PDFs from writable/uploads)

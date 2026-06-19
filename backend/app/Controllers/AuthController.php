@@ -332,6 +332,17 @@ class AuthController extends ResourceController
         return $this->respondCreated(['new_id' => $db->insertID()]);
     }
 
+    public function getAllUsers() {
+        $db = \Config\Database::connect();
+        $users = $db->table('users')
+            ->select('users.id, users.email, users.full_name, users.role, users.office_id, user_profiles.user_role, office_units.office_name')
+            ->join('user_profiles', 'user_profiles.user_id = users.id', 'left')
+            ->join('office_units', 'office_units.office_id = users.office_id', 'left')
+            ->get()
+            ->getResultArray();
+        return $this->respond($users);
+    }
+
     protected function verifyTurnstile($token)
     {
         if (empty($token)) return ['success' => false, 'error' => 'Token is empty'];

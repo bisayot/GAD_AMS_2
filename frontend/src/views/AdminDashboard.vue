@@ -63,6 +63,7 @@ const handleScroll = () => {
 
 const adminMenu = [
   { label: 'Dashboard', icon: 'dashboard', href: '/admin/dashboard' },
+  { label: 'Messages', icon: 'mail', href: '/admin/messages' },
   { label: 'Submitted List', icon: 'folder', href: '/admin/submitted-list' },
   { label: 'Activity Design List', icon: 'description', href: '/admin/ad-list' },
   { label: 'Accomplishment Report List', icon: 'description', href: '/admin/ar-list' },

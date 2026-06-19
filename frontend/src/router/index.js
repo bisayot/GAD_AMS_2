@@ -50,6 +50,7 @@ const routes = [
       { path: 'assign-mandates', name: 'admin-assign-mandates', component: () => import('../views/admin/AssignMandates.vue') },
       { path: 'gad-plan-budget', name: 'admin-gad-plan-budget', component: () => import('../views/admin/GadPlanBudgetView.vue') },
       { path: 'data-privacy-policy', name: 'admin-privacy-policy', component: () => import('../views/admin/PrivacyPolicyView.vue') },
+      { path: 'messages', name: 'admin-messages', component: () => import('../views/admin/MessagesView.vue') },
     ]
   },
 
@@ -74,6 +75,7 @@ const routes = [
       { path: 'user-manual', name: 'college-user-manual', component: () => import('../views/twg/UserManualView.vue') },
       { path: 'data-privacy-policy', name: 'college-privacy-policy', component: () => import('../views/twg/PrivacyPolicyView.vue') },
       { path: 'tech-assist', name: 'college-tech-assist', component: () => import('../views/PlaceholderContent.vue') },
+      { path: 'messages', name: 'college-messages', component: () => import('../views/twg/MessagesView.vue') },
     ]
   },
 
@@ -102,6 +104,7 @@ const routes = [
       { path: 'budget-allocation', name: 'staff-budget-allocation', component: () => import('../views/staff/BudgetAllocationView.vue') },
       { path: 'user-manual', name: 'staff-user-manual', component: () => import('../views/staff/UserManualView.vue') },
       { path: 'data-privacy-policy', name: 'staff-privacy-policy', component: () => import('../views/staff/PrivacyPolicyView.vue') },
+      { path: 'messages', name: 'staff-messages', component: () => import('../views/staff/MessagesView.vue') },
     ]
   },
 ]

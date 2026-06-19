@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 17, 2026 at 05:46 AM
+-- Generation Time: Jun 18, 2026 at 09:58 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -40,15 +40,6 @@ CREATE TABLE `accomplishment_budget_items` (
   `transportation` decimal(15,2) DEFAULT 0.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `accomplishment_budget_items`
---
-
-INSERT INTO `accomplishment_budget_items` (`item_id`, `accomplishment_report_id`, `meals_and_snacks`, `function_room_venue`, `accommodation`, `equipment_rental`, `professional_fee_honoria`, `tokens`, `materials_and_supplies`, `transportation`) VALUES
-(1, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00),
-(2, 14, 3200.00, 4200.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00),
-(3, 15, 3200.00, 4500.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00);
-
 -- --------------------------------------------------------
 
 --
@@ -65,15 +56,6 @@ CREATE TABLE `accomplishment_evaluation_results` (
   `restrooms` decimal(4,2) DEFAULT 0.00,
   `food_and_drinks` decimal(4,2) DEFAULT 0.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `accomplishment_evaluation_results`
---
-
-INSERT INTO `accomplishment_evaluation_results` (`evaluation_id`, `accomplishment_report_id`, `time_management`, `orderliness_and_program_flow`, `appropriateness_of_venue`, `sound_system_and_hall_preparation`, `restrooms`, `food_and_drinks`) VALUES
-(1, 0, 5.00, 5.00, 0.00, 5.00, 0.00, 5.00),
-(2, 14, 5.00, 5.00, 0.00, 5.00, 0.00, 5.00),
-(3, 15, 5.00, 5.00, 5.00, 5.00, 5.00, 4.00);
 
 -- --------------------------------------------------------
 
@@ -104,15 +86,6 @@ CREATE TABLE `accomplishment_report` (
   `assessment_date` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `accomplishment_report`
---
-
-INSERT INTO `accomplishment_report` (`id`, `control_number`, `act_design_id`, `activity_title`, `start_date`, `end_date`, `start_time`, `end_time`, `venue`, `attendees`, `male`, `female`, `rating`, `attachment`, `user_id`, `status`, `created_at`, `remarks`, `venue_id`, `assessment_date`) VALUES
-(13, '2026-1876', 0, 'dddd', '2026-06-16', '2026-06-19', '07:25:00', '19:25:00', 'RDC Hall', 90, 45, 45, 5, '1781619180_248b55a9d0a3aa7b7071.pdf', 2, 'Pending', '2026-06-16 14:13:00', NULL, NULL, NULL),
-(14, '2026-2678', 26, 'adcsdsd', '2026-06-16', '2026-07-07', '08:02:00', '20:02:00', 'RDC Hall', 1264, 564, 700, 5, '1781655350_6fe7667119ff7e305e58.pdf', 2, 'Revision Required', '2026-06-17 00:15:50', 'dddddddddddddddddddddddd', NULL, NULL),
-(15, '2026-7498', 31, 'ggggggg', '2026-06-24', '2026-06-30', '09:32:00', '21:32:00', 'BSU Covered Court', 90, 45, 45, 5, '1781657085_14af68d2b31c365f450d.pdf', 2, 'Pending', '2026-06-17 00:44:45', NULL, NULL, NULL);
-
 -- --------------------------------------------------------
 
 --
@@ -137,15 +110,10 @@ CREATE TABLE `activity_budget_items` (
 --
 
 INSERT INTO `activity_budget_items` (`item_id`, `act_design_id`, `meals_and_snacks`, `function_room_venue`, `accommodation`, `equipment_rental`, `professional_fee_honoria`, `tokens`, `materials_and_supplies`, `transportation`) VALUES
-(1, 23, 3200.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00),
-(2, 24, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00),
-(3, 25, 3200.00, 3200.00, 3200.00, 0.00, 0.00, 0.00, 0.00, 0.00),
-(4, 26, 3200.00, 4200.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00),
-(5, 27, 3200.00, 3200.00, 3200.00, 0.00, 0.00, 0.00, 0.00, 0.00),
-(6, 28, 3200.00, 3200.00, 3200.00, 0.00, 0.00, 0.00, 0.00, 0.00),
-(7, 29, 4500.00, 4500.00, 4500.00, 0.00, 0.00, 0.00, 0.00, 0.00),
-(8, 30, 4500.00, 4500.00, 4500.00, 0.00, 0.00, 0.00, 0.00, 0.00),
-(9, 31, 3200.00, 4500.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00);
+(11, 33, 3200.00, 3500.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00),
+(12, 34, 7400.00, 0.00, 0.00, 0.00, 0.00, 1500.00, 0.00, 0.00),
+(13, 35, 15000.00, 0.00, 0.00, 0.00, 0.00, 2500.00, 0.00, 0.00),
+(14, 36, 5000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00);
 
 -- --------------------------------------------------------
 
@@ -179,11 +147,9 @@ CREATE TABLE `activity_design` (
 --
 
 INSERT INTO `activity_design` (`act_design_id`, `activity_title`, `start_date`, `end_date`, `start_time`, `end_time`, `status`, `attachment`, `user_id`, `gpb_id`, `venue`, `target_participants`, `proposed_budget`, `form_type`, `remarks`, `accomplishment_deadline`, `venue_id`, `assessment_date`) VALUES
-(23, 'sdvsdvs', '2026-06-16', '2026-06-30', '07:11:00', '19:11:00', 'Pending', '1781608284_54e3b499863ef57370c3.pdf', 2, NULL, NULL, 525, 3200, 'inset', NULL, NULL, 1, NULL),
-(25, 'ggggg', '2026-06-16', '2026-06-30', '07:54:00', '19:54:00', 'Pending', '1781610911_766b00e2efeb8701a2e7.pdf', 2, NULL, 'BSU Covered Court', 888, 9600, 'extension', 'dddddddddddd', '2026-06-30', 2, NULL),
-(27, 'ggggg', '2026-06-16', '2026-06-30', '07:54:00', '19:54:00', 'Pending', '1781612972_e3c552acb36ed649aedb.pdf', 2, NULL, NULL, 677, 9600, 'extension', NULL, NULL, 2, NULL),
-(28, 'ggggg', '2026-06-16', '2026-06-30', '07:54:00', '19:54:00', 'Pending', '1781612999_8fb99456fba666f17807.pdf', 2, NULL, NULL, 667, 9600, 'extension', NULL, NULL, 2, NULL),
-(30, 'gggggggfffffffff', '2026-06-12', '2026-06-30', '08:40:00', '20:40:00', 'Pending', '1781613624_b9185e6a7fb7ec63c6c0.pdf', 47, NULL, NULL, 433, 13500, 'extension', NULL, NULL, 3, NULL);
+(33, 'Monthly Study Habit', '2026-06-18', '2026-06-20', '08:00:00', '21:00:00', 'Revision Required', '1781759444_99180822be18280f6f9a.pdf', 2, NULL, NULL, 524, 6700, 'student', 'The Budget input is not aligned with the submitted document, double check', '2026-06-22', 2, NULL),
+(35, 'Monthly Study Habit 3', '2026-06-30', '2026-07-13', '08:30:00', '17:30:00', 'Pending', '1781759857_ce4edb79f5db6db1b47d.pdf', 2, NULL, NULL, 467, 17500, 'student', NULL, NULL, 10, NULL),
+(36, 'CIS Inset 2026', '2040-06-22', '2027-06-22', '01:00:00', '05:00:00', 'Pending', '1781767035_27824fd499116e0659e2.pdf', 51, NULL, 'BSU Gymnasium', 1, 5000, 'inset', 'change date', '2026-06-21', 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -250,10 +216,7 @@ CREATE TABLE `archived_activity_designs` (
 --
 
 INSERT INTO `archived_activity_designs` (`archive_id`, `original_act_design_id`, `activity_title`, `start_date`, `end_date`, `start_time`, `end_time`, `status`, `attachment`, `user_id`, `gpb_id`, `venue`, `target_participants`, `proposed_budget`, `form_type`, `assessment_date`, `accomplishment_deadline`, `remarks`, `archived_at`, `venue_id`) VALUES
-(15, 24, 'dddd', '2026-06-16', '2026-06-19', '07:25:00', '19:25:00', 'Approved', '1781609133_dc58add08579e0ea4e6f.pdf', 2, NULL, NULL, 524, 0, 'inset', '2026-06-16', '2026-06-17', '', '2026-06-16 11:56:37', 3),
-(16, 26, 'adcsdsd', '2026-06-16', '2026-07-07', '08:02:00', '20:02:00', 'Approved', '1781611360_42ed0748fcbd9b16ca99.pdf', 2, NULL, NULL, 544, 7400, 'extension', '2026-06-16', '2026-06-18', '', '2026-06-16 12:03:15', 3),
-(17, 29, 'dddddddddddd', '2026-06-17', '2026-06-24', '08:39:00', '20:39:00', 'Approved', '1781613579_c04caa6c419f0211d337.pdf', 47, NULL, NULL, 434, 13500, 'extension', '2026-06-16', '2026-06-17', '', '2026-06-16 12:41:34', 2),
-(18, 31, 'ggggggg', '2026-06-24', '2026-06-30', '09:32:00', '21:32:00', 'Approved', '1781616752_6882e2fea02a7479b6b0.pdf', 2, NULL, NULL, 342, 7700, 'extension', '2026-06-16', '2026-06-30', '', '2026-06-16 13:32:46', 2);
+(20, 34, 'Monthly Study Habit 2', '2026-06-30', '2026-07-01', '07:14:00', '22:00:00', 'Approved', '1781759715_bb4a92a2878f35000ab4.pdf', 2, NULL, NULL, 435, 8900, 'extension', '2026-07-01', '2026-07-06', '', '2026-06-18 05:37:25', 7);
 
 -- --------------------------------------------------------
 
@@ -273,10 +236,7 @@ CREATE TABLE `control_number` (
 --
 
 INSERT INTO `control_number` (`control_number_id`, `control_number`, `act_design_id`, `user_id`) VALUES
-(18, '2026-1876', 24, NULL),
-(19, '2026-2678', 26, NULL),
-(20, '2026-4520', 29, NULL),
-(21, '2026-7498', 31, NULL);
+(23, '2026-5351', 34, NULL);
 
 -- --------------------------------------------------------
 
@@ -565,7 +525,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `email`, `email_verified_at`, `password`, `reset_token`, `reset_token_expires_at`, `role`, `full_name`, `student_id`, `office_id`, `year_level`, `user_acronym`, `remember_token`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 'Gender and Development Office', 'gad.office@bsu.edu.ph', NULL, '$2y$10$a9XVQgTdygySA0E7XCNf4euNdZmuXjqGxSvUbQEzd5X7qiFmPNae6', NULL, NULL, 'admin', NULL, NULL, 1, NULL, 'GAD', NULL, NULL, '2026-05-25 11:58:10', '2026-06-16 05:47:42'),
+(1, 'Gender and Development Office', 'gad.office@bsu.edu.ph', NULL, '$2y$10$a9XVQgTdygySA0E7XCNf4euNdZmuXjqGxSvUbQEzd5X7qiFmPNae6', NULL, NULL, 'admin', NULL, NULL, 1, NULL, 'GAD', NULL, NULL, '2026-05-25 11:58:10', '2026-06-17 14:17:17'),
 (2, 'College of Agriculture', 'ca@bsu.edu.ph', NULL, '$2y$12$CNLb7UPOnZpF2yZRY0lwSeykT0VWruAa6R753JUJR3bGr2OCvUyei', NULL, NULL, 'college', NULL, NULL, 2, NULL, 'CA', NULL, NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10'),
 (3, 'Registrar\'s Office BSU Buguias Campus', 'buguias.registrar@bsu.edu.ph', NULL, '$2y$12$l7EFqawcRIOIN9O.LGwQ..4PpoSt5sbaRziIQVMbNsOJbF7b/3Lpq', NULL, NULL, 'college', NULL, NULL, 3, NULL, 'Buguias-RO', NULL, NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10'),
 (4, 'Human Resources and Management Office BSU Bokod Campus', 'bokod.hrmo@bsu.edu.ph', NULL, '$2y$12$l7EFqawcRIOIN9O.LGwQ..4PpoSt5sbaRziIQVMbNsOJbF7b/3Lpq', NULL, NULL, 'college', NULL, NULL, 4, NULL, NULL, 'Bokod-HRMO', NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10'),
@@ -611,10 +571,8 @@ INSERT INTO `users` (`id`, `username`, `email`, `email_verified_at`, `password`,
 (44, 'Open University', 'ou@bsu.edu.ph', NULL, '$2y$12$l7EFqawcRIOIN9O.LGwQ..4PpoSt5sbaRziIQVMbNsOJbF7b/3Lpq', NULL, NULL, 'college', NULL, NULL, 44, NULL, 'OU', NULL, NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10'),
 (45, 'College of Education BSU Bokod Campus', 'bokod.ce@bsu.edu.ph', NULL, '$2y$12$l7EFqawcRIOIN9O.LGwQ..4PpoSt5sbaRziIQVMbNsOJbF7b/3Lpq', NULL, NULL, 'college', NULL, NULL, 45, NULL, 'Bokod-CE', NULL, NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10'),
 (46, 'College of Forestry', 'cf@bsu.edu.ph', NULL, '$2y$12$l7EFqawcRIOIN9O.LGwQ..4PpoSt5sbaRziIQVMbNsOJbF7b/3Lpq', NULL, NULL, 'college', NULL, NULL, 46, NULL, 'CF', NULL, NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10'),
-(47, 'gad.staff', 'gad.staff@bsu.edu.ph', NULL, '$2y$12$fbD/jvk.znEQnBmKq4.ebOojmijHJO/zU7.P7Tzo.zV3FgvP8PzNe', NULL, NULL, 'gad_staff', 'GAD Staff User', NULL, 1, NULL, 'GAD-STAFF', NULL, NULL, '2026-03-26 15:53:56', '2026-06-05 02:30:59'),
-(48, 'bisayotduligas', 'bisayotduligas@gmail.com', NULL, '$2y$10$5VtfhFkmlQCKsV6CyFMXluuyIFI3/RWK9biWtB1PXCb4gvLGaDTVW', '0bd0dcc9ada287f21f366eea1f8d44bcab5e681b29a01978a1535f790042571b', '2026-06-10 04:46:35', 'gad_staff', 'Joshua Duligas', NULL, 1, NULL, NULL, NULL, NULL, '2026-06-08 13:06:16', '2026-06-10 03:46:35'),
-(49, 'name', 'name@bsu.edu.ph', NULL, '$2y$10$a2/TkQXIjhLXLWidOrXoQeC0n55RGD6AJPzkobWyHnHr3ii6mHyWy', NULL, NULL, 'college', 'Nicole Sano Elgamo', NULL, 32, NULL, NULL, NULL, NULL, '2026-06-09 00:14:49', '2026-06-09 00:14:49'),
-(50, 'for', 'for@bsu.edu.ph', NULL, '$2y$10$IyOL8u8hQw3mkxKq0iaeQu.AKX9w/tMQ4WeVvNpWLD9fPJWU/xgmm', NULL, NULL, 'college', 'Joshua Santos', NULL, 46, NULL, NULL, NULL, NULL, '2026-06-09 00:38:38', '2026-06-09 00:38:38');
+(47, 'gad.staff', 'gad.staff@bsu.edu.ph', NULL, '$2y$12$fbD/jvk.znEQnBmKq4.ebOojmijHJO/zU7.P7Tzo.zV3FgvP8PzNe', NULL, NULL, 'gad_staff', 'GAD Staff User', NULL, 1, NULL, 'GAD-STAFF', NULL, NULL, '2026-03-26 15:53:56', '2026-06-17 23:26:30'),
+(51, 'marksantos', 'marksantos@gmail.com', NULL, '$2y$10$XpBQvnSPe15XDdOdDySVf.5ri9Y2wCDwqZcdGLoOXmjClhEZTA6Aa', NULL, NULL, 'college', 'Mark Santos', NULL, 32, NULL, NULL, NULL, NULL, '2026-06-17 12:57:12', '2026-06-17 12:57:12');
 
 -- --------------------------------------------------------
 
@@ -683,9 +641,7 @@ INSERT INTO `user_profiles` (`user_id`, `first_name`, `middle_name`, `last_name`
 (45, '', NULL, '', 'TWG', 45),
 (46, '', NULL, '', 'TWG', 46),
 (47, 'GAD', 'Staff', 'User', 'Staff', 1),
-(48, 'Joshua', NULL, 'Duligas', 'Staff', 1),
-(49, 'Nicole', 'Sano', 'Elgamo', 'TWG', 32),
-(50, 'Joshua', NULL, 'Santos', 'TWG', 46);
+(51, 'Mark', '', 'Santos', 'Non-TWG', 32);
 
 -- --------------------------------------------------------
 
@@ -853,49 +809,49 @@ ALTER TABLE `venues`
 -- AUTO_INCREMENT for table `accomplishment_budget_items`
 --
 ALTER TABLE `accomplishment_budget_items`
-  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `accomplishment_evaluation_results`
 --
 ALTER TABLE `accomplishment_evaluation_results`
-  MODIFY `evaluation_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `evaluation_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `accomplishment_report`
 --
 ALTER TABLE `accomplishment_report`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `activity_budget_items`
 --
 ALTER TABLE `activity_budget_items`
-  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `activity_design`
 --
 ALTER TABLE `activity_design`
-  MODIFY `act_design_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `act_design_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `archived_accomplishment_reports`
 --
 ALTER TABLE `archived_accomplishment_reports`
-  MODIFY `archive_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `archive_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `archived_activity_designs`
 --
 ALTER TABLE `archived_activity_designs`
-  MODIFY `archive_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `archive_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `control_number`
 --
 ALTER TABLE `control_number`
-  MODIFY `control_number_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `control_number_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `gad_plan_budget`
@@ -931,7 +887,7 @@ ALTER TABLE `system_logs`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT for table `venues`

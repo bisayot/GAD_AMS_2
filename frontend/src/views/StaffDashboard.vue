@@ -64,6 +64,7 @@ const handleScroll = () => {
 const staffMenu = [
   { label: 'New Submission', icon: 'add', href: '/staff/submit' },
   { label: 'Dashboard', icon: 'dashboard', href: '/staff/dashboard' },
+  { label: 'Messages', icon: 'mail', href: '/staff/messages' },
   { label: 'Submitted List', icon: 'list', href: '/staff/submitted-list' },
   { label: 'Activity Design List', icon: 'list', href: '/staff/ad-list' },
   { label: 'Accomplishment Report List', icon: 'list', href: '/staff/ar-list' },
