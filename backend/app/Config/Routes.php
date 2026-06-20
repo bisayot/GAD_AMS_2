@@ -41,7 +41,10 @@ $routes->group('api', function($routes) {
     // ACTIVITY DESIGN ROUTES (new)
     // ----------------------------------------------------------------
     $routes->options('submit-activity-design', 'ActivityDesignController::submitDesign');
-    $routes->post('submit-activity-design', 'ActivityDesignController::submitDesign');
+    $routes->options('activity-designs/submit', 'AuthController::handleOptions');
+    $routes->post('activity-designs/submit', 'ActivityDesignController::submitDesign');
+    $routes->options('activity-designs/trash/(:num)', 'AuthController::handleOptions');
+    $routes->delete('activity-designs/trash/(:num)', 'ActivityDesignController::trash/$1');
 
     $routes->options('activity-designs', 'ActivityDesignController::index');
     $routes->get('activity-designs', 'ActivityDesignController::index');
@@ -61,7 +64,10 @@ $routes->group('api', function($routes) {
     // ACCOMPLISHMENT REPORT ROUTES (new)
     // ----------------------------------------------------------------
     $routes->options('submit-activity-report', 'AccomplishmentReportController::submitReport');
-    $routes->post('submit-activity-report', 'AccomplishmentReportController::submitReport');
+    $routes->options('accomplishment-reports/submit', 'AuthController::handleOptions');
+    $routes->post('accomplishment-reports/submit', 'AccomplishmentReportController::submitReport');
+    $routes->options('accomplishment-reports/trash/(:num)', 'AuthController::handleOptions');
+    $routes->delete('accomplishment-reports/trash/(:num)', 'AccomplishmentReportController::trash/$1');
 
     $routes->options('activity-reports', 'AccomplishmentReportController::index');
     $routes->get('activity-reports', 'AccomplishmentReportController::index');
@@ -128,9 +134,34 @@ $routes->group('api', function($routes) {
     $routes->options('messages/read/(:num)', 'AuthController::handleOptions');
     $routes->post('messages/read/(:num)', 'MessageController::markAsRead/$1');
 
+    $routes->options('messages/trashed/(:num)', 'AuthController::handleOptions');
+    $routes->get('messages/trashed/(:num)', 'MessageController::getTrashed/$1');
+
+    $routes->options('messages/trash/(:num)', 'AuthController::handleOptions');
+    $routes->post('messages/trash/(:num)', 'MessageController::trashMessage/$1');
+
+    $routes->options('messages/restore/(:num)', 'AuthController::handleOptions');
+    $routes->post('messages/restore/(:num)', 'MessageController::restoreMessage/$1');
+
+    $routes->options('messages/permanently-delete', 'AuthController::handleOptions');
+    $routes->post('messages/permanently-delete', 'MessageController::permanentlyDelete');
+
+    $routes->options('messages/thread/(:num)', 'AuthController::handleOptions');
+    $routes->get('messages/thread/(:num)', 'MessageController::getThread/$1');
+    
+    $routes->options('messages/unread-count/(:num)', 'AuthController::handleOptions');
+    $routes->get('messages/unread-count/(:num)', 'MessageController::getUnreadCount/$1');
+
     // ----------------------------------------------------------------
     // FILE SERVING ROUTES (serve PDFs from writable/uploads)
     // ----------------------------------------------------------------
     $routes->get('files/drafts/(:segment)', 'FileController::serveDraft/$1');
     $routes->get('files/archived/(:segment)', 'FileController::serveArchived/$1');
+    // Document Trash Endpoints
+    $routes->options('documents/trashed', 'AuthController::handleOptions');
+    $routes->get('documents/trashed', 'DocumentTrashController::getTrashedDocuments');
+    $routes->options('documents/restore', 'AuthController::handleOptions');
+    $routes->post('documents/restore', 'DocumentTrashController::restore');
+    $routes->options('documents/permanently-delete', 'AuthController::handleOptions');
+    $routes->post('documents/permanently-delete', 'DocumentTrashController::permanentlyDelete');
 });

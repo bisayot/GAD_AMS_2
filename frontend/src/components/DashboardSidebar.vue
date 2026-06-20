@@ -25,11 +25,14 @@
         :key="item.label"
         :to="item.href"
         @click="$emit('close')"
-        class="flex items-center gap-3 p-3 rounded-xl transition-all duration-200"
+        class="flex items-center justify-between p-3 rounded-xl transition-all duration-200"
         :class="$route.path === item.href ? 'bg-primary/20 text-white font-bold' : 'text-slate-400 hover:bg-white/5 hover:text-white'"
       >
-        <span class="material-symbols-outlined text-xl">{{ item.icon }}</span>
-        <span class="text-sm">{{ item.label }}</span>
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-xl">{{ item.icon }}</span>
+          <span class="text-sm">{{ item.label }}</span>
+        </div>
+        <span v-if="item.badge && item.badge > 0" class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ item.badge }}</span>
       </router-link>
     </nav>
 

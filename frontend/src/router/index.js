@@ -2,24 +2,16 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
-import AboutView from '../views/AboutView.vue'
-import ResourcesView from '../views/ResourcesView.vue'
-import GADCornerView from '../views/GADCornerView.vue'
-import ContactView from '../views/ContactView.vue'
-import AdminDashboard from '../views/AdminDashboard.vue'
-import AdminAnnualReport from '../views/AdminAnnualReport.vue'
-import CollegeDashboard from '../views/CollegeDashboard.vue'
-import StaffDashboard from '../views/StaffDashboard.vue'
 const routes = [
   { path: '/', name: 'home', component: HomeView },
   { path: '/login', name: 'login', component: LoginView },
   { path: '/register', name: 'register', component: RegisterView },
   { path: '/forgot-password', name: 'forgot-password', component: () => import('../views/ForgotPasswordView.vue') },
   { path: '/reset-password', name: 'reset-password', component: () => import('../views/ResetPasswordView.vue') },
-  { path: '/about', name: 'about', component: AboutView },
-  { path: '/resources', name: 'resources', component: ResourcesView },
-  { path: '/gad-corner', name: 'gad-corner', component: GADCornerView },
-  { path: '/contact', name: 'contact', component: ContactView },
+  { path: '/about', name: 'about', component: () => import('../views/AboutView.vue') },
+  { path: '/resources', name: 'resources', component: () => import('../views/ResourcesView.vue') },
+  { path: '/gad-corner', name: 'gad-corner', component: () => import('../views/GADCornerView.vue') },
+  { path: '/contact', name: 'contact', component: () => import('../views/ContactView.vue') },
 
   // Legacy bookmarks → nested routes
   { path: '/college/submit-accomplishment', redirect: '/college/submit-report' },
@@ -28,11 +20,11 @@ const routes = [
   // Admin (nested layout + full workflows)
   {
     path: '/admin',
-    component: AdminDashboard,
+    component: () => import('../views/AdminDashboard.vue'),
     children: [
       { path: '', redirect: '/admin/dashboard' },
       { path: 'dashboard', name: 'admin-dashboard', component: () => import('../views/admin/AdminDashboardContent.vue') },
-      { path: 'annual-report', name: 'admin-annual-report', component: AdminAnnualReport },
+      { path: 'annual-report', name: 'admin-annual-report', component: () => import('../views/AdminAnnualReport.vue') },
       { path: 'submitted-list', name: 'admin-submitted', component: () => import('../views/admin/SubmittedListView.vue') },
       { path: 'ad-list', name: 'admin-activity-designs', component: () => import('../views/admin/AdListView.vue') },
       { path: 'ar-list', name: 'admin-accomplishment-reports', component: () => import('../views/admin/ARListView.vue') },
@@ -41,6 +33,7 @@ const routes = [
       { path: 'ar-review/:id', name: 'admin-ar-review', component: () => import('../views/admin/ARReview.vue') },
       { path: 'ad-review/:id', name: 'admin-ad-review', component: () => import('../views/admin/ADReview.vue') },
       { path: 'archive', name: 'admin-archive', component: () => import('../views/admin/ArchiveView.vue') },
+      { path: 'trash-bin', name: 'admin-trash-bin', component: () => import('../views/admin/DocumentTrashBin.vue') },
       { path: 'mandates', name: 'admin-mandates', component: () => import('../views/admin/MandatesView.vue') },
       { path: 'reports', name: 'admin-reports', component: () => import('../views/admin/ReportsView.vue') },
       { path: 'user-manual', name: 'admin-user-manual', component: () => import('../views/admin/UserManualView.vue') },
@@ -57,7 +50,7 @@ const routes = [
   // College / TWG
   {
     path: '/college',
-    component: CollegeDashboard,
+    component: () => import('../views/CollegeDashboard.vue'),
     children: [
       { path: '', redirect: '/college/dashboard' },
       { path: 'submit', name: 'college-submit-hub', component: () => import('../views/twg/SubmittView.vue') },
@@ -82,7 +75,7 @@ const routes = [
   // Staff
   {
     path: '/staff',
-    component: StaffDashboard,
+    component: () => import('../views/StaffDashboard.vue'),
     children: [
       { path: '', redirect: '/staff/dashboard' },
       { path: 'submit', name: 'staff-submit-hub', component: () => import('../views/staff/SubmitView.vue') },

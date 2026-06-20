@@ -95,18 +95,19 @@
                     </button>
                   </div>
 
-                  <select v-if="selectedDocumentType === 'design'" v-model="selectedDocuments" multiple class="form-input" style="height: auto; min-height: 100px;">
-                    <option v-for="doc in pendingDesigns" :key="doc.id" :value="doc.id">
+                  <div v-if="selectedDocumentType === 'design'" class="checkbox-list" style="max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; background: rgba(0,0,0,0.2);">
+                    <label v-for="doc in pendingDesigns" :key="doc.id" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
+                      <input type="checkbox" :value="doc.id" v-model="selectedDocuments" style="accent-color: #9333ea;">
                       {{ doc.title }}
-                    </option>
-                  </select>
+                    </label>
+                  </div>
 
-                  <select v-if="selectedDocumentType === 'report'" v-model="selectedDocuments" multiple class="form-input" style="height: auto; min-height: 100px;">
-                    <option v-for="doc in pendingReports" :key="doc.id" :value="doc.id">
+                  <div v-if="selectedDocumentType === 'report'" class="checkbox-list" style="max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; background: rgba(0,0,0,0.2);">
+                    <label v-for="doc in pendingReports" :key="doc.id" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
+                      <input type="checkbox" :value="doc.id" v-model="selectedDocuments" style="accent-color: #9333ea;">
                       {{ doc.title }}
-                    </option>
-                  </select>
-                  <small v-if="selectedDocumentType" class="help-text">Hold Ctrl/Cmd to select multiple documents</small>
+                    </label>
+                  </div>
                 </div>
 
                 <!-- Title Field -->
@@ -137,31 +138,55 @@
                <div class="sidebar-item" @click="activeTab = 'sent'; fetchMessages()" style="padding: 0.75rem 1rem; cursor: pointer; border-radius: 0.5rem; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; color: #cbd5e1;" :style="activeTab === 'sent' ? 'background: rgba(147, 51, 234, 0.2); color: #c084fc; border: 1px solid rgba(147, 51, 234, 0.5);' : 'border: 1px solid transparent;'">
                  <span class="material-symbols-outlined">send</span> Sent
                </div>
+               <div class="sidebar-item" @click="activeTab = 'trash'; fetchMessages()" style="padding: 0.75rem 1rem; cursor: pointer; border-radius: 0.5rem; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; color: #cbd5e1;" :style="activeTab === 'trash' ? 'background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.5);' : 'border: 1px solid transparent;'">
+                 <span class="material-symbols-outlined">delete</span> Trash
+               </div>
             </div>
 
             <div class="messages-list-wrapper" style="flex: 1;">
               <div class="messages-list">
                 <div v-if="messages.length === 0" class="empty-state">
                   <div class="empty-icon">
-                    <span class="material-symbols-outlined">mail</span>
+                    <span class="material-symbols-outlined">{{ activeTab === 'trash' ? 'delete' : (activeTab === 'inbox' ? 'mail' : 'send') }}</span>
                   </div>
-                  <h5 class="empty-title">No {{ activeTab === 'inbox' ? 'Inbox' : 'Sent' }} Messages</h5>
+                  <h5 class="empty-title">No {{ activeTab === 'inbox' ? 'Inbox' : (activeTab === 'sent' ? 'Sent' : 'Trashed') }} Messages</h5>
                   <p class="empty-text">You have no messages here.</p>
                 </div>
                 
-                <div v-else v-for="message in messages" :key="message.id" class="message-card" @click="expandedMessageId = expandedMessageId === message.id ? null : message.id" style="cursor: pointer;">
-                  <div class="message-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <div class="message-sender" style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
-                      <span class="badge" style="background: rgba(147, 51, 234, 0.2); color: #c084fc; padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-size: 0.8rem; border: 1px solid rgba(147, 51, 234, 0.3);">{{ message.role || 'Unknown' }}</span>
-                      <span class="sender-office" style="color: #e2e8f0; font-size: 0.95rem; font-weight: 500;">{{ getOfficeName(message.office_id) }}</span>
-                      <span class="sender-email" style="color: #94a3b8; font-size: 0.9rem;">&lt;{{ message.email || 'No email' }}&gt;</span>
-                    </div>
-                    <div class="message-actions">
-                      <span class="message-date" style="color: #64748b; font-size: 0.875rem;">{{ message.date }}</span>
-                    </div>
+                <div v-if="activeTab === 'trash' && messages.length > 0" style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                  <label style="color: #cbd5e1; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" @change="e => selectedTrashIds = e.target.checked ? messages.map(m => m.id) : []" :checked="selectedTrashIds.length === messages.length && messages.length > 0" style="accent-color: #ef4444;">
+                    Select All
+                  </label>
+                  <button @click="permanentlyDeleteSelected" :disabled="selectedTrashIds.length === 0" class="btn-primary" style="background: #ef4444; padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; color: white; cursor: pointer; font-size: 0.85rem;" :style="{ opacity: selectedTrashIds.length === 0 ? 0.5 : 1 }">
+                    Permanently Delete Selected
+                  </button>
+                </div>
+
+                <div v-for="message in messages" :key="message.id" class="message-card" @click="toggleMessageExpand(message)" style="cursor: pointer; position: relative;">
+                  <div v-if="activeTab === 'trash'" style="position: absolute; left: 1rem; top: 1.5rem;" @click.stop>
+                    <input type="checkbox" :value="message.id" v-model="selectedTrashIds" style="accent-color: #ef4444;">
                   </div>
-                  
-                  <h5 class="message-title" style="margin-top: 0.5rem;">{{ message.title }}</h5>
+                  <div :style="{ paddingLeft: activeTab === 'trash' ? '2.5rem' : '0' }">
+                    <div class="message-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                      <div class="message-sender" style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                        <span class="badge" style="background: rgba(147, 51, 234, 0.2); color: #c084fc; padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-size: 0.8rem; border: 1px solid rgba(147, 51, 234, 0.3);">{{ message.role || 'Unknown' }}</span>
+                        <span class="sender-office" style="color: #e2e8f0; font-size: 0.95rem; font-weight: 500;">{{ getOfficeName(message.office_id) }}</span>
+                        <span class="sender-email" style="color: #94a3b8; font-size: 0.9rem;">&lt;{{ message.email || 'No email' }}&gt;</span>
+                        <span v-if="activeTab === 'inbox' && message.is_read == 0" class="badge" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; border: 1px solid rgba(59, 130, 246, 0.3);">New</span>
+                      </div>
+                      <div class="message-actions" style="display: flex; align-items: center; gap: 1rem;">
+                        <span class="message-date" style="color: #64748b; font-size: 0.875rem;">{{ activeTab === 'trash' ? 'Deleted: ' + message.deleted_date : message.date }}</span>
+                        <button v-if="activeTab === 'inbox' || activeTab === 'sent'" @click.stop="moveToTrash(message.id)" title="Move to Trash" style="background: transparent; border: none; color: #64748b; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center;">
+                          <span class="material-symbols-outlined" style="font-size: 1.2rem;">delete</span>
+                        </button>
+                        <button v-if="activeTab === 'trash'" @click.stop="restoreMessage(message.id)" title="Restore Message" style="background: transparent; border: none; color: #10b981; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center;">
+                          <span class="material-symbols-outlined" style="font-size: 1.2rem;">restore_from_trash</span>
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <h5 class="message-title" style="margin-top: 0.5rem;" :style="{ fontWeight: (activeTab === 'inbox' && message.is_read == 0) ? '700' : '500', color: (activeTab === 'inbox' && message.is_read == 0) ? '#f8fafc' : '#e2e8f0' }">{{ message.title }}</h5>
                   
                   <transition name="expand">
                     <div v-if="expandedMessageId === message.id" class="message-expanded-content" style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
@@ -174,13 +199,30 @@
                           <strong>Attached:</strong> {{ message.document_type }}
                         </span>
                         <div style="display: flex; gap: 0.5rem;">
-                          <button v-for="docId in (message.document_id ? message.document_id.split(',') : [])" :key="docId" @click.stop="message.document_type === 'Activity Design' ? viewAttachedDesign(docId) : viewAttachedReport(docId)" class="btn-view-doc" style="background: #9333ea; color: white; border: none; padding: 0.3rem 0.75rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.85rem; transition: background 0.3s;">
-                            View {{ message.document_type === 'Activity Design' ? 'Design' : 'Report' }}
+                          <button v-for="docId in (message.document_id ? message.document_id.split(',') : [])" :key="docId" @click.stop="(message.document_type === 'Activity Design' || message.document_type === 'design') ? viewAttachedDesign(docId) : viewAttachedReport(docId)" class="btn-view-doc" style="background: #9333ea; color: white; border: none; padding: 0.3rem 0.75rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.85rem; transition: background 0.3s;">
+                            View {{ (message.document_type === 'Activity Design' || message.document_type === 'design') ? 'Design' : 'Report' }}
                           </button>
                         </div>
                       </div>
 
-                      <div style="margin-top: 1.5rem;" v-if="activeTab === 'inbox' && replyingToId !== message.id">
+                      <!-- Thread History -->
+                      <div v-if="threadHistory.length > 1" class="message-thread" style="margin-bottom: 1.5rem; background: rgba(0,0,0,0.15); border-radius: 0.5rem; padding: 1rem; border: 1px solid rgba(255,255,255,0.05);">
+                        <h6 style="color: #94a3b8; margin: 0 0 1rem 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Thread History</h6>
+                        <div v-for="(threadMsg, idx) in threadHistory" :key="threadMsg.id" style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span style="color: #cbd5e1; font-weight: 500; font-size: 1rem;">{{ threadMsg.sender_name }} <span style="color: #64748b; font-size: 0.9rem;">({{ threadMsg.sender_role }})</span></span>
+                            <span style="color: #64748b; font-size: 0.85rem;">{{ threadMsg.date }}</span>
+                          </div>
+                          <p :style="{ color: '#94a3b8', margin: threadMsg.document_id ? '0 0 0.5rem 0' : '0', fontSize: '1rem', whiteSpace: 'pre-wrap' }">{{ threadMsg.message }}</p>
+                          <div v-if="threadMsg.document_id" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button v-for="docId in threadMsg.document_id.split(',')" :key="docId" @click.stop="(threadMsg.document_type === 'Activity Design' || threadMsg.document_type === 'design') ? viewAttachedDesign(docId) : viewAttachedReport(docId)" class="btn-view-doc" style="background: rgba(147, 51, 234, 0.2); color: #c084fc; border: 1px solid rgba(147, 51, 234, 0.3); padding: 0.2rem 0.6rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.75rem; transition: background 0.3s;">
+                              View {{ (threadMsg.document_type === 'Activity Design' || threadMsg.document_type === 'design') ? 'Design' : 'Report' }}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style="margin-top: 1.5rem;" v-if="activeTab !== 'trash' && replyingToId !== message.id">
                         <button @click.stop="replyToMessage(message)" class="btn-reply" style="background: rgba(147, 51, 234, 0.2); color: #c084fc; border: 1px solid rgba(147, 51, 234, 0.5); padding: 0.5rem 1.25rem; border-radius: 0.5rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 500; transition: all 0.3s ease;">
                           <span class="material-symbols-outlined" style="font-size: 1.1rem;">reply</span> Reply
                         </button>
@@ -215,17 +257,18 @@
                               </button>
                             </div>
                             
-                            <select v-if="replyDocumentType === 'design'" v-model="replyDocuments" multiple class="form-input" style="width: 100%; height: auto; min-height: 100px; padding: 0.5rem; border-radius: 0.5rem; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #f8fafc;">
-                              <option v-for="doc in replyPendingDesigns" :key="doc.id" :value="doc.id" style="color: #1a1a2e; padding: 0.25rem;">
+                            <div v-if="replyDocumentType === 'design'" class="checkbox-list" style="max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; background: rgba(0,0,0,0.2);">
+                              <label v-for="doc in replyPendingDesigns" :key="doc.id" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
+                                <input type="checkbox" :value="doc.id" v-model="replyDocuments" style="accent-color: #9333ea;">
                                 {{ doc.title }}
-                              </option>
-                            </select>
-                            <select v-if="replyDocumentType === 'report'" v-model="replyDocuments" multiple class="form-input" style="width: 100%; height: auto; min-height: 100px; padding: 0.5rem; border-radius: 0.5rem; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #f8fafc;">
-                              <option v-for="doc in replyPendingReports" :key="doc.id" :value="doc.id" style="color: #1a1a2e; padding: 0.25rem;">
+                              </label>
+                            </div>
+                            <div v-if="replyDocumentType === 'report'" class="checkbox-list" style="max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; background: rgba(0,0,0,0.2);">
+                              <label v-for="doc in replyPendingReports" :key="doc.id" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
+                                <input type="checkbox" :value="doc.id" v-model="replyDocuments" style="accent-color: #9333ea;">
                                 {{ doc.title }}
-                              </option>
-                            </select>
-                            <small v-if="replyDocumentType" class="help-text" style="display: block; margin-top: 0.5rem; color: #94a3b8; font-size: 0.8rem;">Hold Ctrl/Cmd to select multiple documents</small>
+                              </label>
+                            </div>
                           </div>
                           
                           <div class="form-group" style="margin-bottom: 1.5rem;">
@@ -247,6 +290,7 @@
                       </transition>
                     </div>
                   </transition>
+                  </div>
                 </div>
               </div>
             </div>
@@ -283,6 +327,8 @@ const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
 
 const activeTab = ref('inbox');
 const expandedMessageId = ref(null);
+const threadHistory = ref([]);
+const selectedTrashIds = ref([]);
 const showReplyModal = ref(false); // Can be removed later, kept for safety
 const replyingToId = ref(null);
 const replyMessageContext = ref(null);
@@ -301,13 +347,89 @@ const getOfficeName = (id) => {
 const fetchMessages = async () => {
   if (user.value.id) {
     try {
-      const endpoint = activeTab.value === 'inbox' ? `messages/inbox/${user.value.id}` : `messages/sent/${user.value.id}`;
+      const endpoint = activeTab.value === 'inbox' ? `messages/inbox/${user.value.id}` 
+                     : activeTab.value === 'sent' ? `messages/sent/${user.value.id}`
+                     : `messages/trashed/${user.value.id}`;
       const response = await api.get(endpoint);
       if (response.data.success) {
         messages.value = response.data.data;
+        selectedTrashIds.value = [];
+        expandedMessageId.value = null;
       }
     } catch (err) {
       console.error('Error fetching messages:', err);
+    }
+  }
+};
+
+const toggleMessageExpand = async (message) => {
+  if (expandedMessageId.value === message.id) {
+    expandedMessageId.value = null;
+  } else {
+    expandedMessageId.value = message.id;
+    // Mark as read
+    if (activeTab.value === 'inbox' && message.is_read == 0) {
+      api.post(`/messages/read/${message.id}`).then(() => {
+        message.is_read = 1;
+      }).catch(err => console.error("Error marking as read", err));
+    }
+    // Fetch thread
+    threadHistory.value = [];
+    api.get(`/messages/thread/${message.id}`).then(res => {
+      if (res.data.success) {
+        threadHistory.value = res.data.data;
+      }
+    }).catch(err => console.error("Error fetching thread", err));
+  }
+};
+
+const moveToTrash = async (messageId) => {
+  try {
+    const res = await api.post(`/messages/trash/${messageId}`, { user_id: user.value.id });
+    if (res.data.success) {
+      Swal.fire({ icon: 'success', title: 'Trashed', text: 'Message moved to trash.', timer: 1500, showConfirmButton: false });
+      fetchMessages();
+    }
+  } catch (err) {
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to trash message' });
+  }
+};
+
+const restoreMessage = async (messageId) => {
+  try {
+    const res = await api.post(`/messages/restore/${messageId}`, { user_id: user.value.id });
+    if (res.data.success) {
+      Swal.fire({ icon: 'success', title: 'Restored', text: 'Message restored.', timer: 1500, showConfirmButton: false });
+      fetchMessages();
+    }
+  } catch (err) {
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to restore message' });
+  }
+};
+
+const permanentlyDeleteSelected = async () => {
+  if (selectedTrashIds.value.length === 0) return;
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: "You won't be able to revert this!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#64748b',
+    confirmButtonText: 'Yes, delete permanently!'
+  });
+  if (result.isConfirmed) {
+    try {
+      const res = await api.post('/messages/permanently-delete', { 
+        user_id: user.value.id, 
+        message_ids: selectedTrashIds.value 
+      });
+      if (res.data.success) {
+        Swal.fire({ icon: 'success', title: 'Deleted!', text: 'Messages have been permanently deleted.', timer: 1500, showConfirmButton: false });
+        fetchMessages();
+      }
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to delete messages permanently' });
     }
   }
 };
@@ -468,7 +590,8 @@ const sendReply = async () => {
     const payload = {
       sender_id: user.value.id,
       to: [replyMessageContext.value.sender_id],
-      title: `Re: ${replyMessageContext.value.title.replace(/^Re:\s*/, '')}`,
+      parent_id: replyMessageContext.value.parent_id || replyMessageContext.value.id,
+      title: replyMessageContext.value.title.startsWith('Re:') ? replyMessageContext.value.title : `Re: ${replyMessageContext.value.title}`,
       message: replyText.value,
       document_type: replyDocumentType.value || null,
       document_id: replyDocuments.value.length > 0 ? replyDocuments.value : null

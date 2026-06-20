@@ -20,7 +20,10 @@ class MessageModel extends Model
         'document_type', 
         'document_id', 
         'is_read', 
-        'created_at'
+        'created_at',
+        'parent_id',
+        'deleted_by_sender_at',
+        'deleted_by_recipient_at'
     ];
 
     protected $useTimestamps = false;
