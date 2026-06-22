@@ -85,35 +85,16 @@
 
                 <!-- Document Submission Field -->
                 <div v-if="selectedUsers.length > 0 && selectedRole !== 'Director'" class="form-group">
-                  <label class="form-label">Document Submission (Optional):</label>
+                  <label class="form-label">Document Submission (Optional): Activity Design</label>
                   
-                  <div class="role-buttons" style="margin-bottom: 1rem;">
-                    <button 
-                      @click="selectedDocumentType = selectedDocumentType === 'design' ? '' : 'design'; selectedDocuments = []"
-                      :class="['role-btn', { active: selectedDocumentType === 'design' }]"
-                    >
-                      Activity Design
-                    </button>
-                    <button 
-                      @click="selectedDocumentType = selectedDocumentType === 'report' ? '' : 'report'; selectedDocuments = []"
-                      :class="['role-btn', { active: selectedDocumentType === 'report' }]"
-                    >
-                      Accomplishment Report
-                    </button>
-                  </div>
-
-                  <div v-if="selectedDocumentType === 'design'" class="checkbox-list" style="max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; background: rgba(0,0,0,0.2);">
-                    <label v-for="doc in pendingDesigns" :key="doc.id" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
-                      <input type="checkbox" :value="doc.id" v-model="selectedDocuments" style="accent-color: #9333ea;">
+                  <div class="checkbox-list" style="max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; background: rgba(0,0,0,0.2); margin-top: 0.5rem;">
+                    <label v-for="doc in archivedDesigns" :key="doc.id" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
+                      <input type="checkbox" :value="doc.id" @change="e => { selectedDocumentType = e.target.checked ? 'design' : ''; selectedDocuments = e.target.checked ? [e.target.value] : [] }" :checked="selectedDocuments.includes(doc.id)" style="accent-color: #9333ea;">
                       {{ doc.title }}
                     </label>
-                  </div>
-
-                  <div v-if="selectedDocumentType === 'report'" class="checkbox-list" style="max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; background: rgba(0,0,0,0.2);">
-                    <label v-for="doc in pendingReports" :key="doc.id" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
-                      <input type="checkbox" :value="doc.id" v-model="selectedDocuments" style="accent-color: #9333ea;">
-                      {{ doc.title }}
-                    </label>
+                    <div v-if="archivedDesigns.length === 0" style="color: #94a3b8; font-size: 0.9rem; padding: 0.5rem; text-align: center;">
+                      No archived activity designs available.
+                    </div>
                   </div>
                 </div>
 
@@ -246,35 +227,16 @@
                           </h5>
                           
                           <div class="form-group" style="margin-bottom: 1rem;">
-                            <label style="display: block; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">Attach Document(s) (Optional):</label>
-                            <div class="role-buttons" style="margin-bottom: 1rem; display: flex; gap: 0.5rem;">
-                              <button 
-                                @click="replyDocumentType = replyDocumentType === 'design' ? '' : 'design'; replyDocuments = []"
-                                :class="['role-btn', { active: replyDocumentType === 'design' }]"
-                                style="padding: 0.5rem 1rem; border-radius: 0.25rem; border: 1px solid rgba(147,51,234,0.5); background: transparent; color: #cbd5e1; cursor: pointer;"
-                              >
-                                Activity Design
-                              </button>
-                              <button 
-                                @click="replyDocumentType = replyDocumentType === 'report' ? '' : 'report'; replyDocuments = []"
-                                :class="['role-btn', { active: replyDocumentType === 'report' }]"
-                                style="padding: 0.5rem 1rem; border-radius: 0.25rem; border: 1px solid rgba(147,51,234,0.5); background: transparent; color: #cbd5e1; cursor: pointer;"
-                              >
-                                Accomplishment Report
-                              </button>
-                            </div>
+                            <label style="display: block; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">Attach Activity Design (Optional):</label>
                             
-                            <div v-if="replyDocumentType === 'design'" class="checkbox-list" style="max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; background: rgba(0,0,0,0.2);">
-                              <label v-for="doc in replyPendingDesigns" :key="doc.id" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
-                                <input type="checkbox" :value="doc.id" v-model="replyDocuments" style="accent-color: #9333ea;">
+                            <div class="checkbox-list" style="max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; background: rgba(0,0,0,0.2);">
+                              <label v-for="doc in replyArchivedDesigns" :key="doc.id" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
+                                <input type="checkbox" :value="doc.id" @change="e => { replyDocumentType = e.target.checked ? 'design' : ''; replyDocuments = e.target.checked ? [e.target.value] : [] }" :checked="replyDocuments.includes(doc.id)" style="accent-color: #9333ea;">
                                 {{ doc.title }}
                               </label>
-                            </div>
-                            <div v-if="replyDocumentType === 'report'" class="checkbox-list" style="max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; background: rgba(0,0,0,0.2);">
-                              <label v-for="doc in replyPendingReports" :key="doc.id" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
-                                <input type="checkbox" :value="doc.id" v-model="replyDocuments" style="accent-color: #9333ea;">
-                                {{ doc.title }}
-                              </label>
+                              <div v-if="replyArchivedDesigns.length === 0" style="color: #94a3b8; font-size: 0.9rem; padding: 0.5rem; text-align: center;">
+                                No archived activity designs available.
+                              </div>
                             </div>
                           </div>
                           
@@ -324,8 +286,7 @@ const selectedOffice = ref('');
 const selectedUsers = ref([]);
 const selectedDocumentType = ref('');
 const selectedDocuments = ref([]);
-const pendingDesigns = ref([]);
-const pendingReports = ref([]);
+const archivedDesigns = ref([]);
 const messageTitle = ref('');
 const messageText = ref('');
 const allUsers = ref([]);
@@ -342,8 +303,7 @@ const replyMessageContext = ref(null);
 const replyText = ref('');
 const replyDocumentType = ref('');
 const replyDocuments = ref([]);
-const replyPendingDesigns = ref([]);
-const replyPendingReports = ref([]);
+const replyArchivedDesigns = ref([]);
 
 const getOfficeName = (id) => {
   if (!id) return 'Unknown Office';
@@ -465,41 +425,30 @@ watch(selectedUsers, async (newVal) => {
     try {
       const fetchPromises = newVal.map(async (userId) => {
         try {
-          const [designsRes, reportsRes] = await Promise.all([
-            api.get(`activity-designs/${userId}`),
-            api.get(`activity-reports/${userId}`)
-          ]);
+          const userObj = allUsers.value.find(u => u.id === userId);
+          const role = userObj ? userObj.user_role : 'TWG';
+          const archivesRes = await api.get(`archives?user_id=${userId}&role=${role}`);
           
-          const designsList = designsRes.data.data || [];
-          const designs = designsList
-            .filter(d => d.status === 'Pending')
+          const archivesList = archivesRes.data.data || [];
+          const designs = archivesList
+            .filter(a => a.type === 'design')
             .map(d => ({
-              id: `design_${d.act_design_id}`,
+              id: `design_${d.original_id}`,
               title: d.title,
               type: 'Activity Design'
             }));
             
-          const reportsList = reportsRes.data.data || [];
-          const reports = reportsList
-            .filter(r => r.status === 'Pending')
-            .map(r => ({
-              id: `report_${r.id}`,
-              title: r.title,
-              type: 'Accomplishment Report'
-            }));
-            
-          return { designs, reports };
+          return { designs };
         } catch (e) {
           console.error(`Error fetching docs for user ${userId}`, e);
-          return { designs: [], reports: [] };
+          return { designs: [] };
         }
       });
       
       const allResults = await Promise.all(fetchPromises);
-      pendingDesigns.value = allResults.flatMap(r => r.designs);
-      pendingReports.value = allResults.flatMap(r => r.reports);
+      archivedDesigns.value = allResults.flatMap(r => r.designs);
       
-      const currentList = selectedDocumentType.value === 'design' ? pendingDesigns.value : (selectedDocumentType.value === 'report' ? pendingReports.value : []);
+      const currentList = archivedDesigns.value;
       if (selectedDocuments.value.length > 0) {
         selectedDocuments.value = selectedDocuments.value.filter(id => currentList.find(d => d.id === id));
       }
@@ -507,8 +456,7 @@ watch(selectedUsers, async (newVal) => {
       console.error('Error fetching user documents:', err);
     }
   } else {
-    pendingDesigns.value = [];
-    pendingReports.value = [];
+    archivedDesigns.value = [];
     selectedDocumentType.value = '';
     selectedDocuments.value = [];
   }
@@ -547,17 +495,12 @@ const fetchUsers = async () => {
 watch(replyMessageContext, async (newVal) => {
   if (newVal && newVal.sender_id) {
     try {
-      const [designsRes, reportsRes] = await Promise.all([
-        api.get(`activity-designs/${newVal.sender_id}`),
-        api.get(`activity-reports/${newVal.sender_id}`)
-      ]);
-      const designsList = designsRes.data.data || [];
-      replyPendingDesigns.value = designsList.filter(d => d.status === 'Pending').map(d => ({
-        id: `design_${d.act_design_id}`, title: d.title, type: 'Activity Design'
-      }));
-      const reportsList = reportsRes.data.data || [];
-      replyPendingReports.value = reportsList.filter(r => r.status === 'Pending').map(r => ({
-        id: `report_${r.id}`, title: r.title, type: 'Accomplishment Report'
+      const userObj = allUsers.value.find(u => u.id === newVal.sender_id);
+      const role = userObj ? userObj.user_role : 'TWG';
+      const archivesRes = await api.get(`archives?user_id=${newVal.sender_id}&role=${role}`);
+      const archivesList = archivesRes.data.data || [];
+      replyArchivedDesigns.value = archivesList.filter(a => a.type === 'design').map(d => ({
+        id: `design_${d.original_id}`, title: d.title, type: 'Activity Design'
       }));
     } catch (err) {
       console.error('Error fetching docs for reply', err);
@@ -607,10 +550,10 @@ const replyToMessage = async (message) => {
   replyingToId.value = message.id;
 
   try {
-    const designsRes = await api.get('/activity-designs');
-    replyPendingDesigns.value = designsRes.data.filter(d => d.status === 'Pending');
-    const reportsRes = await api.get('/accomplishment-reports');
-    replyPendingReports.value = reportsRes.data.filter(r => r.status === 'Pending');
+    const archivesRes = await api.get('archives?role=gad_staff'); // get all for staff just in case, or let watcher handle it
+    replyArchivedDesigns.value = archivesRes.data.data.filter(a => a.type === 'design').map(d => ({
+      id: `design_${d.original_id}`, title: d.title, type: 'Activity Design'
+    }));
   } catch (error) {
     console.error('Error fetching documents for reply:', error);
   }

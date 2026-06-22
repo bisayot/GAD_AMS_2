@@ -5,16 +5,16 @@
       isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
     ]"
   >
-    <div class="sidebar-header">
+    <div class="sidebar-header relative w-full">
       <div class="sidebar-logo">
-        <img src="/images/bsulogo.png" alt="BSU Logo" />
+        <img src="/images/logo.png" alt="Custom Logo" />
         <div class="logo-text">
           <div class="logo-subtitle">Benguet State University</div>
           <div class="logo-title">GAD-AMS</div>
           <div class="logo-dept">Gender and Development Office</div>
         </div>
       </div>
-      <button @click="$emit('close')" class="lg:hidden text-slate-400 hover:text-white p-1 flex-shrink-0 flex items-center justify-center ml-2">
+      <button @click="$emit('close')" class="lg:hidden absolute top-0 -right-2 text-slate-400 hover:text-white p-1 flex items-center justify-center">
         <span class="material-symbols-outlined text-lg">close</span>
       </button>
     </div>
@@ -59,8 +59,8 @@ defineEmits(['logout', 'close']);
   /* Logo section */
   .sidebar-header {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: center;
     margin-bottom: 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.15);
     padding-bottom: 16px;
@@ -69,18 +69,19 @@ defineEmits(['logout', 'close']);
 
   .sidebar-logo {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
   }
 
   .sidebar-logo img {
-    height: 48px;
+    height: 72px;
     width: auto;
     object-fit: contain;
   }
 
   .logo-text {
-    text-align: left;
+    text-align: center;
   }
 
   .logo-subtitle {

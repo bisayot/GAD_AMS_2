@@ -93,24 +93,35 @@ class DocumentTrashController extends BaseController
         $adModel = new ActivityDesignModel();
         $arModel = new AccomplishmentReportModel();
 
+        $designIds = [];
+        $reportIds = [];
+
         foreach ($items as $item) {
             if ($item->doc_type === 'design') {
-                $record = $adModel->onlyDeleted()->find($item->id);
-                if ($record) {
-                    if (!empty($record['attachment'])) {
-                        FileStorage::deleteFromDrafts($record['attachment']);
-                    }
-                    $adModel->delete($item->id, true); // true = purge
-                }
+                $designIds[] = $item->id;
             } elseif ($item->doc_type === 'report') {
-                $record = $arModel->onlyDeleted()->find($item->id);
-                if ($record) {
-                    if (!empty($record['attachment'])) {
-                        FileStorage::deleteFromDrafts($record['attachment']);
-                    }
-                    $arModel->delete($item->id, true);
+                $reportIds[] = $item->id;
+            }
+        }
+
+        if (!empty($designIds)) {
+            $records = $adModel->onlyDeleted()->whereIn('act_design_id', $designIds)->findAll();
+            foreach ($records as $record) {
+                if (!empty($record['attachment'])) {
+                    FileStorage::deleteFromDrafts($record['attachment']);
                 }
             }
+            $adModel->delete($designIds, true); // true = purge
+        }
+
+        if (!empty($reportIds)) {
+            $records = $arModel->onlyDeleted()->whereIn('id', $reportIds)->findAll();
+            foreach ($records as $record) {
+                if (!empty($record['attachment'])) {
+                    FileStorage::deleteFromDrafts($record['attachment']);
+                }
+            }
+            $arModel->delete($reportIds, true);
         }
 
         return $this->response->setJSON(['success' => true, 'message' => 'Permanently deleted selected items']);
@@ -127,13 +138,24 @@ class DocumentTrashController extends BaseController
         $adModel = new ActivityDesignModel();
         $arModel = new AccomplishmentReportModel();
 
+        $designIds = [];
+        $reportIds = [];
+
         foreach ($items as $item) {
             if ($item->doc_type === 'design') {
-                // To restore, we set deleted_at back to null
-                $adModel->update($item->id, ['deleted_at' => null]);
+                $designIds[] = $item->id;
             } elseif ($item->doc_type === 'report') {
-                $arModel->update($item->id, ['deleted_at' => null]);
+                $reportIds[] = $item->id;
             }
+        }
+
+        if (!empty($designIds)) {
+            // To restore, we set deleted_at back to null
+            $adModel->builder()->whereIn('act_design_id', $designIds)->update(['deleted_at' => null]);
+        }
+        
+        if (!empty($reportIds)) {
+            $arModel->builder()->whereIn('id', $reportIds)->update(['deleted_at' => null]);
         }
 
         return $this->response->setJSON(['success' => true, 'message' => 'Restored selected items']);

@@ -85,39 +85,7 @@
                   </div>
                 </div>
 
-                <!-- Document Submission Field -->
-                <div v-if="selectedUsers.length > 0" class="form-group">
-                  <label class="form-label">Document Submission (Optional):</label>
-                  
-                  <div class="role-buttons" style="margin-bottom: 1rem;">
-                    <button 
-                      @click="selectedDocumentType = selectedDocumentType === 'design' ? '' : 'design'; selectedDocuments = []"
-                      :class="['role-btn', { active: selectedDocumentType === 'design' }]"
-                    >
-                      Activity Design
-                    </button>
-                    <button 
-                      @click="selectedDocumentType = selectedDocumentType === 'report' ? '' : 'report'; selectedDocuments = []"
-                      :class="['role-btn', { active: selectedDocumentType === 'report' }]"
-                    >
-                      Accomplishment Report
-                    </button>
-                  </div>
 
-                  <div v-if="selectedDocumentType === 'design'" class="checkbox-list" style="max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; background: rgba(0,0,0,0.2);">
-                    <label v-for="doc in pendingDesigns" :key="doc.id" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
-                      <input type="checkbox" :value="doc.id" v-model="selectedDocuments" style="accent-color: #9333ea;">
-                      {{ doc.title }}
-                    </label>
-                  </div>
-
-                  <div v-if="selectedDocumentType === 'report'" class="checkbox-list" style="max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; background: rgba(0,0,0,0.2);">
-                    <label v-for="doc in pendingReports" :key="doc.id" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
-                      <input type="checkbox" :value="doc.id" v-model="selectedDocuments" style="accent-color: #9333ea;">
-                      {{ doc.title }}
-                    </label>
-                  </div>
-                </div>
 
                 <!-- Title Field -->
                 <div v-if="selectedUsers.length > 0" class="form-group">
@@ -247,38 +215,7 @@
                             </button>
                           </h5>
                           
-                          <div class="form-group" style="margin-bottom: 1rem;">
-                            <label style="display: block; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">Attach Document(s) (Optional):</label>
-                            <div class="role-buttons" style="margin-bottom: 1rem; display: flex; gap: 0.5rem;">
-                              <button 
-                                @click="replyDocumentType = replyDocumentType === 'design' ? '' : 'design'; replyDocuments = []"
-                                :class="['role-btn', { active: replyDocumentType === 'design' }]"
-                                style="padding: 0.5rem 1rem; border-radius: 0.25rem; border: 1px solid rgba(147,51,234,0.5); background: transparent; color: #cbd5e1; cursor: pointer;"
-                              >
-                                Activity Design
-                              </button>
-                              <button 
-                                @click="replyDocumentType = replyDocumentType === 'report' ? '' : 'report'; replyDocuments = []"
-                                :class="['role-btn', { active: replyDocumentType === 'report' }]"
-                                style="padding: 0.5rem 1rem; border-radius: 0.25rem; border: 1px solid rgba(147,51,234,0.5); background: transparent; color: #cbd5e1; cursor: pointer;"
-                              >
-                                Accomplishment Report
-                              </button>
-                            </div>
-                            
-                            <div v-if="replyDocumentType === 'design'" class="checkbox-list" style="max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; background: rgba(0,0,0,0.2);">
-                              <label v-for="doc in replyPendingDesigns" :key="doc.id" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
-                                <input type="checkbox" :value="doc.id" v-model="replyDocuments" style="accent-color: #9333ea;">
-                                {{ doc.title }}
-                              </label>
-                            </div>
-                            <div v-if="replyDocumentType === 'report'" class="checkbox-list" style="max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; background: rgba(0,0,0,0.2);">
-                              <label v-for="doc in replyPendingReports" :key="doc.id" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
-                                <input type="checkbox" :value="doc.id" v-model="replyDocuments" style="accent-color: #9333ea;">
-                                {{ doc.title }}
-                              </label>
-                            </div>
-                          </div>
+
                           
                           <div class="form-group" style="margin-bottom: 1.5rem;">
                             <label style="display: block; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">Message:</label>

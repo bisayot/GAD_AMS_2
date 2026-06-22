@@ -60,6 +60,10 @@ $routes->group('api', function($routes) {
     $routes->options('update-design/(:num)', 'ActivityDesignController::updateDesign/$1');
     $routes->post('update-design/(:num)', 'ActivityDesignController::updateDesign/$1');
 
+    // Update deadline
+    $routes->options('update-deadline/(:num)', 'AuthController::handleOptions');
+    $routes->post('update-deadline/(:num)', 'ActivityDesignController::updateDeadline/$1');
+
     // ----------------------------------------------------------------
     // ACCOMPLISHMENT REPORT ROUTES (new)
     // ----------------------------------------------------------------

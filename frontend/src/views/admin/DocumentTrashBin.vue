@@ -4,7 +4,7 @@
     <div class="mb-8 relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl font-black text-[#16213e] tracking-tight">Document Trash Bin</h1>
-        <p class="text-[#475569] font-medium mt-1">Manage soft-deleted documents. Items will be automatically permanently deleted after 30 days.</p>
+        <p class="text-[#475569] font-medium mt-1">Items will be automatically permanently deleted after 30 days.</p>
       </div>
       
       <div class="flex gap-3">
@@ -47,7 +47,6 @@
               </th>
               <th class="p-4 font-bold">Document Title</th>
               <th class="p-4 font-bold">Type</th>
-              <th class="p-4 font-bold">Deleted By</th>
               <th class="p-4 font-bold">Date Deleted</th>
               <th class="p-4 font-bold text-right">Actions</th>
             </tr>
@@ -67,12 +66,9 @@
               </td>
               <td class="p-4">
                 <span class="px-3 py-1 rounded-full text-xs font-bold tracking-wider"
-                  :class="item.doc_type === 'design' ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-[#b979cc]/20 text-[#b979cc] border border-[#b979cc]/30'">
+                  :class="item.doc_type === 'design' ? 'bg-purple-500/30 text-purple-200 border border-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.3)]' : 'bg-pink-500/30 text-pink-200 border border-pink-400 shadow-[0_0_10px_rgba(236,72,153,0.3)]'">
                   {{ item.doc_type === 'design' ? 'Activity Design' : 'Accomplishment Report' }}
                 </span>
-              </td>
-              <td class="p-4 text-[rgba(203,213,225,0.8)] text-sm">
-                {{ item.submitter_name }}
               </td>
               <td class="p-4 text-[#94a3b8] font-mono text-sm">
                 {{ item.deleted_date }}
