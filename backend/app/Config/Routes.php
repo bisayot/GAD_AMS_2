@@ -32,6 +32,16 @@ $routes->group('api', function($routes) {
     $routes->options('users', 'AuthController::handleOptions');
 
     // ----------------------------------------------------------------
+    // USER MANAGEMENT ROUTES (new)
+    // ----------------------------------------------------------------
+    $routes->options('users/suspend/(:num)', 'AuthController::handleOptions');
+    $routes->post('users/suspend/(:num)', 'UserManagementController::suspend/$1');
+    $routes->options('users/restore/(:num)', 'AuthController::handleOptions');
+    $routes->post('users/restore/(:num)', 'UserManagementController::restore/$1');
+    $routes->options('users/delete/(:num)', 'AuthController::handleOptions');
+    $routes->delete('users/delete/(:num)', 'UserManagementController::permanentlyDelete/$1');
+
+    // ----------------------------------------------------------------
     // CLOUDFLARE R2 STORAGE ROUTE (existing)
     // ----------------------------------------------------------------
     $routes->post('storage/ticket', 'StorageController::getUploadTicket');

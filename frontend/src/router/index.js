@@ -44,6 +44,7 @@ const routes = [
       { path: 'gad-plan-budget', name: 'admin-gad-plan-budget', component: () => import('../views/admin/GadPlanBudgetView.vue') },
       { path: 'data-privacy-policy', name: 'admin-privacy-policy', component: () => import('../views/admin/PrivacyPolicyView.vue') },
       { path: 'messages', name: 'admin-messages', component: () => import('../views/admin/MessagesView.vue') },
+      { path: 'user-management', name: 'admin-user-management', component: () => import('../views/admin/UserManagementView.vue') },
     ]
   },
 
