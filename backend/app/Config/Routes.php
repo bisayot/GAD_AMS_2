@@ -42,6 +42,12 @@ $routes->group('api', function($routes) {
     $routes->delete('users/delete/(:num)', 'UserManagementController::permanentlyDelete/$1');
 
     // ----------------------------------------------------------------
+    // ACTIVITY LOGS ROUTES (new)
+    // ----------------------------------------------------------------
+    $routes->options('activity-logs', 'AuthController::handleOptions');
+    $routes->get('activity-logs', 'ActivityLogController::index');
+
+    // ----------------------------------------------------------------
     // CLOUDFLARE R2 STORAGE ROUTE (existing)
     // ----------------------------------------------------------------
     $routes->post('storage/ticket', 'StorageController::getUploadTicket');

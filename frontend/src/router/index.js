@@ -45,6 +45,7 @@ const routes = [
       { path: 'data-privacy-policy', name: 'admin-privacy-policy', component: () => import('../views/admin/PrivacyPolicyView.vue') },
       { path: 'messages', name: 'admin-messages', component: () => import('../views/admin/MessagesView.vue') },
       { path: 'user-management', name: 'admin-user-management', component: () => import('../views/admin/UserManagementView.vue') },
+      { path: 'activity-logs', name: 'admin-activity-logs', component: () => import('../views/admin/ActivityLogsView.vue') },
     ]
   },
 
@@ -70,6 +71,7 @@ const routes = [
       { path: 'data-privacy-policy', name: 'college-privacy-policy', component: () => import('../views/twg/PrivacyPolicyView.vue') },
       { path: 'tech-assist', name: 'college-tech-assist', component: () => import('../views/PlaceholderContent.vue') },
       { path: 'messages', name: 'college-messages', component: () => import('../views/twg/MessagesView.vue') },
+      { path: 'activity-logs', name: 'college-activity-logs', component: () => import('../views/twg/ActivityLogsView.vue') },
     ]
   },
 
@@ -99,6 +101,8 @@ const routes = [
       { path: 'user-manual', name: 'staff-user-manual', component: () => import('../views/staff/UserManualView.vue') },
       { path: 'data-privacy-policy', name: 'staff-privacy-policy', component: () => import('../views/staff/PrivacyPolicyView.vue') },
       { path: 'messages', name: 'staff-messages', component: () => import('../views/staff/MessagesView.vue') },
+      { path: 'user-management', name: 'staff-user-management', component: () => import('../views/staff/UserManagementView.vue') },
+      { path: 'activity-logs', name: 'staff-activity-logs', component: () => import('../views/staff/ActivityLogsView.vue') },
     ]
   },
 ]

@@ -42,7 +42,7 @@ class AuthController extends ResourceController
         }
 
         if (!empty($user['deleted_at'])) {
-            return $this->failUnauthorized("Your account has been suspended. Please contact the director.");
+            return $this->failUnauthorized("Your account has been suspended. Please contact the GAD Office.");
         }
 
         if (!password_verify($password, $user['password'])) {
@@ -60,6 +60,8 @@ class AuthController extends ResourceController
         $db = \Config\Database::connect();
         $userProfile = $db->table('user_profiles')->where('user_id', $user['id'])->get()->getRowArray();
         $userRole = $userProfile ? ($userProfile['user_role'] ?? 'Non-TWG') : 'Non-TWG';
+
+        \App\Models\ActivityLogModel::log($user['id'], 'Login', $user['full_name'] . " logged in");
 
         return $this->respond([
             'status' => 200,
@@ -163,6 +165,9 @@ class AuthController extends ResourceController
                 'user_role' => $data['user_role'] ?? 'Non-TWG',
                 'office_unit_id' => $officeId
             ]);
+
+            $actionUserId = $this->request->getHeaderLine('X-User-Id') ?: $newUserId;
+            \App\Models\ActivityLogModel::log($actionUserId, 'Register User', 'registered a new user: ' . $data['fullname']);
 
             return $this->respondCreated(['message' => 'Account created successfully. Please log in.']);
         }
@@ -339,7 +344,7 @@ class AuthController extends ResourceController
     public function getAllUsers() {
         $db = \Config\Database::connect();
         $users = $db->table('users')
-            ->select('users.id, users.email, users.full_name, users.role, users.office_id, users.deleted_at, user_profiles.user_role, office_units.office_name')
+            ->select('users.id, users.email, users.full_name, users.role, users.office_id, users.deleted_at, users.created_at, user_profiles.user_role, office_units.office_name')
             ->join('user_profiles', 'user_profiles.user_id = users.id', 'left')
             ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->get()

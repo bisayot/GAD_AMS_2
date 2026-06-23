@@ -69,6 +69,9 @@ class MessageController extends ResourceController
         }
 
         if ($insertedCount > 0) {
+            $actionUserId = $this->request->getHeaderLine('X-User-Id') ?: $senderId;
+            \App\Models\ActivityLogModel::log($actionUserId, 'Send Message', 'sent a message: ' . $title);
+
             return $this->response->setJSON([
                 'success' => true,
                 'message' => "Message sent to $insertedCount recipient(s)."
@@ -287,6 +290,9 @@ class MessageController extends ResourceController
         $db->table('messages')->where('recipient_id', $userId)
             ->groupStart()->where('id', $threadId)->orWhere('parent_id', $threadId)->groupEnd()
             ->update(['deleted_by_recipient_at' => $now]);
+
+        $actionUserId = $this->request->getHeaderLine('X-User-Id') ?: $userId;
+        \App\Models\ActivityLogModel::log($actionUserId, 'Trash Message', 'moved a message thread to trash');
 
         return $this->response->setJSON(['success' => true]);
     }

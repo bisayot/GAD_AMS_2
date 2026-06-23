@@ -87,6 +87,21 @@
 
 
 
+                <!-- Document Submission Field -->
+                <div v-if="selectedUsers.length > 0" class="form-group">
+                  <label class="form-label">Document Submission (Optional):</label>
+                  
+                  <div class="checkbox-list" style="max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; background: rgba(0,0,0,0.2); margin-top: 0.5rem;">
+                    <label v-for="doc in allUserDocuments" :key="doc.id" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
+                      <input type="checkbox" :value="doc.id" v-model="selectedDocuments" style="accent-color: #9333ea;">
+                      {{ doc.title }} <span style="color:#94a3b8; font-size: 0.8rem;">({{ doc.type }})</span>
+                    </label>
+                    <div v-if="allUserDocuments.length === 0" style="color: #94a3b8; font-size: 0.9rem; padding: 0.5rem; text-align: center;">
+                      No documents available.
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Title Field -->
                 <div v-if="selectedUsers.length > 0" class="form-group">
                   <label class="form-label">Title:</label>
@@ -176,8 +191,8 @@
                           <strong>Attached:</strong> {{ message.document_type }}
                         </span>
                         <div style="display: flex; gap: 0.5rem;">
-                          <button v-for="docId in (message.document_id ? message.document_id.split(',') : [])" :key="docId" @click.stop="(message.document_type === 'Activity Design' || message.document_type === 'design') ? viewAttachedDesign(docId) : viewAttachedReport(docId)" class="btn-view-doc" style="background: #9333ea; color: white; border: none; padding: 0.3rem 0.75rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.85rem; transition: background 0.3s;">
-                            View {{ (message.document_type === 'Activity Design' || message.document_type === 'design') ? 'Design' : 'Report' }}
+                          <button v-for="docId in (message.document_id ? message.document_id.split(',') : [])" :key="docId" @click.stop="docId.startsWith('design_') ? viewAttachedDesign(docId) : viewAttachedReport(docId)" class="btn-view-doc" style="background: #9333ea; color: white; border: none; padding: 0.3rem 0.75rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.85rem; transition: background 0.3s;">
+                            View {{ docId.startsWith('design_') ? 'Design' : 'Report' }}
                           </button>
                         </div>
                       </div>
@@ -192,8 +207,8 @@
                           </div>
                           <p :style="{ color: '#94a3b8', margin: threadMsg.document_id ? '0 0 0.5rem 0' : '0', fontSize: '1rem', whiteSpace: 'pre-wrap' }">{{ threadMsg.message }}</p>
                           <div v-if="threadMsg.document_id" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                            <button v-for="docId in threadMsg.document_id.split(',')" :key="docId" @click.stop="(threadMsg.document_type === 'Activity Design' || threadMsg.document_type === 'design') ? viewAttachedDesign(docId) : viewAttachedReport(docId)" class="btn-view-doc" style="background: rgba(147, 51, 234, 0.2); color: #c084fc; border: 1px solid rgba(147, 51, 234, 0.3); padding: 0.2rem 0.6rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.75rem; transition: background 0.3s;">
-                              View {{ (threadMsg.document_type === 'Activity Design' || threadMsg.document_type === 'design') ? 'Design' : 'Report' }}
+                            <button v-for="docId in threadMsg.document_id.split(',')" :key="docId" @click.stop="docId.startsWith('design_') ? viewAttachedDesign(docId) : viewAttachedReport(docId)" class="btn-view-doc" style="background: rgba(147, 51, 234, 0.2); color: #c084fc; border: 1px solid rgba(147, 51, 234, 0.3); padding: 0.2rem 0.6rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.75rem; transition: background 0.3s;">
+                              View {{ docId.startsWith('design_') ? 'Design' : 'Report' }}
                             </button>
                           </div>
                         </div>
@@ -216,6 +231,19 @@
                           </h5>
                           
 
+                          <div class="form-group" style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">Attach Document (Optional):</label>
+                            
+                            <div class="checkbox-list" style="max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; background: rgba(0,0,0,0.2);">
+                              <label v-for="doc in replyAllUserDocuments" :key="doc.id" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
+                                <input type="checkbox" :value="doc.id" v-model="replyDocuments" style="accent-color: #9333ea;">
+                                {{ doc.title }} <span style="color:#94a3b8; font-size: 0.8rem;">({{ doc.type }})</span>
+                              </label>
+                              <div v-if="replyAllUserDocuments.length === 0" style="color: #94a3b8; font-size: 0.9rem; padding: 0.5rem; text-align: center;">
+                                No documents available.
+                              </div>
+                            </div>
+                          </div>
                           
                           <div class="form-group" style="margin-bottom: 1.5rem;">
                             <label style="display: block; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">Message:</label>
@@ -263,8 +291,7 @@ const selectedOffice = ref('');
 const selectedUsers = ref([]);
 const selectedDocumentType = ref('');
 const selectedDocuments = ref([]);
-const pendingDesigns = ref([]);
-const pendingReports = ref([]);
+const allUserDocuments = ref([]);
 const messageTitle = ref('');
 const messageText = ref('');
 const allUsers = ref([]);
@@ -281,8 +308,7 @@ const replyMessageContext = ref(null);
 const replyText = ref('');
 const replyDocumentType = ref('');
 const replyDocuments = ref([]);
-const replyPendingDesigns = ref([]);
-const replyPendingReports = ref([]);
+const replyAllUserDocuments = ref([]);
 
 const getOfficeName = (id) => {
   if (!id) return 'Unknown Office';
@@ -404,50 +430,54 @@ watch(selectedUsers, async (newVal) => {
     try {
       const fetchPromises = newVal.map(async (userId) => {
         try {
-          const [designsRes, reportsRes] = await Promise.all([
+          const userObj = allUsers.value.find(u => u.id === userId);
+          const role = userObj ? userObj.user_role : 'TWG';
+          const [designsRes, reportsRes, archivesRes] = await Promise.all([
             api.get(`activity-designs/${userId}`),
-            api.get(`activity-reports/${userId}`)
+            api.get(`activity-reports/${userId}`),
+            api.get(`archives?user_id=${userId}&role=${role}`)
           ]);
           
-          const designsList = designsRes.data.data || [];
-          const designs = designsList
-            .filter(d => d.status === 'Pending')
-            .map(d => ({
-              id: `design_${d.act_design_id}`,
-              title: d.title,
-              type: 'Activity Design'
-            }));
+          const activeDesigns = (designsRes.data?.data || []).map(d => ({
+            id: `design_${d.act_design_id}`,
+            title: `${d.title} (${d.status})`,
+            type: 'Activity Design'
+          }));
+          const activeReports = (reportsRes.data?.data || []).map(r => ({
+            id: `report_${r.id}`,
+            title: `${r.title} (${r.status})`,
+            type: 'Accomplishment Report'
+          }));
+          const archivesList = archivesRes.data?.data || [];
+          const archivedDesigns = archivesList.filter(a => a.type === 'design').map(d => ({
+            id: `design_${d.original_id}`,
+            title: `${d.title} (Archived)`,
+            type: 'Activity Design'
+          }));
+          const archivedReports = archivesList.filter(a => a.type === 'report').map(r => ({
+            id: `report_${r.original_id}`,
+            title: `${r.title} (Archived)`,
+            type: 'Accomplishment Report'
+          }));
             
-          const reportsList = reportsRes.data.data || [];
-          const reports = reportsList
-            .filter(r => r.status === 'Pending')
-            .map(r => ({
-              id: `report_${r.id}`,
-              title: r.title,
-              type: 'Accomplishment Report'
-            }));
-            
-          return { designs, reports };
+          return [...activeDesigns, ...activeReports, ...archivedDesigns, ...archivedReports];
         } catch (e) {
           console.error(`Error fetching docs for user ${userId}`, e);
-          return { designs: [], reports: [] };
+          return [];
         }
       });
       
       const allResults = await Promise.all(fetchPromises);
-      pendingDesigns.value = allResults.flatMap(r => r.designs);
-      pendingReports.value = allResults.flatMap(r => r.reports);
+      allUserDocuments.value = allResults.flat();
       
-      const currentList = selectedDocumentType.value === 'design' ? pendingDesigns.value : (selectedDocumentType.value === 'report' ? pendingReports.value : []);
       if (selectedDocuments.value.length > 0) {
-        selectedDocuments.value = selectedDocuments.value.filter(id => currentList.find(d => d.id === id));
+        selectedDocuments.value = selectedDocuments.value.filter(id => allUserDocuments.value.find(d => d.id === id));
       }
     } catch (err) {
       console.error('Error fetching user documents:', err);
     }
   } else {
-    pendingDesigns.value = [];
-    pendingReports.value = [];
+    allUserDocuments.value = [];
     selectedDocumentType.value = '';
     selectedDocuments.value = [];
   }
@@ -491,8 +521,8 @@ const sendMessage = async () => {
       to: selectedUsers.value,
       title: messageTitle.value,
       message: messageText.value,
-      document_type: selectedDocumentType.value || null,
-      document_id: selectedDocuments.value.length > 0 ? selectedDocuments.value : null
+      document_type: selectedDocuments.value.length > 0 ? (selectedDocuments.value.every(id => id.startsWith('design_')) ? 'Activity Design' : selectedDocuments.value.every(id => id.startsWith('report_')) ? 'Accomplishment Report' : 'Mixed') : null,
+      document_id: selectedDocuments.value.length > 0 ? selectedDocuments.value.join(',') : null
     };
     
     const response = await api.post('messages/send', payload);
@@ -526,10 +556,30 @@ const replyToMessage = async (message) => {
   replyingToId.value = message.id;
 
   try {
-    const designsRes = await api.get('/activity-designs');
-    replyPendingDesigns.value = designsRes.data.filter(d => d.status === 'Pending');
-    const reportsRes = await api.get('/accomplishment-reports');
-    replyPendingReports.value = reportsRes.data.filter(r => r.status === 'Pending');
+    const targetUserId = message.sender_id;
+    const userObj = allUsers.value.find(u => u.id === targetUserId);
+    const role = userObj ? userObj.user_role : 'TWG';
+    const [designsRes, reportsRes, archivesRes] = await Promise.all([
+      api.get(`activity-designs/${targetUserId}`),
+      api.get(`activity-reports/${targetUserId}`),
+      api.get(`archives?user_id=${targetUserId}&role=${role}`)
+    ]);
+    
+    const activeDesigns = (designsRes.data?.data || []).map(d => ({
+      id: `design_${d.act_design_id}`, title: `${d.title} (${d.status})`, type: 'Activity Design'
+    }));
+    const activeReports = (reportsRes.data?.data || []).map(r => ({
+      id: `report_${r.id}`, title: `${r.title} (${r.status})`, type: 'Accomplishment Report'
+    }));
+    const archivesList = archivesRes.data?.data || [];
+    const archivedDesigns = archivesList.filter(a => a.type === 'design').map(d => ({
+      id: `design_${d.original_id}`, title: `${d.title} (Archived)`, type: 'Activity Design'
+    }));
+    const archivedReports = archivesList.filter(a => a.type === 'report').map(r => ({
+      id: `report_${r.original_id}`, title: `${r.title} (Archived)`, type: 'Accomplishment Report'
+    }));
+    
+    replyAllUserDocuments.value = [...activeDesigns, ...activeReports, ...archivedDesigns, ...archivedReports];
   } catch (error) {
     console.error('Error fetching documents for reply:', error);
   }
@@ -556,8 +606,8 @@ const sendReply = async () => {
       parent_id: replyMessageContext.value.parent_id || replyMessageContext.value.id,
       title: replyMessageContext.value.title.startsWith('Re:') ? replyMessageContext.value.title : `Re: ${replyMessageContext.value.title}`,
       message: replyText.value,
-      document_type: replyDocumentType.value || null,
-      document_id: replyDocuments.value.length > 0 ? replyDocuments.value : null
+      document_type: replyDocuments.value.length > 0 ? (replyDocuments.value.every(id => id.startsWith('design_')) ? 'Activity Design' : replyDocuments.value.every(id => id.startsWith('report_')) ? 'Accomplishment Report' : 'Mixed') : null,
+      document_id: replyDocuments.value.length > 0 ? replyDocuments.value.join(',') : null
     };
 
     const response = await api.post('/messages/send', payload);
