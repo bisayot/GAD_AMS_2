@@ -137,7 +137,7 @@ const emailSearch = ref('');
 const fetchLogs = async () => {
   loading.value = true;
   try {
-    const res = await api.get('/activity-logs', { params: { role: 'gad_staff' } });
+    const res = await api.get('/activity-logs', { params: { exclude_admin: 'true' } });
     if (res.data.success) {
       allLogs.value = res.data.data;
     }
@@ -262,26 +262,28 @@ onMounted(() => {
 }
 
 .page-title {
-  font-family: 'Times New Roman', serif;
+
   font-size: 2rem;
-  color: white;
+  color: #16213e;
+  font-weight: 900;
+  letter-spacing: -0.025em;
   margin-bottom: 0.5rem;
 }
 
 .page-subtitle {
-  color: #94a3b8;
+  color: #475569;
   font-size: 0.95rem;
 }
 
 .stat-card {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.7) 100%);
-  border: 1px solid rgba(185, 121, 204, 0.2);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 1px solid rgba(185, 121, 204, 0.15);
   border-radius: 1rem;
   padding: 1.5rem;
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .stat-icon {
@@ -328,7 +330,7 @@ onMounted(() => {
 }
 
 .glass-card {
-  background: rgba(15, 23, 42, 0.6);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   backdrop-filter: blur(12px);
   border-radius: 1.25rem;
   border: 1px solid rgba(185, 121, 204, 0.15);
@@ -361,9 +363,9 @@ onMounted(() => {
   display: flex;
   gap: 1rem;
   padding: 1.25rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 1rem;
-  border: 1px solid transparent;
+  border: 1px solid rgba(185, 121, 204, 0.1);
   transition: all 0.2s;
 }
 

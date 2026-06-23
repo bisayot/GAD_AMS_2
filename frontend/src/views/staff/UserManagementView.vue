@@ -1,8 +1,9 @@
 <template>
   <main class="main-viewport">
     <div class="page-container">
-      <div class="flex items-center justify-between mb-8">
-        <h1 class="text-3xl font-black text-[#16213e] tracking-tight drop-shadow-sm">User Management</h1>
+      <div class="header-section mb-8">
+        <h1 class="page-title">User Management</h1>
+        <p class="page-subtitle">Manage system users, roles, and office assignments.</p>
       </div>
 
       <div class="layout-stacked">
@@ -359,6 +360,17 @@ onMounted(() => {
 <style scoped>
 .main-viewport { flex: 1; overflow-y: auto; background: transparent; }
 .page-container { min-height: 100vh; padding: 1rem; max-width: 1200px; margin: 0 auto; }
+.page-title {
+  font-size: 2rem;
+  color: #16213e;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.5rem;
+}
+.page-subtitle {
+  color: #475569;
+  font-size: 0.95rem;
+}
 .glass-card { 
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); 
   backdrop-filter: blur(24px); 

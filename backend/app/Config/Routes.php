@@ -56,7 +56,8 @@ $routes->group('api', function($routes) {
     // ----------------------------------------------------------------
     // ACTIVITY DESIGN ROUTES (new)
     // ----------------------------------------------------------------
-    $routes->options('submit-activity-design', 'ActivityDesignController::submitDesign');
+    $routes->options('submit-activity-design', 'AuthController::handleOptions');
+    $routes->post('submit-activity-design', 'ActivityDesignController::submitDesign');
     $routes->options('activity-designs/submit', 'AuthController::handleOptions');
     $routes->post('activity-designs/submit', 'ActivityDesignController::submitDesign');
     $routes->options('activity-designs/trash/(:num)', 'AuthController::handleOptions');
@@ -83,7 +84,8 @@ $routes->group('api', function($routes) {
     // ----------------------------------------------------------------
     // ACCOMPLISHMENT REPORT ROUTES (new)
     // ----------------------------------------------------------------
-    $routes->options('submit-activity-report', 'AccomplishmentReportController::submitReport');
+    $routes->options('submit-activity-report', 'AuthController::handleOptions');
+    $routes->post('submit-activity-report', 'AccomplishmentReportController::submitReport');
     $routes->options('accomplishment-reports/submit', 'AuthController::handleOptions');
     $routes->post('accomplishment-reports/submit', 'AccomplishmentReportController::submitReport');
     $routes->options('accomplishment-reports/trash/(:num)', 'AuthController::handleOptions');
@@ -115,6 +117,7 @@ $routes->group('api', function($routes) {
     $routes->options('archives', 'ArchiveController::index');
     $routes->get('archives', 'ArchiveController::index');
     $routes->get('offices', 'OfficeController::index');
+    $routes->options('venues', 'AuthController::handleOptions');
     $routes->get('venues', 'VenueController::index');
     $routes->post('archive-design/(:num)', 'ArchiveController::archiveDesign/$1');
     $routes->post('archive-report/(:num)', 'ArchiveController::archiveReport/$1');

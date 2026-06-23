@@ -3,8 +3,8 @@
     <div class="messages-content-wrapper">
       <div class="messages-header">
         <div>
-          <h1 class="messages-title">Messages</h1>
-          <p class="messages-subtitle">View and manage your messages here.</p>
+          <h1 class="page-title">Messages</h1>
+          <p class="page-subtitle">View and manage your messages here.</p>
         </div>
       </div>
 
@@ -605,18 +605,9 @@ onMounted(() => {
   padding: 0 0.25rem;
 }
 
-.messages-title {
-  font-size: 1.5rem;
-  font-weight: 900;
-  letter-spacing: -0.025em;
-  color: #1a1a2e;
-}
+.page-title { font-size: 2rem; color: #16213e; font-weight: 900; letter-spacing: -0.025em; margin-bottom: 0.5rem; }
 
-.messages-subtitle {
-  font-size: 1rem;
-  color: #475569;
-  margin-top: 0.25rem;
-}
+.page-subtitle { color: #475569; font-size: 0.95rem; }
 
 .create-message-btn {
   background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%);
@@ -1050,3 +1041,4 @@ onMounted(() => {
   }
 }
 </style>
+
