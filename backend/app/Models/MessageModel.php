@@ -20,6 +20,7 @@ class MessageModel extends Model
         'document_type', 
         'document_id', 
         'is_read', 
+        'is_announcement',
         'created_at',
         'parent_id',
         'deleted_by_sender_at',

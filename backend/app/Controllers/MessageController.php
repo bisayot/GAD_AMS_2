@@ -84,6 +84,91 @@ class MessageController extends ResourceController
         }
     }
 
+    public function announce()
+    {
+        $rules = [
+            'sender_id' => 'required|integer',
+            'target_type' => 'required|in_list[all,role,office]',
+            'title'     => 'required|string',
+            'message'   => 'required|string',
+        ];
+
+        if (!$this->validate($rules)) {
+            return $this->response->setJSON([
+                'success' => false, 
+                'message' => 'Validation failed', 
+                'errors' => $this->validator->getErrors()
+            ])->setStatusCode(400);
+        }
+
+        $senderId = $this->request->getVar('sender_id');
+        $targetType = $this->request->getVar('target_type');
+        $targetValue = $this->request->getVar('target_value');
+        $title = $this->request->getVar('title');
+        $messageText = $this->request->getVar('message');
+
+        $db = \Config\Database::connect();
+        
+        $builder = $db->table('users')
+            ->select('users.id')
+            ->where('users.deleted_at', null)
+            ->where('users.id !=', $senderId); // Don't send to self
+
+        if ($targetType === 'role') {
+            $builder->join('user_profiles', 'user_profiles.user_id = users.id', 'left');
+            $builder->groupStart()
+                ->where('users.role', $targetValue)
+                ->orWhere('user_profiles.user_role', $targetValue)
+            ->groupEnd();
+        } else if ($targetType === 'office') {
+            $builder->where('users.office_id', $targetValue);
+        }
+
+        $recipients = $builder->get()->getResultArray();
+
+        if (empty($recipients)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'No active users found matching the selected criteria.'
+            ])->setStatusCode(404);
+        }
+
+        $createdAt = date('Y-m-d H:i:s');
+        $insertedCount = 0;
+
+        foreach ($recipients as $row) {
+            $data = [
+                'sender_id'     => $senderId,
+                'recipient_id'  => $row['id'],
+                'parent_id'     => null,
+                'title'         => $title,
+                'message_text'  => $messageText,
+                'is_read'       => 0,
+                'is_announcement' => 1,
+                'created_at'    => $createdAt
+            ];
+
+            if ($this->messageModel->insert($data)) {
+                $insertedCount++;
+            }
+        }
+
+        if ($insertedCount > 0) {
+            $actionUserId = $this->request->getHeaderLine('X-User-Id') ?: $senderId;
+            \App\Models\ActivityLogModel::log($actionUserId, 'Make Announcement', 'sent an announcement: ' . $title);
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => "Announcement sent to $insertedCount recipient(s)."
+            ]);
+        } else {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Failed to send announcement.'
+            ])->setStatusCode(500);
+        }
+    }
+
     public function getInbox($userId)
     {
         if (!$userId) {
@@ -131,6 +216,7 @@ class MessageController extends ResourceController
                 'document_type' => $msg['document_type'],
                 'document_id' => $msg['document_id'],
                 'is_read' => $msg['is_read'],
+                'is_announcement' => $msg['is_announcement'],
                 'parent_id' => $msg['parent_id']
             ];
         }, $messages);
@@ -187,6 +273,7 @@ class MessageController extends ResourceController
                 'document_type' => $msg['document_type'],
                 'document_id' => $msg['document_id'],
                 'is_read' => $msg['is_read'],
+                'is_announcement' => $msg['is_announcement'],
                 'parent_id' => $msg['parent_id'],
                 'message' => $msg['message_text']
             ];
@@ -259,6 +346,7 @@ class MessageController extends ResourceController
                 'document_type' => $msg['document_type'],
                 'document_id' => $msg['document_id'],
                 'is_read' => $msg['is_read'],
+                'is_announcement' => $msg['is_announcement'],
                 'direction' => $msg['direction'],
                 'parent_id' => $msg['parent_id']
             ];

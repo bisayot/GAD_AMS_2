@@ -17,11 +17,74 @@
               <span class="title-indicator"></span>
               <h4 class="section-title" style="margin: 0;">Messages</h4>
             </div>
-            <button @click="showCreateModal = !showCreateModal" class="btn-primary" style="padding: 0.5rem 1rem; border-radius: 0.5rem; background: linear-gradient(135deg, #9333ea, #c084fc); border: none; color: white; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 500; font-size: 0.95rem; transition: transform 0.3s, box-shadow 0.3s; box-shadow: 0 4px 6px rgba(147, 51, 234, 0.2);">
-              <span class="material-symbols-outlined" style="font-size: 1.2rem;">{{ showCreateModal ? 'close' : 'add' }}</span>
-              {{ showCreateModal ? 'Cancel' : 'Create New Message' }}
-            </button>
+            <div style="display: flex; gap: 1rem;">
+              <button @click="showAnnounceModal = !showAnnounceModal; if(showAnnounceModal) showCreateModal = false" class="btn-primary" style="padding: 0.5rem 1rem; border-radius: 0.5rem; background: linear-gradient(135deg, #3b82f6, #60a5fa); border: none; color: white; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 500; font-size: 0.95rem; transition: transform 0.3s, box-shadow 0.3s; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);">
+                <span class="material-symbols-outlined" style="font-size: 1.2rem;">campaign</span>
+                Make Announcement
+              </button>
+              <button @click="showCreateModal = !showCreateModal; if(showCreateModal) showAnnounceModal = false" class="btn-primary" style="padding: 0.5rem 1rem; border-radius: 0.5rem; background: linear-gradient(135deg, #9333ea, #c084fc); border: none; color: white; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 500; font-size: 0.95rem; transition: transform 0.3s, box-shadow 0.3s; box-shadow: 0 4px 6px rgba(147, 51, 234, 0.2);">
+                <span class="material-symbols-outlined" style="font-size: 1.2rem;">{{ showCreateModal ? 'close' : 'add' }}</span>
+                {{ showCreateModal ? 'Cancel' : 'Create New Message' }}
+              </button>
+            </div>
           </div>
+
+          <!-- Announcement Panel (Top) -->
+          <transition name="slide-down">
+            <div v-if="showAnnounceModal" class="create-message-panel" style="background: linear-gradient(135deg, #1e293b, #0f172a); border-color: #3b82f6; margin-bottom: 1rem;">
+              <div class="panel-header" style="border-bottom-color: rgba(59,130,246,0.3);">
+                <h2 class="panel-title" style="color: #60a5fa; display: flex; align-items: center; gap: 0.5rem;"><span class="material-symbols-outlined">campaign</span> Make Announcement</h2>
+                <button @click="showAnnounceModal = false" class="close-btn">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+              
+              <div class="panel-body">
+                <div class="form-group">
+                  <label class="form-label">Target Audience:</label>
+                  <select v-model="announceTargetType" class="form-control" style="width: 100%; border-radius: 0.5rem; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #f8fafc; margin-bottom: 1rem;">
+                    <option value="">Select Audience...</option>
+                    <option value="all">Whole University</option>
+                    <option value="role">Specific Role</option>
+                    <option value="office">Specific Office / Unit</option>
+                  </select>
+                </div>
+
+                <div v-if="announceTargetType === 'role'" class="form-group">
+                  <label class="form-label">Select Role:</label>
+                  <select v-model="announceTargetValue" class="form-control" style="width: 100%; border-radius: 0.5rem; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #f8fafc; margin-bottom: 1rem;">
+                    <option value="">Select Role...</option>
+                    <option v-for="role in roles" :key="role.value" :value="role.value">{{ role.label }}</option>
+                  </select>
+                </div>
+
+                <div v-if="announceTargetType === 'office'" class="form-group">
+                  <label class="form-label">Select Office:</label>
+                  <select v-model="announceTargetValue" class="form-control" style="width: 100%; border-radius: 0.5rem; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #f8fafc; margin-bottom: 1rem;">
+                    <option value="">Select Office...</option>
+                    <option v-for="office in offices" :key="office.value" :value="office.value">{{ office.label }}</option>
+                  </select>
+                </div>
+
+                <!-- Title Field -->
+                <div v-if="announceTargetType && (announceTargetType === 'all' || announceTargetValue)" class="form-group">
+                  <label class="form-label">Title:</label>
+                  <input v-model="announceTitle" type="text" class="form-input" placeholder="Enter announcement title">
+                </div>
+
+                <!-- Message Field -->
+                <div v-if="announceTitle" class="form-group">
+                  <label class="form-label">Message:</label>
+                  <textarea v-model="announceMessage" class="form-textarea" rows="6" placeholder="Enter your announcement details"></textarea>
+                </div>
+              </div>
+
+              <div v-if="announceMessage" class="panel-footer" style="border-top-color: rgba(59,130,246,0.3);">
+                <button @click="showAnnounceModal = false" class="btn-secondary">Cancel</button>
+                <button @click="sendAnnouncement" class="btn-primary" style="background: linear-gradient(135deg, #3b82f6, #60a5fa); box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);">Send Announcement</button>
+              </div>
+            </div>
+          </transition>
 
           <!-- Create Message Panel (Top) -->
           <transition name="slide-down">
@@ -133,7 +196,10 @@
 
             <div class="messages-list-wrapper" style="flex: 1;">
               <div class="messages-list">
-                <div v-if="messages.length === 0" class="empty-state">
+                <div v-if="loadingMessages" class="flex justify-center items-center py-12" style="display: flex; justify-content: center; padding: 3rem 0;">
+                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" style="border-bottom-color: #a855f7;"></div>
+                </div>
+                <div v-else-if="messages.length === 0" class="empty-state">
                   <div class="empty-icon">
                     <span class="material-symbols-outlined">{{ activeTab === 'trash' ? 'delete' : (activeTab === 'inbox' ? 'mail' : 'send') }}</span>
                   </div>
@@ -174,7 +240,10 @@
                       </div>
                     </div>
                     
-                    <h5 class="message-title" style="margin-top: 0.5rem;" :style="{ fontWeight: (activeTab === 'inbox' && message.is_read == 0) ? '700' : '500', color: (activeTab === 'inbox' && message.is_read == 0) ? '#f8fafc' : '#e2e8f0' }">{{ message.title }}</h5>
+                    <h5 class="message-title" style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem;" :style="{ fontWeight: (activeTab === 'inbox' && message.is_read == 0) ? '700' : '500', color: (activeTab === 'inbox' && message.is_read == 0) ? '#f8fafc' : '#e2e8f0' }">
+                      <span v-if="message.is_announcement == 1" class="badge" style="background: rgba(234, 179, 8, 0.2); color: #facc15; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.75rem; border: 1px solid rgba(234, 179, 8, 0.3); display: inline-flex; align-items: center; gap: 0.25rem;"><span class="material-symbols-outlined" style="font-size: 14px;">campaign</span> Announcement</span>
+                      {{ message.title }}
+                    </h5>
                   
                   <transition name="expand">
                     <div v-if="expandedMessageId === message.id" class="message-expanded-content" style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
@@ -281,6 +350,61 @@ const router = useRouter();
 
 const messages = ref([]);
 const showCreateModal = ref(false);
+const showAnnounceModal = ref(false);
+const announceTargetType = ref('');
+const announceTargetValue = ref('');
+const announceTitle = ref('');
+const announceMessage = ref('');
+
+const sendAnnouncement = async () => {
+  if (!user.value.id) return;
+  if (!announceTargetType.value) {
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Please select a target audience.' });
+    return;
+  }
+  if (announceTargetType.value !== 'all' && !announceTargetValue.value) {
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Please select a specific role or office.' });
+    return;
+  }
+  if (!announceTitle.value || !announceMessage.value) {
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Please fill in all fields.' });
+    return;
+  }
+
+  try {
+    const payload = {
+      sender_id: user.value.id,
+      target_type: announceTargetType.value,
+      target_value: announceTargetValue.value,
+      title: announceTitle.value,
+      message: announceMessage.value
+    };
+    
+    const response = await api.post('messages/announce', payload);
+    if (response.data.success) {
+      showAnnounceModal.value = false;
+      announceTargetType.value = '';
+      announceTargetValue.value = '';
+      announceTitle.value = '';
+      announceMessage.value = '';
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: 'Announcement broadcasted successfully.',
+        confirmButtonColor: '#3b82f6'
+      });
+      if (activeTab.value === 'sent') fetchMessages();
+    }
+  } catch (err) {
+    console.error('Error sending announcement:', err);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: err.response?.data?.message || 'Failed to send announcement.',
+      confirmButtonColor: '#ef4444'
+    });
+  }
+};
 const selectedRole = ref('');
 const selectedOffice = ref('');
 const selectedUsers = ref([]);
@@ -294,6 +418,7 @@ const offices = ref([]);
 const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
 
 const activeTab = ref('inbox');
+const loadingMessages = ref(true);
 const expandedMessageId = ref(null);
 const threadHistory = ref([]);
 const selectedTrashIds = ref([]);
@@ -313,6 +438,8 @@ const getOfficeName = (id) => {
 
 const fetchMessages = async () => {
   if (user.value.id) {
+    loadingMessages.value = true;
+    messages.value = []; // Clear current messages to prevent old data flash
     try {
       const endpoint = activeTab.value === 'inbox' ? `messages/inbox/${user.value.id}` 
                      : activeTab.value === 'sent' ? `messages/sent/${user.value.id}`
@@ -325,6 +452,8 @@ const fetchMessages = async () => {
       }
     } catch (err) {
       console.error('Error fetching messages:', err);
+    } finally {
+      loadingMessages.value = false;
     }
   }
 };
@@ -650,6 +779,11 @@ onMounted(() => {
 </script>
 
 <style scoped>
+select.form-control option {
+  background: #1e293b;
+  color: #f8fafc;
+}
+
 .messages-main-content {
   padding-left: 0;
   flex-grow: 1;
@@ -668,9 +802,18 @@ onMounted(() => {
   padding: 0 0.25rem;
 }
 
-.page-title { font-size: 2rem; color: #16213e; font-weight: 900; letter-spacing: -0.025em; margin-bottom: 0.5rem; }
+.page-title {
+  font-size: 2rem;
+  color: #16213e;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.5rem;
+}
 
-.page-subtitle { color: #475569; font-size: 0.95rem; }
+.page-subtitle {
+  color: #475569;
+  font-size: 0.95rem;
+}
 
 .create-message-btn {
   background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%);

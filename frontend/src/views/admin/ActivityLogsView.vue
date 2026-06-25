@@ -52,9 +52,29 @@
                 v-model="emailSearch"
                 placeholder="Search by email..."
                 class="search-input"
-              >
+              />
             </div>
           </div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="border-b border-purple-900/30 flex">
+          <button 
+            @click="activeTab = 'main'"
+            class="flex-1 py-4 text-center font-bold text-sm transition-colors border-b-2"
+            :class="activeTab === 'main' ? 'text-purple-400 border-purple-400 bg-purple-500/5' : 'text-slate-400 border-transparent hover:text-slate-300 hover:bg-white/5'"
+          >
+            Main Logs <br>
+            <span class="text-xs font-normal opacity-70">(Retained for 1 Year)</span>
+          </button>
+          <button 
+            @click="activeTab = 'operational'"
+            class="flex-1 py-4 text-center font-bold text-sm transition-colors border-b-2"
+            :class="activeTab === 'operational' ? 'text-purple-400 border-purple-400 bg-purple-500/5' : 'text-slate-400 border-transparent hover:text-slate-300 hover:bg-white/5'"
+          >
+            Operational Logs <br>
+            <span class="text-xs font-normal opacity-70">(Retained for 90 Days)</span>
+          </button>
         </div>
         
         <div class="p-6">
@@ -73,23 +93,23 @@
                 <span class="material-symbols-outlined text-sm">{{ getActionIcon(log.action) }}</span>
               </div>
               <div class="log-details flex-grow">
-                <p class="log-description">
-                  <span class="font-bold text-white">{{ log.full_name }}</span> 
-                  <span class="text-slate-300">{{ log.description }}</span>
-                </p>
-                <div class="log-meta flex items-center gap-4 mt-1">
-                  <span class="text-xs text-slate-400 flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[14px]">schedule</span>
-                    {{ formatDateTime(log.created_at) }}
-                  </span>
-                  <span class="text-xs text-purple-400 font-medium px-2 py-0.5 bg-purple-500/10 rounded-full border border-purple-500/20">
-                    {{ formatRole(log.role) }}
-                  </span>
+                  <p class="log-description">
+                    <span class="font-bold text-white">{{ log.email || 'Unknown User' }}</span> 
+                    <span class="text-slate-300">{{ log.description }}</span>
+                  </p>
+                  <div class="log-meta flex items-center gap-4 mt-1">
+                    <span class="text-xs text-slate-400 flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[14px]">schedule</span>
+                      {{ formatDateTime(log.created_at) }}
+                    </span>
+                    <span class="text-xs text-purple-400 font-medium px-2 py-0.5 bg-purple-500/10 rounded-full border border-purple-500/20">
+                      {{ formatRole(log.custom_role || log.system_role) }}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
       </section>
 
       <!-- Right Column: Recent Activities -->
@@ -108,7 +128,7 @@
               <div v-for="log in recentLogs.slice(0, 10)" :key="'recent-'+log.id" class="relative pl-6">
                 <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-slate-800 border-2 border-pink-500"></div>
                 <div class="text-xs text-slate-400 mb-0.5">{{ formatTimeAgo(log.created_at) }}</div>
-                <div class="text-sm font-medium text-white mb-1">{{ log.full_name }}</div>
+                <div class="text-sm font-medium text-white mb-1">{{ log.email || 'Unknown User' }}</div>
                 <div class="text-xs text-slate-300">{{ log.action }}</div>
               </div>
               <div v-if="recentLogs.length === 0 && !loading" class="text-slate-400 text-sm pl-6 py-4">
@@ -134,6 +154,8 @@ const loading = ref(true);
 
 const roleFilter = ref('');
 const emailSearch = ref('');
+const activeTab = ref('main');
+const operationalActions = ['Login', 'Logout', 'Register User', 'Suspend User', 'Restore User', 'Delete User'];
 
 const fetchLogs = async () => {
   loading.value = true;
@@ -155,15 +177,18 @@ const recentLogs = computed(() => {
 });
 
 const filteredLogs = computed(() => {
-  let logs = recentLogs.value;
+  let logs = recentLogs.value.filter(log => {
+    const isOp = operationalActions.includes(log.action);
+    return activeTab.value === 'operational' ? isOp : !isOp;
+  });
   
   if (roleFilter.value) {
     if (roleFilter.value === 'twg') {
-      logs = logs.filter(l => l.role === 'TWG');
+      logs = logs.filter(l => l.custom_role === 'TWG');
     } else if (roleFilter.value === 'non_twg') {
-      logs = logs.filter(l => l.role === 'Non-TWG');
+      logs = logs.filter(l => l.custom_role === 'Non-TWG');
     } else {
-      logs = logs.filter(l => l.role?.toLowerCase() === roleFilter.value);
+      logs = logs.filter(l => l.system_role?.toLowerCase() === roleFilter.value);
     }
   }
   
@@ -190,13 +215,15 @@ const formatRole = (role) => {
 
 const formatDateTime = (dateStr) => {
   if (!dateStr) return '';
-  const d = new Date(dateStr);
-  return d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+  const utcDateStr = dateStr.endsWith('Z') ? dateStr : dateStr.replace(' ', 'T') + 'Z';
+  const d = new Date(utcDateStr);
+  return d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' });
 };
 
 const formatTimeAgo = (dateStr) => {
   if (!dateStr) return '';
-  const date = new Date(dateStr);
+  const utcDateStr = dateStr.endsWith('Z') ? dateStr : dateStr.replace(' ', 'T') + 'Z';
+  const date = new Date(utcDateStr);
   const now = new Date();
   const seconds = Math.floor((now - date) / 1000);
   
@@ -340,7 +367,28 @@ onMounted(() => {
   overflow: hidden;
 }
 
-.filter-select, .search-input {
+.filter-select {
+  background: rgba(0, 0, 0, 0.4) url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23b979cc' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E") no-repeat right 1.25rem center/1.25rem 1.25rem;
+  appearance: none;
+  border: 1px solid rgba(185, 121, 204, 0.5);
+  border-radius: 0.5rem;
+  padding: 0.5rem 2.75rem 0.5rem 1rem;
+  color: white;
+  font-size: 0.875rem;
+  outline: none;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.filter-select:focus {
+  border-color: rgba(185, 121, 204, 0.8);
+  background: rgba(0, 0, 0, 0.6);
+}
+.filter-select option {
+  background: #1e293b;
+  color: white;
+}
+
+.search-input {
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(185, 121, 204, 0.3);
   color: white;

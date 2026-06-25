@@ -57,6 +57,8 @@ class AuthController extends ResourceController
 
         // In a real app, you'd generate a JWT here. 
         // For this demo, we'll just return user info.
+        $userModel->update($user['id'], ['last_login' => date('Y-m-d H:i:s')]);
+        
         $db = \Config\Database::connect();
         $userProfile = $db->table('user_profiles')->where('user_id', $user['id'])->get()->getRowArray();
         $userRole = $userProfile ? ($userProfile['user_role'] ?? 'Non-TWG') : 'Non-TWG';
@@ -344,7 +346,9 @@ class AuthController extends ResourceController
     public function getAllUsers() {
         $db = \Config\Database::connect();
         $users = $db->table('users')
-            ->select('users.id, users.email, users.full_name, users.role, users.office_id, users.deleted_at, users.created_at, user_profiles.user_role, office_units.office_name')
+            ->select('users.id, users.email, users.full_name, users.role, users.office_id, users.deleted_at, users.created_at, users.last_login, user_profiles.user_role, office_units.office_name')
+            ->select('(SELECT COUNT(*) FROM activity_design WHERE activity_design.user_id = users.id) as ad_count')
+            ->select('(SELECT COUNT(*) FROM accomplishment_report WHERE accomplishment_report.user_id = users.id) as ar_count')
             ->join('user_profiles', 'user_profiles.user_id = users.id', 'left')
             ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->get()

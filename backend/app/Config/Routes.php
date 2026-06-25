@@ -40,6 +40,10 @@ $routes->group('api', function($routes) {
     $routes->post('users/restore/(:num)', 'UserManagementController::restore/$1');
     $routes->options('users/delete/(:num)', 'AuthController::handleOptions');
     $routes->delete('users/delete/(:num)', 'UserManagementController::permanentlyDelete/$1');
+    $routes->options('users/create', 'AuthController::handleOptions');
+    $routes->post('users/create', 'UserManagementController::create');
+    $routes->options('users/update/(:num)', 'AuthController::handleOptions');
+    $routes->post('users/update/(:num)', 'UserManagementController::update/$1');
 
     // ----------------------------------------------------------------
     // ACTIVITY LOGS ROUTES (new)
@@ -150,6 +154,8 @@ $routes->group('api', function($routes) {
     // ----------------------------------------------------------------
     $routes->options('messages/send', 'AuthController::handleOptions');
     $routes->post('messages/send', 'MessageController::send');
+    $routes->options('messages/announce', 'AuthController::handleOptions');
+    $routes->post('messages/announce', 'MessageController::announce');
     $routes->options('messages/inbox/(:num)', 'AuthController::handleOptions');
     $routes->get('messages/inbox/(:num)', 'MessageController::getInbox/$1');
     $routes->options('messages/sent/(:num)', 'AuthController::handleOptions');

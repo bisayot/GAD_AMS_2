@@ -28,6 +28,26 @@
           </h2>
         </div>
         
+        <!-- Tabs -->
+        <div class="border-b border-purple-900/30 flex">
+          <button 
+            @click="activeTab = 'main'"
+            class="flex-1 py-4 text-center font-bold text-sm transition-colors border-b-2"
+            :class="activeTab === 'main' ? 'text-purple-400 border-purple-400 bg-purple-500/5' : 'text-slate-400 border-transparent hover:text-slate-300 hover:bg-white/5'"
+          >
+            Main Logs <br>
+            <span class="text-xs font-normal opacity-70">(Retained for 1 Year)</span>
+          </button>
+          <button 
+            @click="activeTab = 'operational'"
+            class="flex-1 py-4 text-center font-bold text-sm transition-colors border-b-2"
+            :class="activeTab === 'operational' ? 'text-purple-400 border-purple-400 bg-purple-500/5' : 'text-slate-400 border-transparent hover:text-slate-300 hover:bg-white/5'"
+          >
+            Operational Logs <br>
+            <span class="text-xs font-normal opacity-70">(Retained for 90 Days)</span>
+          </button>
+        </div>
+        
         <div class="p-6">
           <div v-if="loading" class="flex justify-center items-center py-12">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
@@ -39,7 +59,7 @@
           </div>
           
           <div v-else class="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-2">
-            <div v-for="log in recentLogs" :key="log.id" class="log-item">
+            <div v-for="log in filteredLogs" :key="log.id" class="log-item">
               <div class="log-icon" :class="getActionColor(log.action)">
                 <span class="material-symbols-outlined text-sm">{{ getActionIcon(log.action) }}</span>
               </div>
@@ -98,6 +118,9 @@ const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
 const allLogs = ref([]);
 const loading = ref(true);
 
+const activeTab = ref('main');
+const operationalActions = ['Login', 'Logout', 'Register User', 'Suspend User', 'Restore User', 'Delete User'];
+
 const fetchLogs = async () => {
   loading.value = true;
   try {
@@ -116,15 +139,24 @@ const recentLogs = computed(() => {
   return [...allLogs.value].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 });
 
+const filteredLogs = computed(() => {
+  return recentLogs.value.filter(log => {
+    const isOp = operationalActions.includes(log.action);
+    return activeTab.value === 'operational' ? isOp : !isOp;
+  });
+});
+
 const formatDateTime = (dateStr) => {
   if (!dateStr) return '';
-  const d = new Date(dateStr);
-  return d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+  const utcDateStr = dateStr.endsWith('Z') ? dateStr : dateStr.replace(' ', 'T') + 'Z';
+  const d = new Date(utcDateStr);
+  return d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' });
 };
 
 const formatTimeAgo = (dateStr) => {
   if (!dateStr) return '';
-  const date = new Date(dateStr);
+  const utcDateStr = dateStr.endsWith('Z') ? dateStr : dateStr.replace(' ', 'T') + 'Z';
+  const date = new Date(utcDateStr);
   const now = new Date();
   const seconds = Math.floor((now - date) / 1000);
   

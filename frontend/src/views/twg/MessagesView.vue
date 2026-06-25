@@ -126,7 +126,10 @@
 
             <div class="messages-list-wrapper" style="flex: 1;">
               <div class="messages-list">
-                <div v-if="messages.length === 0" class="empty-state">
+                <div v-if="loadingMessages" class="flex justify-center items-center py-12" style="display: flex; justify-content: center; padding: 3rem 0;">
+                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" style="border-bottom-color: #a855f7;"></div>
+                </div>
+                <div v-else-if="messages.length === 0" class="empty-state">
                   <div class="empty-icon">
                     <span class="material-symbols-outlined">{{ activeTab === 'trash' ? 'delete' : (activeTab === 'inbox' ? 'mail' : 'send') }}</span>
                   </div>
@@ -167,7 +170,10 @@
                       </div>
                     </div>
                     
-                    <h5 class="message-title" style="margin-top: 0.5rem;" :style="{ fontWeight: (activeTab === 'inbox' && message.is_read == 0) ? '700' : '500', color: (activeTab === 'inbox' && message.is_read == 0) ? '#f8fafc' : '#e2e8f0' }">{{ message.title }}</h5>
+                    <h5 class="message-title" style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem;" :style="{ fontWeight: (activeTab === 'inbox' && message.is_read == 0) ? '700' : '500', color: (activeTab === 'inbox' && message.is_read == 0) ? '#f8fafc' : '#e2e8f0' }">
+                      <span v-if="message.is_announcement == 1" class="badge" style="background: rgba(234, 179, 8, 0.2); color: #facc15; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.75rem; border: 1px solid rgba(234, 179, 8, 0.3); display: inline-flex; align-items: center; gap: 0.25rem;"><span class="material-symbols-outlined" style="font-size: 14px;">campaign</span> Announcement</span>
+                      {{ message.title }}
+                    </h5>
                   
                   <transition name="expand">
                     <div v-if="expandedMessageId === message.id" class="message-expanded-content" style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
@@ -287,6 +293,7 @@ const offices = ref([]);
 const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
 
 const activeTab = ref('inbox');
+const loadingMessages = ref(true);
 const expandedMessageId = ref(null);
 const threadHistory = ref([]);
 const selectedTrashIds = ref([]);
@@ -306,6 +313,8 @@ const getOfficeName = (id) => {
 
 const fetchMessages = async () => {
   if (user.value.id) {
+    loadingMessages.value = true;
+    messages.value = []; // Clear current messages to prevent old data flash
     try {
       const endpoint = activeTab.value === 'inbox' ? `messages/inbox/${user.value.id}` 
                      : activeTab.value === 'sent' ? `messages/sent/${user.value.id}`
@@ -318,6 +327,8 @@ const fetchMessages = async () => {
       }
     } catch (err) {
       console.error('Error fetching messages:', err);
+    } finally {
+      loadingMessages.value = false;
     }
   }
 };
@@ -587,6 +598,11 @@ onMounted(() => {
 </script>
 
 <style scoped>
+select.form-control option {
+  background: #1e293b;
+  color: #f8fafc;
+}
+
 .messages-main-content {
   padding-left: 0;
   flex-grow: 1;
@@ -605,9 +621,18 @@ onMounted(() => {
   padding: 0 0.25rem;
 }
 
-.page-title { font-size: 2rem; color: #16213e; font-weight: 900; letter-spacing: -0.025em; margin-bottom: 0.5rem; }
+.page-title {
+  font-size: 2rem;
+  color: #16213e;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.5rem;
+}
 
-.page-subtitle { color: #475569; font-size: 0.95rem; }
+.page-subtitle {
+  color: #475569;
+  font-size: 0.95rem;
+}
 
 .create-message-btn {
   background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%);
