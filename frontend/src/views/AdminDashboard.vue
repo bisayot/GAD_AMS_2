@@ -72,10 +72,11 @@ const adminMenu = ref([
   { label: 'Mandates Management', icon: 'account_balance', href: '/admin/mandates' },
   { label: 'Report Monitoring', icon: 'bar_chart', href: '/admin/reports' },
   { label: 'Budget Monitoring', icon: 'account_balance_wallet', href: '/admin/budget' },
-  { label: 'User Manual', icon: 'help', href: '/admin/user-manual' },
-  { label: 'Data Privacy Policy', icon: 'privacy_tip', href: '/admin/data-privacy-policy' },
+  { label: 'Office/Unit Management', icon: 'domain', href: '/admin/office-management' },
   { label: 'User Management', icon: 'manage_accounts', href: '/admin/user-management' },
-  { label: 'Activity Logs', icon: 'history', href: '/admin/activity-logs' }
+  { label: 'Activity Logs', icon: 'history', href: '/admin/activity-logs' },
+  { label: 'User Manual', icon: 'help', href: '/admin/user-manual' },
+  { label: 'Data Privacy Policy', icon: 'privacy_tip', href: '/admin/data-privacy-policy' }
 ]);
 
 const fetchUnreadCount = async () => {

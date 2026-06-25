@@ -28,6 +28,16 @@ $routes->group('api', function($routes) {
     $routes->post('add_office', 'AuthController::addOffice');
     $routes->options('office_units', 'AuthController::handleOptions');
     $routes->options('add_office', 'AuthController::handleOptions');
+
+    // ----------------------------------------------------------------
+    // OFFICE MANAGEMENT ROUTES (new)
+    // ----------------------------------------------------------------
+    $routes->options('offices', 'AuthController::handleOptions');
+    $routes->get('offices', 'OfficeController::index');
+    $routes->post('offices', 'OfficeController::create');
+    $routes->options('offices/(:num)', 'AuthController::handleOptions');
+    $routes->put('offices/(:num)', 'OfficeController::update/$1');
+    $routes->delete('offices/(:num)', 'OfficeController::delete/$1');
     $routes->get('users', 'AuthController::getAllUsers');
     $routes->options('users', 'AuthController::handleOptions');
 
@@ -120,15 +130,21 @@ $routes->group('api', function($routes) {
     // ----------------------------------------------------------------
     $routes->options('archives', 'ArchiveController::index');
     $routes->get('archives', 'ArchiveController::index');
-    $routes->get('offices', 'OfficeController::index');
     $routes->options('venues', 'AuthController::handleOptions');
     $routes->get('venues', 'VenueController::index');
     $routes->post('archive-design/(:num)', 'ArchiveController::archiveDesign/$1');
     $routes->post('archive-report/(:num)', 'ArchiveController::archiveReport/$1');
 
     // ----------------------------------------------------------------
+    // ANALYTICS ROUTES
+    // ----------------------------------------------------------------
+    $routes->options('analytics/participants/(:num)', 'AuthController::handleOptions');
+    $routes->get('analytics/participants/(:num)', 'AnalyticsController::getParticipants/$1');
+
+    // ----------------------------------------------------------------
     // ADMIN TRACKING ROUTES (new)
     // ----------------------------------------------------------------
+    $routes->options('admin/twg-submissions', 'AuthController::handleOptions');
     $routes->get('admin/twg-submissions', 'ActivityDesignController::getTWGSubmissions');
 
     // ----------------------------------------------------------------

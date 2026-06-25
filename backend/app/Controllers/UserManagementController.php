@@ -25,12 +25,20 @@ class UserManagementController extends ResourceController
         }
 
         $email = $data['email'];
-        $username = strtolower(str_replace(' ', '_', explode('@', $email)[0]));
+        $baseUsername = strtolower(str_replace(' ', '_', explode('@', $email)[0]));
+        $username = $baseUsername;
         
         $userModel = new \App\Models\UserModel();
         
         if ($userModel->findByIdentity($email)) {
             return $this->failResourceExists('A user with that email already exists');
+        }
+
+        // Ensure username is unique
+        $counter = 1;
+        while ($userModel->where('username', $username)->first()) {
+            $username = $baseUsername . $counter;
+            $counter++;
         }
 
         $role = 'college'; 
