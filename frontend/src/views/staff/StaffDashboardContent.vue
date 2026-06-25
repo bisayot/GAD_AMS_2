@@ -74,11 +74,11 @@
             <h4 class="section-title">Data Visualization & Analytics</h4>
           </div>
           
-          <div class="analytics-chart-container" style="background: #1e293b; padding: 1.5rem; border-radius: 1rem; border: 1px solid #334155; margin-top: 1.5rem;">
+          <div class="analytics-chart-container" style="background: rgba(0, 0, 0, 0.25); padding: 1.5rem; border-radius: 1rem; border: 1px solid rgba(147, 51, 234, 0.15); margin-top: 1.5rem; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.1);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
               <h5 style="color: #f8fafc; font-weight: 600; font-size: 1.1rem; margin: 0;">Gender-Disaggregated Data</h5>
               <select v-model="analyticsYear" @change="fetchAnalyticsData" style="background: rgba(15, 23, 42, 0.8); color: #f8fafc; border: 1px solid rgba(147, 51, 234, 0.3); border-radius: 0.5rem; padding: 0.25rem 0.5rem; font-size: 0.9rem; outline: none; cursor: pointer;">
-                <option v-for="year in [2025, 2026, 2027, 2028]" :key="year" :value="year" style="background: #1e293b; color: white;">{{ year }}</option>
+                <option v-for="year in availableYears" :key="year" :value="year" style="background: #1e293b; color: white;">{{ year }}</option>
               </select>
             </div>
             
@@ -263,11 +263,27 @@ import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, Li
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
-const analyticsYear = ref(2026);
+const getPHYear = () => {
+  return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" })).getFullYear();
+};
+
+const analyticsYear = ref(getPHYear());
 const analyticsLoading = ref(true);
 const monthlyData = ref([]);
 const officeData = ref([]);
 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const availableYears = computed(() => {
+  const startYear = 2026;
+  const currentYear = getPHYear();
+  const maxYear = Math.max(currentYear + 2, startYear + 2);
+  const years = [];
+  for (let y = startYear; y <= maxYear; y++) {
+    years.push(y);
+  }
+  return years;
+});
+
 const yearlyTotal = computed(() => monthlyData.value.reduce((acc, curr) => acc + curr.male + curr.female, 0));
 const yearlyMale = computed(() => monthlyData.value.reduce((acc, curr) => acc + curr.male, 0));
 const yearlyFemale = computed(() => monthlyData.value.reduce((acc, curr) => acc + curr.female, 0));
@@ -731,6 +747,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .title-indicator {
@@ -742,17 +759,17 @@ onMounted(async () => {
 
 .section-title {
   font-weight: 700;
-  color: #16213e;
-  font-size: 1.25rem;
+  color: #ffffff;
+  font-size: 1.125rem;
+  margin: 0;
 }
 
 /* Table Container */
 .table-container {
-  border: 1px solid rgba(147, 51, 234, 0.15);
+  border: 1px solid rgba(147, 51, 234, 0.1);
   border-radius: 0.75rem;
   overflow: hidden;
-  background: linear-gradient(135deg, #0f172a, #020617);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  background: transparent;
 }
 
 .table-wrapper {
@@ -890,10 +907,11 @@ onMounted(async () => {
 }
 
 /* Analytics Placeholder */
+.pending-activities-section,
 .analytics-section {
   border-radius: 1rem;
-  border: 1px solid rgba(185, 121, 204, 0.15);
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 1px solid rgba(147, 51, 234, 0.15);
+  background: linear-gradient(135deg, #0f172a, #020617);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   padding: 1.5rem;
 }

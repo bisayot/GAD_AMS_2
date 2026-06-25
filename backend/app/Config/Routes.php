@@ -55,6 +55,11 @@ $routes->group('api', function($routes) {
     $routes->options('users/update/(:num)', 'AuthController::handleOptions');
     $routes->post('users/update/(:num)', 'UserManagementController::update/$1');
 
+    $routes->options('users/profile', 'AuthController::handleOptions');
+    $routes->get('users/profile', 'UserManagementController::getProfile');
+    $routes->options('users/profile/update', 'AuthController::handleOptions');
+    $routes->post('users/profile/update', 'UserManagementController::updateProfile');
+
     // ----------------------------------------------------------------
     // ACTIVITY LOGS ROUTES (new)
     // ----------------------------------------------------------------
@@ -140,6 +145,8 @@ $routes->group('api', function($routes) {
     // ----------------------------------------------------------------
     $routes->options('analytics/participants/(:num)', 'AuthController::handleOptions');
     $routes->get('analytics/participants/(:num)', 'AnalyticsController::getParticipants/$1');
+    $routes->options('analytics/participants/user/(:num)/(:num)', 'AuthController::handleOptions');
+    $routes->get('analytics/participants/user/(:num)/(:num)', 'AnalyticsController::getParticipantsByUser/$1/$2');
 
     // ----------------------------------------------------------------
     // ADMIN TRACKING ROUTES (new)

@@ -67,4 +67,39 @@ class AnalyticsController extends Controller
             'officeData' => $officeData
         ]);
     }
+
+    public function getParticipantsByUser($year, $userId)
+    {
+        $db = \Config\Database::connect();
+        
+        $sql = "
+            SELECT 
+                MONTH(start_date) as month,
+                SUM(male) as total_male,
+                SUM(female) as total_female
+            FROM archived_accomplishment_reports
+            WHERE YEAR(start_date) = ? AND user_id = ?
+            GROUP BY MONTH(start_date)
+            ORDER BY MONTH(start_date) ASC
+        ";
+
+        $results = $db->query($sql, [$year, $userId])->getResultArray();
+
+        $monthsData = array_fill(1, 12, ['male' => 0, 'female' => 0]);
+
+        foreach ($results as $row) {
+            if ($row['month']) {
+                $monthsData[(int)$row['month']] = [
+                    'male' => (int)$row['total_male'],
+                    'female' => (int)$row['total_female']
+                ];
+            }
+        }
+
+        return $this->respond([
+            'success' => true,
+            'year' => $year,
+            'data' => array_values($monthsData)
+        ]);
+    }
 }

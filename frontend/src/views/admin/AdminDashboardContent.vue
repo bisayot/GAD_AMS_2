@@ -76,11 +76,11 @@
             <h4 class="section-title">Data Visualization & Analytics</h4>
           </div>
           
-          <div class="analytics-chart-container" style="background: #1e293b; padding: 1.5rem; border-radius: 1rem; border: 1px solid #334155; margin-top: 1.5rem;">
+          <div class="analytics-chart-container" style="background: rgba(0, 0, 0, 0.25); padding: 1.5rem; border-radius: 1rem; border: 1px solid rgba(147, 51, 234, 0.15); margin-top: 1.5rem; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.1);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
               <h5 style="color: #f8fafc; font-weight: 600; font-size: 1.1rem; margin: 0;">Gender-Disaggregated Data</h5>
               <select v-model="analyticsYear" @change="fetchAnalyticsData" style="background: rgba(15, 23, 42, 0.8); color: #f8fafc; border: 1px solid rgba(147, 51, 234, 0.3); border-radius: 0.5rem; padding: 0.25rem 0.5rem; font-size: 0.9rem; outline: none; cursor: pointer;">
-                <option v-for="year in [2025, 2026, 2027, 2028]" :key="year" :value="year" style="background: #1e293b; color: white;">{{ year }}</option>
+                <option v-for="year in availableYears" :key="year" :value="year" style="background: #1e293b; color: white;">{{ year }}</option>
               </select>
             </div>
             
@@ -522,11 +522,27 @@ const fetchStats = async () => {
 };
 
 
-const analyticsYear = ref(2026);
+const getPHYear = () => {
+  return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" })).getFullYear();
+};
+
+const analyticsYear = ref(getPHYear());
 const analyticsLoading = ref(true);
 const monthlyData = ref([]);
 const officeData = ref([]);
 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const availableYears = computed(() => {
+  const startYear = 2026;
+  const currentYear = getPHYear();
+  const maxYear = Math.max(currentYear + 2, startYear + 2);
+  const years = [];
+  for (let y = startYear; y <= maxYear; y++) {
+    years.push(y);
+  }
+  return years;
+});
+
 const yearlyTotal = computed(() => monthlyData.value.reduce((acc, curr) => acc + curr.male + curr.female, 0));
 const yearlyMale = computed(() => monthlyData.value.reduce((acc, curr) => acc + curr.male, 0));
 const yearlyFemale = computed(() => monthlyData.value.reduce((acc, curr) => acc + curr.female, 0));
@@ -635,8 +651,8 @@ onMounted(() => {
 .schedule-card,
 .activity-logs-card {
   border-radius: 1rem;
-  border: 1px solid rgba(185, 121, 204, 0.15);
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 1px solid rgba(147, 51, 234, 0.15);
+  background: linear-gradient(135deg, #0f172a, #020617);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
@@ -758,7 +774,7 @@ onMounted(() => {
 }
 
 .table-container {
-  border: 1px solid rgba(185, 121, 204, 0.1);
+  border: 1px solid rgba(147, 51, 234, 0.1);
   border-radius: 0.75rem;
   overflow: hidden;
   background: transparent;
@@ -784,7 +800,7 @@ onMounted(() => {
   padding: 1rem;
   font-size: 0.85rem;
   font-weight: 700;
-  color: #b979cc;
+  color: #c084fc;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -875,8 +891,8 @@ onMounted(() => {
 
 .view-all-link {
   background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(185, 121, 204, 0.2);
-  color: #b979cc;
+  border: 1px solid rgba(147, 51, 234, 0.2);
+  color: white;
   padding: 0.375rem 0.75rem;
   border-radius: 0.5rem;
   font-size: 0.85rem;
@@ -892,7 +908,7 @@ onMounted(() => {
 
 .view-all-link:hover {
   color: #c084fc;
-  border-color: rgba(185, 121, 204, 0.4);
+  border-color: rgba(147, 51, 234, 0.4);
 }
 
 .analytics-placeholder {
@@ -996,7 +1012,7 @@ onMounted(() => {
 }
 
 .date-cell:hover {
-  background: rgba(185, 121, 204, 0.2);
+  background: rgba(147, 51, 234, 0.3);
 }
 
 .date-cell:hover .date-number {
@@ -1073,8 +1089,7 @@ onMounted(() => {
 }
 
 .deadline-item:hover {
-  border-color: rgba(185, 121, 204, 0.3);
-  background: rgba(185, 121, 204, 0.05);
+  border-color: rgba(147, 51, 234, 0.2);
 }
 
 .deadline-info {

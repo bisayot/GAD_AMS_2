@@ -207,4 +207,61 @@ class UserManagementController extends ResourceController
         
         return $this->respond(['success' => true, 'message' => 'User permanently deleted']);
     }
+    public function getProfile()
+    {
+        $userId = $this->request->getHeaderLine('X-User-Id');
+        if (!$userId) return $this->failUnauthorized('Not logged in');
+
+        $userModel = new \App\Models\UserModel();
+        $user = $userModel->find($userId);
+        if (!$user) return $this->failNotFound('User not found');
+
+        return $this->respond([
+            'success' => true,
+            'user' => [
+                'id' => $user['id'],
+                'email' => $user['email'],
+                'full_name' => $user['full_name'],
+                'role' => $user['role']
+            ]
+        ]);
+    }
+
+    public function updateProfile()
+    {
+        $userId = $this->request->getHeaderLine('X-User-Id');
+        if (!$userId) return $this->failUnauthorized('Not logged in');
+
+        $data = $this->request->getJSON(true) ?: $this->request->getPost();
+        $userModel = new \App\Models\UserModel();
+        $user = $userModel->find($userId);
+        if (!$user) return $this->failNotFound('User not found');
+
+        if (isset($data['email'])) {
+            $rules = ['email' => 'required|valid_email'];
+            if (!$this->validateData($data, $rules)) {
+                return $this->respond(['success' => false, 'message' => 'Invalid email format']);
+            }
+            if ($data['email'] !== $user['email'] && $userModel->findByIdentity($data['email'])) {
+                return $this->respond(['success' => false, 'message' => 'Email already in use']);
+            }
+            $userModel->update($userId, ['email' => $data['email']]);
+            \App\Models\ActivityLogModel::log($userId, 'Update Profile', 'updated their email address');
+            return $this->respond(['success' => true, 'message' => 'Email updated successfully']);
+        }
+
+        if (isset($data['current_password']) && isset($data['new_password'])) {
+            if (!password_verify($data['current_password'], $user['password'])) {
+                return $this->respond(['success' => false, 'message' => 'Incorrect current password']);
+            }
+            if (strlen($data['new_password']) < 6) {
+                return $this->respond(['success' => false, 'message' => 'New password must be at least 6 characters']);
+            }
+            $userModel->update($userId, ['password' => password_hash($data['new_password'], PASSWORD_DEFAULT)]);
+            \App\Models\ActivityLogModel::log($userId, 'Update Profile', 'updated their password');
+            return $this->respond(['success' => true, 'message' => 'Password updated successfully']);
+        }
+
+        return $this->respond(['success' => false, 'message' => 'No valid update data provided']);
+    }
 }
