@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 25, 2026 at 02:46 AM
+-- Generation Time: Jun 26, 2026 at 08:02 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -43,6 +43,7 @@ CREATE TABLE `accomplishment_budget_items` (
 --
 -- Dumping data for table `accomplishment_budget_items`
 --
+
 
 
 -- --------------------------------------------------------
@@ -98,11 +99,7 @@ CREATE TABLE `accomplishment_report` (
   `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `accomplishment_report`
---
-
-
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `activity_budget_items`
@@ -126,6 +123,8 @@ CREATE TABLE `activity_budget_items` (
 --
 
 
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `activity_design`
@@ -176,7 +175,6 @@ CREATE TABLE `activity_logs` (
 --
 
 
-
 --
 -- Table structure for table `archived_accomplishment_reports`
 --
@@ -209,7 +207,6 @@ CREATE TABLE `archived_accomplishment_reports` (
 --
 -- Dumping data for table `archived_accomplishment_reports`
 --
-
 
 
 --
@@ -448,7 +445,6 @@ CREATE TABLE `messages` (
   `sender_id` int(11) UNSIGNED NOT NULL,
   `recipient_id` int(11) UNSIGNED NOT NULL,
   `parent_id` int(11) UNSIGNED DEFAULT NULL,
-  `title` varchar(255) NOT NULL,
   `message_text` text NOT NULL,
   `document_type` varchar(100) DEFAULT NULL,
   `document_id` text DEFAULT NULL,
@@ -463,8 +459,6 @@ CREATE TABLE `messages` (
 -- Dumping data for table `messages`
 --
 
-
--- --------------------------------------------------------
 
 --
 -- Table structure for table `migrations`
@@ -484,6 +478,15 @@ CREATE TABLE `migrations` (
 -- Dumping data for table `migrations`
 --
 
+INSERT INTO `migrations` (`id`, `version`, `class`, `group`, `namespace`, `time`, `batch`) VALUES
+(1, '2026-06-19-022849', 'App\\Database\\Migrations\\CreateMessagesTable', 'default', 'App', 1781836185, 1),
+(2, '2026-06-19-033911', 'App\\Database\\Migrations\\AlterMessagesDocumentId', 'default', 'App', 1781840369, 2),
+(3, '2026-06-19-063936', 'App\\Database\\Migrations\\AddThreadAndTrashToMessages', 'default', 'App', 1781851202, 3),
+(4, '2026-06-19-082034', 'App\\Database\\Migrations\\AddDeletedAtToDocuments', 'default', 'App', 1781857260, 4),
+(5, '2026-06-23-025857', 'App\\Database\\Migrations\\CreateActivityLogsTable', 'default', 'App', 1782183569, 5),
+(6, '2026-06-24-000000', 'App\\Database\\Migrations\\AddLastLoginToUsers', 'default', 'App', 1782263806, 6),
+(7, '2026-06-24-000001', 'App\\Database\\Migrations\\AddIsAnnouncementToMessages', 'default', 'App', 1782264591, 7),
+(8, '2026-06-26-014303', 'App\\Database\\Migrations\\DropTitleFromMessages', 'default', 'App', 1782438211, 8);
 
 -- --------------------------------------------------------
 
@@ -580,8 +583,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `email`, `email_verified_at`, `password`, `reset_token`, `reset_token_expires_at`, `role`, `full_name`, `student_id`, `office_id`, `year_level`, `user_acronym`, `remember_token`, `deleted_at`, `created_at`, `updated_at`, `last_login`) VALUES
-(1, 'Gender and Development Office', 'gad.office@bsu.edu.ph', NULL, '$2y$10$a9XVQgTdygySA0E7XCNf4euNdZmuXjqGxSvUbQEzd5X7qiFmPNae6', NULL, NULL, 'admin', NULL, NULL, 1, NULL, 'GAD', NULL, NULL, '2026-05-25 11:58:10', '2026-06-25 00:42:09', '2026-06-25 00:42:09'),
-(2, 'College of Agriculture', 'ca@bsu.edu.ph', NULL, '$2y$12$CNLb7UPOnZpF2yZRY0lwSeykT0VWruAa6R753JUJR3bGr2OCvUyei', NULL, NULL, 'college', NULL, NULL, 2, NULL, 'CA', NULL, NULL, '2026-05-25 11:58:10', '2026-06-25 00:42:27', '2026-06-25 00:42:27'),
+(1, 'Gender and Development Office', 'gad.office@bsu.edu.ph', NULL, '$2y$10$a9XVQgTdygySA0E7XCNf4euNdZmuXjqGxSvUbQEzd5X7qiFmPNae6', NULL, NULL, 'admin', NULL, NULL, 1, NULL, 'GAD', NULL, NULL, '2026-05-25 11:58:10', '2026-06-26 05:53:28', '2026-06-26 05:53:28'),
+(2, 'College of Agriculture', 'ca@bsu.edu.ph', NULL, '$2y$12$CNLb7UPOnZpF2yZRY0lwSeykT0VWruAa6R753JUJR3bGr2OCvUyei', NULL, NULL, 'college', NULL, NULL, 2, NULL, 'CA', NULL, NULL, '2026-05-25 11:58:10', '2026-06-26 05:53:50', '2026-06-26 05:53:50'),
 (3, 'Registrar\'s Office BSU Buguias Campus', 'buguias.registrar@bsu.edu.ph', NULL, '$2y$12$l7EFqawcRIOIN9O.LGwQ..4PpoSt5sbaRziIQVMbNsOJbF7b/3Lpq', NULL, NULL, 'college', NULL, NULL, 3, NULL, 'Buguias-RO', NULL, NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10', NULL),
 (4, 'Human Resources and Management Office BSU Bokod Campus', 'bokod.hrmo@bsu.edu.ph', NULL, '$2y$12$l7EFqawcRIOIN9O.LGwQ..4PpoSt5sbaRziIQVMbNsOJbF7b/3Lpq', NULL, NULL, 'college', NULL, NULL, 4, NULL, NULL, 'Bokod-HRMO', NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10', NULL),
 (5, 'International Relations Office', 'iro@bsu.edu.ph', NULL, '$2y$12$l7EFqawcRIOIN9O.LGwQ..4PpoSt5sbaRziIQVMbNsOJbF7b/3Lpq', NULL, NULL, 'college', NULL, NULL, 5, NULL, 'IRO', NULL, NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10', NULL),
@@ -626,8 +629,9 @@ INSERT INTO `users` (`id`, `username`, `email`, `email_verified_at`, `password`,
 (44, 'Open University', 'ou@bsu.edu.ph', NULL, '$2y$12$l7EFqawcRIOIN9O.LGwQ..4PpoSt5sbaRziIQVMbNsOJbF7b/3Lpq', NULL, NULL, 'college', NULL, NULL, 44, NULL, 'OU', NULL, NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10', NULL),
 (45, 'College of Education BSU Bokod Campus', 'bokod.ce@bsu.edu.ph', NULL, '$2y$12$l7EFqawcRIOIN9O.LGwQ..4PpoSt5sbaRziIQVMbNsOJbF7b/3Lpq', NULL, NULL, 'college', NULL, NULL, 45, NULL, 'Bokod-CE', NULL, NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10', NULL),
 (46, 'College of Forestry', 'cf@bsu.edu.ph', NULL, '$2y$12$l7EFqawcRIOIN9O.LGwQ..4PpoSt5sbaRziIQVMbNsOJbF7b/3Lpq', NULL, NULL, 'college', NULL, NULL, 46, NULL, 'CF', NULL, NULL, '2026-05-25 11:58:10', '2026-05-25 11:58:10', NULL),
-(47, 'gad.staff', 'gad.staff@bsu.edu.ph', NULL, '$2y$12$fbD/jvk.znEQnBmKq4.ebOojmijHJO/zU7.P7Tzo.zV3FgvP8PzNe', NULL, NULL, 'gad_staff', 'GAD Staff User', NULL, 1, NULL, 'GAD-STAFF', NULL, NULL, '2026-03-26 15:53:56', '2026-06-25 00:42:16', '2026-06-25 00:42:16'),
-(51, 'marksantos', 'marksantos@gmail.com', NULL, '$2y$10$XpBQvnSPe15XDdOdDySVf.5ri9Y2wCDwqZcdGLoOXmjClhEZTA6Aa', NULL, NULL, 'college', 'Mark Santos', NULL, 32, NULL, NULL, NULL, NULL, '2026-06-17 12:57:12', '2026-06-23 13:47:33', NULL);
+(47, 'gad.staff', 'gad.staff@bsu.edu.ph', NULL, '$2y$12$fbD/jvk.znEQnBmKq4.ebOojmijHJO/zU7.P7Tzo.zV3FgvP8PzNe', NULL, NULL, 'gad_staff', 'GAD Staff User', NULL, 1, NULL, 'GAD-STAFF', NULL, NULL, '2026-03-26 15:53:56', '2026-06-26 05:53:38', '2026-06-26 05:53:38'),
+(51, 'marksantos', 'marksantos@gmail.com', NULL, '$2y$10$XpBQvnSPe15XDdOdDySVf.5ri9Y2wCDwqZcdGLoOXmjClhEZTA6Aa', NULL, NULL, 'college', 'Mark Santos', NULL, 32, NULL, NULL, NULL, NULL, '2026-06-17 12:57:12', '2026-06-23 13:47:33', NULL),
+(52, 'bisayotduligas', 'bisayotduligas@gmail.com', NULL, '$2y$10$EfHJmvx7.gMSH9fe2TEjkeAlty0Js39/MB0qukXQkfvLE2/JZaD3a', NULL, NULL, 'college', 'Joshua Duligas', NULL, 32, NULL, NULL, NULL, NULL, '2026-06-25 02:46:48', '2026-06-25 07:39:59', '2026-06-25 07:39:59');
 
 -- --------------------------------------------------------
 
@@ -696,7 +700,8 @@ INSERT INTO `user_profiles` (`user_id`, `first_name`, `middle_name`, `last_name`
 (45, '', NULL, '', 'TWG', 45),
 (46, '', NULL, '', 'TWG', 46),
 (47, 'GAD', 'Staff', 'User', 'Staff', 1),
-(51, 'Mark', '', 'Santos', 'Non-TWG', 32);
+(51, 'Mark', '', 'Santos', 'Non-TWG', 32),
+(52, '', NULL, '', 'Non-TWG', 32);
 
 -- --------------------------------------------------------
 
@@ -892,25 +897,25 @@ ALTER TABLE `accomplishment_report`
 -- AUTO_INCREMENT for table `activity_budget_items`
 --
 ALTER TABLE `activity_budget_items`
-  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `activity_design`
 --
 ALTER TABLE `activity_design`
-  MODIFY `act_design_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `act_design_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT for table `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT for table `archived_accomplishment_reports`
 --
 ALTER TABLE `archived_accomplishment_reports`
-  MODIFY `archive_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `archive_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `archived_activity_designs`
@@ -946,25 +951,25 @@ ALTER TABLE `mandate`
 -- AUTO_INCREMENT for table `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=178;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=670;
 
 --
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `office_units`
 --
 ALTER TABLE `office_units`
-  MODIFY `office_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `office_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
 
 --
 -- AUTO_INCREMENT for table `venues`
