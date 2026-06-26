@@ -19,7 +19,7 @@ class MessageController extends ResourceController
         $rules = [
             'sender_id' => 'required|integer',
             'to'        => 'required',
-            'title'     => 'required|string',
+            
             'message'   => 'required|string',
         ];
 
@@ -33,7 +33,7 @@ class MessageController extends ResourceController
 
         $senderId = $this->request->getVar('sender_id');
         $to = $this->request->getVar('to'); // Expected array of user IDs
-        $title = $this->request->getVar('title');
+        $title = $this->request->getVar('title') ?? '';
         $messageText = $this->request->getVar('message');
         $documentType = $this->request->getVar('document_type');
         $documentId = $this->request->getVar('document_id');
@@ -50,11 +50,30 @@ class MessageController extends ResourceController
         $createdAt = date('Y-m-d H:i:s');
         $insertedCount = 0;
 
+        $db = \Config\Database::connect();
+        $findThreadId = function($u1, $u2) use ($db) {
+            $existingMessage = $db->table('messages')
+                ->groupStart()
+                    ->groupStart()
+                        ->where('sender_id', $u1)
+                        ->where('recipient_id', $u2)
+                    ->groupEnd()
+                    ->orGroupStart()
+                        ->where('sender_id', $u2)
+                        ->where('recipient_id', $u1)
+                    ->groupEnd()
+                ->groupEnd()
+                ->orderBy('created_at', 'ASC')
+                ->get()
+                ->getRowArray();
+            return $existingMessage ? ($existingMessage['parent_id'] ?: $existingMessage['id']) : null;
+        };
+
         foreach ($to as $recipientId) {
             $data = [
                 'sender_id'     => $senderId,
                 'recipient_id'  => $recipientId,
-                'parent_id'     => $parentId ? $parentId : null,
+                'parent_id'     => $parentId ? $parentId : $findThreadId($senderId, $recipientId),
                 'title'         => $title,
                 'message_text'  => $messageText,
                 'document_type' => $documentType ? $documentType : null,
@@ -89,7 +108,6 @@ class MessageController extends ResourceController
         $rules = [
             'sender_id' => 'required|integer',
             'target_type' => 'required|in_list[all,role,office]',
-            'title'     => 'required|string',
             'message'   => 'required|string',
         ];
 
@@ -104,7 +122,6 @@ class MessageController extends ResourceController
         $senderId = $this->request->getVar('sender_id');
         $targetType = $this->request->getVar('target_type');
         $targetValue = $this->request->getVar('target_value');
-        $title = $this->request->getVar('title');
         $messageText = $this->request->getVar('message');
 
         $db = \Config\Database::connect();
@@ -112,7 +129,7 @@ class MessageController extends ResourceController
         $builder = $db->table('users')
             ->select('users.id')
             ->where('users.deleted_at', null)
-            ->where('users.id !=', $senderId); // Don't send to self
+            ->where('users.id !=', $senderId);
 
         if ($targetType === 'role') {
             $builder->join('user_profiles', 'user_profiles.user_id = users.id', 'left');
@@ -136,12 +153,48 @@ class MessageController extends ResourceController
         $createdAt = date('Y-m-d H:i:s');
         $insertedCount = 0;
 
+        // Find existing master announcement thread for this sender
+        $existingMaster = $db->table('messages')
+            ->where('sender_id', $senderId)
+            ->where('recipient_id', 0)
+            ->where('is_announcement', 1)
+            ->orderBy('created_at', 'ASC')
+            ->get()
+            ->getRowArray();
+        
+        $masterParentId = $existingMaster ? ($existingMaster['parent_id'] ?: $existingMaster['id']) : null;
+
+        // Insert Master Announcement Record for the Sender's UI
+        $masterData = [
+            'sender_id'     => $senderId,
+            'recipient_id'  => 0, // Dummy recipient
+            'parent_id'     => $masterParentId,
+            'message_text'  => $messageText,
+            'is_read'       => 1,
+            'is_announcement' => 1,
+            'created_at'    => $createdAt
+        ];
+        $this->messageModel->insert($masterData);
+        if (!$masterParentId) {
+            $masterParentId = $this->messageModel->getInsertID();
+        }
+
+        // Insert individual copies for the actual recipients
         foreach ($recipients as $row) {
+            // Find existing announcement thread between this sender and this recipient
+            $existingRecip = $db->table('messages')
+                ->where('sender_id', $senderId)
+                ->where('recipient_id', $row['id'])
+                ->where('is_announcement', 1)
+                ->orderBy('created_at', 'ASC')
+                ->get()
+                ->getRowArray();
+            $recipParentId = $existingRecip ? ($existingRecip['parent_id'] ?: $existingRecip['id']) : null;
+
             $data = [
                 'sender_id'     => $senderId,
                 'recipient_id'  => $row['id'],
-                'parent_id'     => null,
-                'title'         => $title,
+                'parent_id'     => $recipParentId,
                 'message_text'  => $messageText,
                 'is_read'       => 0,
                 'is_announcement' => 1,
@@ -155,7 +208,7 @@ class MessageController extends ResourceController
 
         if ($insertedCount > 0) {
             $actionUserId = $this->request->getHeaderLine('X-User-Id') ?: $senderId;
-            \App\Models\ActivityLogModel::log($actionUserId, 'Make Announcement', 'sent an announcement: ' . $title);
+            \App\Models\ActivityLogModel::log($actionUserId, 'Make Announcement', 'sent an announcement');
 
             return $this->response->setJSON([
                 'success' => true,
@@ -210,7 +263,6 @@ class MessageController extends ResourceController
                 'role' => $msg['role'],
                 'office_id' => $msg['office_id'],
                 'date' => $date->format('M d, Y h:i A'),
-                'title' => $msg['title'],
                 'preview' => mb_strimwidth(strip_tags($msg['message_text']), 0, 100, "..."),
                 'message' => $msg['message_text'],
                 'document_type' => $msg['document_type'],
@@ -241,10 +293,10 @@ class MessageController extends ResourceController
             INNER JOIN (
                 SELECT MAX(id) as max_id
                 FROM messages
-                WHERE sender_id = ? AND deleted_by_sender_at IS NULL
+                WHERE sender_id = ? AND deleted_by_sender_at IS NULL AND (is_announcement = 0 OR recipient_id = 0)
                 GROUP BY IFNULL(parent_id, id)
             ) latest ON messages.id = latest.max_id
-            JOIN users ON users.id = messages.recipient_id
+            LEFT JOIN users ON users.id = messages.recipient_id
             LEFT JOIN user_profiles ON user_profiles.user_id = users.id
             ORDER BY messages.created_at DESC
         ";
@@ -268,7 +320,6 @@ class MessageController extends ResourceController
                 'role' => $msg['role'],
                 'office_id' => $msg['office_id'],
                 'date' => $date->format('M d, Y h:i A'),
-                'title' => $msg['title'],
                 'preview' => $msg['message_text'],
                 'document_type' => $msg['document_type'],
                 'document_id' => $msg['document_id'],
@@ -287,10 +338,9 @@ class MessageController extends ResourceController
     
     public function markAsRead($messageId)
     {
-        if ($this->messageModel->update($messageId, ['is_read' => 1])) {
-            return $this->response->setJSON(['success' => true]);
-        }
-        return $this->response->setJSON(['success' => false])->setStatusCode(500);
+        $db = \Config\Database::connect();
+        $db->table('messages')->where('id', $messageId)->update(['is_read' => 1]);
+        return $this->response->setJSON(['success' => true]);
     }
 
     public function getTrashed($userId)
@@ -314,7 +364,7 @@ class MessageController extends ResourceController
                    OR (sender_id = ? AND deleted_by_sender_at IS NOT NULL)
                 GROUP BY IFNULL(parent_id, id)
             ) latest ON messages.id = latest.max_id
-            JOIN users ON users.id = IF(messages.sender_id = ?, messages.recipient_id, messages.sender_id)
+            LEFT JOIN users ON users.id = IF(messages.sender_id = ?, messages.recipient_id, messages.sender_id)
             LEFT JOIN user_profiles ON user_profiles.user_id = users.id
             ORDER BY messages.created_at DESC
         ";
@@ -340,7 +390,6 @@ class MessageController extends ResourceController
                 'office_id' => $msg['office_id'],
                 'date' => $date->format('M d, Y h:i A'),
                 'deleted_date' => $deletedDate->format('M d, Y h:i A'),
-                'title' => $msg['title'],
                 'preview' => mb_strimwidth(strip_tags($msg['message_text']), 0, 100, "..."),
                 'message' => $msg['message_text'],
                 'document_type' => $msg['document_type'],
@@ -410,6 +459,47 @@ class MessageController extends ResourceController
         return $this->response->setJSON(['success' => true]);
     }
 
+    public function bulkTrash()
+    {
+        $json = $this->request->getJSON();
+        $messageIds = $this->request->getVar('message_ids') ?? ($json->message_ids ?? []);
+        $userId = $this->request->getVar('user_id') ?? ($json->user_id ?? null);
+        if (!$userId || empty($messageIds)) return $this->response->setJSON(['success' => false, 'message' => 'Invalid request'])->setStatusCode(400);
+
+        $now = date('Y-m-d H:i:s');
+        $db = \Config\Database::connect();
+        
+        $db->table('messages')->where('sender_id', $userId)
+            ->groupStart()->whereIn('id', $messageIds)->orWhereIn('parent_id', $messageIds)->groupEnd()
+            ->update(['deleted_by_sender_at' => $now]);
+            
+        $db->table('messages')->where('recipient_id', $userId)
+            ->groupStart()->whereIn('id', $messageIds)->orWhereIn('parent_id', $messageIds)->groupEnd()
+            ->update(['deleted_by_recipient_at' => $now]);
+
+        return $this->response->setJSON(['success' => true]);
+    }
+
+    public function bulkRestore()
+    {
+        $json = $this->request->getJSON();
+        $messageIds = $this->request->getVar('message_ids') ?? ($json->message_ids ?? []);
+        $userId = $this->request->getVar('user_id') ?? ($json->user_id ?? null);
+        if (!$userId || empty($messageIds)) return $this->response->setJSON(['success' => false, 'message' => 'Invalid request'])->setStatusCode(400);
+
+        $db = \Config\Database::connect();
+        
+        $db->table('messages')->where('sender_id', $userId)
+            ->groupStart()->whereIn('id', $messageIds)->orWhereIn('parent_id', $messageIds)->groupEnd()
+            ->update(['deleted_by_sender_at' => null]);
+            
+        $db->table('messages')->where('recipient_id', $userId)
+            ->groupStart()->whereIn('id', $messageIds)->orWhereIn('parent_id', $messageIds)->groupEnd()
+            ->update(['deleted_by_recipient_at' => null]);
+
+        return $this->response->setJSON(['success' => true]);
+    }
+
     public function permanentlyDelete()
     {
         $json = $this->request->getJSON();
@@ -457,6 +547,13 @@ class MessageController extends ResourceController
         if (!$msg) return $this->response->setJSON(['success' => false])->setStatusCode(404);
         
         $rootId = $msg['parent_id'] ? $msg['parent_id'] : $msg['id'];
+        
+        $userId = $this->request->getHeaderLine('X-User-Id');
+        if ($userId) {
+            $db->table('messages')->where('recipient_id', $userId)
+               ->groupStart()->where('id', $rootId)->orWhere('parent_id', $rootId)->groupEnd()
+               ->update(['is_read' => 1]);
+        }
         
         // Fetch root and all its direct descendants
         $builder = $db->table('messages');

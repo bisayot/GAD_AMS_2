@@ -73,7 +73,8 @@ class AuthController extends ResourceController
                 'username' => $user['username'],
                 'role' => $user['role'],
                 'user_role' => $userRole,
-                'full_name' => $user['full_name']
+                'full_name' => $user['full_name'],
+                'office_id' => $user['office_id']
             ]
         ]);
     }
@@ -92,7 +93,7 @@ class AuthController extends ResourceController
             'fullname' => 'required',
             'department' => 'required',
             'email' => 'required|valid_email',
-            'password' => 'required|min_length[6]',
+            'password' => ['label' => 'Password', 'rules' => 'required|min_length[8]|regex_match[/[A-Z]/]|regex_match[/[a-z]/]|regex_match[/[0-9]/]|regex_match[/[^A-Za-z0-9]/]'],
             'confirm_password' => 'required|matches[password]'
         ];
 
@@ -270,7 +271,7 @@ class AuthController extends ResourceController
         
         $rules = [
             'token' => 'required',
-            'password' => 'required|min_length[6]',
+            'password' => ['label' => 'Password', 'rules' => 'required|min_length[8]|regex_match[/[A-Z]/]|regex_match[/[a-z]/]|regex_match[/[0-9]/]|regex_match[/[^A-Za-z0-9]/]'],
         ];
 
         if (!$this->validateData($data, $rules)) {

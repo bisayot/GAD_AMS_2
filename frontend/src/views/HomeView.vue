@@ -557,6 +557,11 @@ const goals = [
   height: auto;
   margin: 30px auto 0;
   display: block;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+.hero-logo:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 15px rgba(153, 13, 209, 0.6));
 }
 .hero-overlay {
   position: absolute;
@@ -1048,6 +1053,11 @@ const goals = [
   position: relative;
   z-index: 1;
   display: block;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.about-img:hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 

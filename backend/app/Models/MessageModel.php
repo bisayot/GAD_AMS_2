@@ -15,7 +15,6 @@ class MessageModel extends Model
     protected $allowedFields    = [
         'sender_id', 
         'recipient_id', 
-        'title', 
         'message_text', 
         'document_type', 
         'document_id', 

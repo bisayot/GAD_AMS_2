@@ -189,6 +189,11 @@ $routes->group('api', function($routes) {
     $routes->options('messages/trashed/(:num)', 'AuthController::handleOptions');
     $routes->get('messages/trashed/(:num)', 'MessageController::getTrashed/$1');
 
+    $routes->options('messages/bulk-trash', 'AuthController::handleOptions');
+    $routes->post('messages/bulk-trash', 'MessageController::bulkTrash');
+    $routes->options('messages/bulk-restore', 'AuthController::handleOptions');
+    $routes->post('messages/bulk-restore', 'MessageController::bulkRestore');
+    
     $routes->options('messages/trash/(:num)', 'AuthController::handleOptions');
     $routes->post('messages/trash/(:num)', 'MessageController::trashMessage/$1');
 
