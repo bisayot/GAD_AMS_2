@@ -225,7 +225,7 @@ const statusBadgeClass = (status) => {
 };
 
 const viewDetails = (id, status) => {
-  if (status === 'Revision Required') {
+  if (status === 'Revision Required' || status === 'Revision') {
     router.push(`/staff/ar-revision/${id}`);
   } else {
     router.push(`/staff/ar-view/${id}`);
@@ -246,7 +246,7 @@ const fetchReports = async () => {
       const total = accomplishmentReports.value.length;
       const pending = accomplishmentReports.value.filter(r => r.status === 'Pending').length;
       const verified = accomplishmentReports.value.filter(r => r.status === 'Verified').length;
-      const revision = accomplishmentReports.value.filter(r => r.status === 'Revision Required').length;
+      const revision = accomplishmentReports.value.filter(r => r.status === 'Revision Required' || r.status === 'Revision').length;
       metricsStats.value[0].value = String(total);
       metricsStats.value[1].value = String(pending);
       metricsStats.value[2].value = String(verified);

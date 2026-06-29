@@ -77,10 +77,6 @@
                   <p class="text-sm-light mt-1">{{ report.activity_design.gender_issue || '---' }}</p>
                 </div>
                 <div>
-                  <label class="info-label">GPB/GAD ID</label>
-                  <p class="text-sm-light mt-1">{{ report.activity_design.gpb_id || 'N/A' }}</p>
-                </div>
-                <div>
                   <label class="info-label">Venue</label>
                   <p class="text-sm-light mt-1">{{ report.activity_design.venue_name || report.activity_design.venue }}</p>
                 </div>
@@ -165,6 +161,18 @@
                 <div class="full-width-info">
                   <label class="info-label">Actual Activity Title</label>
                   <p class="text-sm-light mt-1">{{ report.activity_title }}</p>
+                </div>
+                <div class="full-width-info" v-if="report.activity_design">
+                  <label class="info-label">Activity Classification</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.activity_classification || '---' }}</p>
+                </div>
+                <div class="full-width-info" v-if="report.activity_design">
+                  <label class="info-label">GAD Mandate</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.gad_mandate || '---' }}</p>
+                </div>
+                <div class="full-width-info" v-if="report.activity_design">
+                  <label class="info-label">Gender Issues</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.gender_issue || '---' }}</p>
                 </div>
                 <div>
                   <label class="info-label">Start Date of Implementation</label>

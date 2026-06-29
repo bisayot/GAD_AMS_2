@@ -203,8 +203,8 @@
                 <input 
                   v-model="accomplishmentDeadline"
                   type="date" 
-                  class="modal-input"
-                  :min="minAccomplishmentDeadline"
+                  class="modal-input disabled-input"
+                  readonly
                 >
               </div>
 
@@ -226,8 +226,11 @@
                 <button @click="showRevisionModal = true" class="btn-revision">
                   <span class="material-symbols-outlined">edit_note</span> REVISION
                 </button>
-                <button @click="showCancelModal = true" class="btn-cancel-req">
-                  <span class="material-symbols-outlined">cancel</span> CANCEL REQUEST
+                <button v-if="design && design.status === 'Pending'" @click="showCancelModal = true" class="btn-cancel-req">
+                  <span class="material-symbols-outlined">cancel</span> DISAPPROVE
+                </button>
+                <button v-if="design && design.status !== 'Pending'" @click="handleRevertDecision" class="btn-cancel-req" style="background: #f59e0b;">
+                  <span class="material-symbols-outlined">undo</span> REVERT DECISION
                 </button>
                 <button @click="handleTrash" class="btn-trash">
                   <span class="material-symbols-outlined">delete</span> MOVE TO TRASH
@@ -279,17 +282,17 @@
       </div>
     </div>
 
-    <!-- Cancel Modal -->
+    <!-- Disapprove Modal -->
     <div v-if="showCancelModal" class="revision-modal show">
       <div class="revision-modal-content border-red-500/50">
         <div class="revision-modal-header from-red-600 to-red-400">
-          <h3><span class="material-symbols-outlined">warning</span> Confirm Cancellation</h3>
+          <h3><span class="material-symbols-outlined">warning</span> Confirm Disapproval</h3>
         </div>
         <div class="revision-modal-body">
-          <p class="text-sm-light mb-4">Are you sure you want to cancel this request? This action will move it to the archive as 'Cancelled'.</p>
+          <p class="text-sm-light mb-4">Are you sure you want to disapprove this request? The proponent will be notified.</p>
           
           <div class="form-group">
-            <label class="text-red-400">Reason for Cancellation</label>
+            <label class="text-red-400">Reason for Disapproval</label>
             <textarea 
               v-model="cancelReason" 
               class="modal-textarea border-red-500/30" 
@@ -299,9 +302,9 @@
           </div>
         </div>
         <div class="revision-modal-footer">
-          <button @click="showCancelModal = false" class="btn-cancel-modal">Go Back</button>
-          <button @click="handleConfirmCancel" class="btn-send from-red-600 to-red-400">
-            <span class="material-symbols-outlined">check_circle</span> Confirm
+          <button @click="showCancelModal = false" class="btn-cancel-modal text-white">Cancel</button>
+          <button @click="handleConfirmDisapprove" class="btn-send bg-red-600 hover:bg-red-700">
+            <span class="material-symbols-outlined">warning</span> Disapprove
           </button>
         </div>
       </div>
@@ -348,16 +351,9 @@ const todayDate = ref(getTodayDate());
 
 const minAccomplishmentDeadline = computed(() => {
   if (!assessmentDate.value) return todayDate.value;
-  const minDate = new Date(assessmentDate.value);
-  let addedDays = 0;
-  while (addedDays < 3) {
-    minDate.setDate(minDate.getDate() + 1);
-    const dayOfWeek = minDate.getDay();
-    if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Skip Sunday(0) and Saturday(6)
-      addedDays++;
-    }
-  }
-  return minDate.toISOString().split('T')[0];
+  const targetDate = new Date(assessmentDate.value);
+  targetDate.setDate(targetDate.getDate() + 14); // Exactly 14 days (2 weeks)
+  return targetDate.toISOString().split('T')[0];
 });
 
 const fetchDesignDetails = async () => {
@@ -370,10 +366,15 @@ const fetchDesignDetails = async () => {
       if (design.value.control && design.value.control !== 'PENDING ASSIGNMENT') {
         controlNumber.value = design.value.control;
       } else {
-        // Auto-generate a suggested control number if empty
-        const year = new Date().getFullYear();
-        const randomNum = Math.floor(Math.random() * 9000) + 1000;
-        controlNumber.value = `${year}-${randomNum}`;
+        // Fetch the next control number from the backend
+        try {
+          const res = await api.get('get-next-control-number');
+          if (res.data && res.data.success) {
+            controlNumber.value = res.data.next_control_number;
+          }
+        } catch (e) {
+          console.error("Failed to fetch next control number", e);
+        }
       }
       
       if (design.value.end_date) {
@@ -472,29 +473,61 @@ const handleSendRevision = async () => {
   }
 };
 
-const handleConfirmCancel = async () => {
+const handleConfirmDisapprove = async () => {
   if (!cancelReason.value) {
-    Swal.fire({ icon: 'warning', title: 'Missing Info', text: 'Please provide a reason for cancellation.', confirmButtonColor: '#b979cc' });
+    Swal.fire({ icon: 'warning', title: 'Missing Info', text: 'Please provide a reason for disapproval.', confirmButtonColor: '#b979cc' });
     return;
   }
   
   submitting.value = true;
   try {
     const id = design.value.act_design_id;
-    const response = await api.post(`archive-design/${id}`, {
+    const response = await api.post(`disapprove-design/${id}`, {
       remarks: cancelReason.value
     });
     
     if (response.data.success) {
-      Swal.fire({ icon: 'success', title: 'Cancelled', text: 'Request cancelled and archived.', confirmButtonColor: '#b979cc' }).then(() => {
+      Swal.fire({ icon: 'success', title: 'Disapproved', text: 'Request has been disapproved.', confirmButtonColor: '#b979cc' }).then(() => {
         router.push('/admin/ad-list');
       });
     } else {
-      Swal.fire({ icon: 'error', title: 'Failed', text: response.data.message || 'Failed to cancel request.', confirmButtonColor: '#b979cc' });
+      Swal.fire({ icon: 'error', title: 'Failed', text: response.data.message || 'Failed to disapprove request.', confirmButtonColor: '#b979cc' });
     }
   } catch (err) {
-    console.error('Error cancelling request:', err);
-    Swal.fire({ icon: 'error', title: 'Failed', text: 'Failed to cancel request.', confirmButtonColor: '#b979cc' });
+    console.error('Error disapproving request:', err);
+    Swal.fire({ icon: 'error', title: 'Failed', text: 'Failed to disapprove request.', confirmButtonColor: '#b979cc' });
+  } finally {
+    submitting.value = false;
+  }
+};
+
+const handleRevertDecision = async () => {
+  const result = await Swal.fire({
+    title: 'Revert Decision?',
+    text: 'Are you sure you want to revert the decision and set this design back to Pending?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#f59e0b',
+    cancelButtonColor: '#64748b',
+    confirmButtonText: 'Yes, revert it!'
+  });
+
+  if (!result.isConfirmed) return;
+  
+  submitting.value = true;
+  try {
+    const id = design.value.act_design_id;
+    const response = await api.post(`revert-design/${id}`);
+    if (response.data.success) {
+      Swal.fire({ icon: 'success', title: 'Reverted', text: 'Decision has been reverted.', confirmButtonColor: '#b979cc' }).then(() => {
+        router.push('/admin/ad-list');
+      });
+    } else {
+      Swal.fire({ icon: 'error', title: 'Failed', text: response.data.message || 'Failed to revert decision.', confirmButtonColor: '#b979cc' });
+    }
+  } catch (err) {
+    console.error('Error reverting decision:', err);
+    Swal.fire({ icon: 'error', title: 'Failed', text: 'Failed to revert decision.', confirmButtonColor: '#b979cc' });
   } finally {
     submitting.value = false;
   }

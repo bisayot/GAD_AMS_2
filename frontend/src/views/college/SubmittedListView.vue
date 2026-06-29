@@ -51,6 +51,18 @@
                 </div>
                 </div>
             </div>
+
+            <div class="stat-card">
+                <div class="stat-card-inner">
+                <div class="stat-icon-wrapper amber" style="background: rgba(220, 38, 38, 0.1);">
+                    <span class="material-symbols-outlined" style="color: #ef4444;">cancel</span>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">{{ disapprovedCount }}</h3>
+                    <p class="stat-label" style="color: #ef4444;">DISAPPROVED</p>
+                </div>
+                </div>
+            </div>
             </div><br>
 
           <div class="tabs-container">
@@ -82,6 +94,7 @@
                   <option value="all">All Status</option>
                   <option value="pending">Pending Review</option>
                   <option value="revision">For Revision</option>
+                  <option value="disapproved">Disapproved</option>
                 </select>
               </div>
 
@@ -279,7 +292,7 @@ const filteredItems = computed(() => {
 });
 
 const totalActive = computed(() => {
-  return submissions.value.filter(item => item.status === 'pending' || item.status === 'revision').length;
+  return submissions.value.filter(item => item.status === 'pending' || item.status === 'revision' || item.status === 'disapproved').length;
 });
 
 const totalDesigns = computed(() => {
@@ -292,6 +305,10 @@ const totalReports = computed(() => {
 
 const pendingCount = computed(() => {
   return submissions.value.filter(item => item.status === 'pending').length;
+});
+
+const disapprovedCount = computed(() => {
+  return submissions.value.filter(item => item.status === 'disapproved').length;
 });
 
 const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage));
@@ -439,7 +456,7 @@ onMounted(() => {
 
 @media (min-width: 768px) {
   .stats-container {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
   }
 }
 
@@ -892,6 +909,12 @@ onMounted(() => {
 .status-badge.status-revision {
   background: #fee2e2;
   color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.status-badge.status-disapproved {
+  background: #fee2e2;
+  color: #ef4444;
   border: 1px solid #fecaca;
 }
 

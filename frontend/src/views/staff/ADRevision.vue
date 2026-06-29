@@ -55,23 +55,30 @@
               <div class="info-item">
                 <span class="info-label">Form Type</span>
                 <select v-model="formData.form_type" class="modal-input select-input">
-                  <option value="employee">Employee Training</option>
-                  <option value="inset">INSET</option>
-                  <option value="extension">Extension Program</option>
-                  <option value="student">Student Activity</option>
+                  <option value="" disabled>Select form type...</option>
+                  <option v-for="ft in formTypes" :key="ft.id" :value="ft.id" class="dark-option">{{ ft.name }}</option>
                 </select>
               </div>
               <div class="info-item">
                 <span class="info-label">Activity Classification</span>
-                <span class="info-value-white">{{ design.activity_classification || '---' }}</span>
+                <select v-model="formData.activity_classification" class="modal-input select-input">
+                  <option value="" disabled>Select classification...</option>
+                  <option v-for="c in activityClassifications" :key="c.id" :value="c.id" class="dark-option">{{ c.classification_name }}</option>
+                </select>
               </div>
               <div class="info-item" style="grid-column: span 2;">
                 <span class="info-label">GAD Mandate</span>
-                <span class="info-value-white">{{ design.gad_mandate || '---' }}</span>
+                <select v-model="formData.gad_mandate" class="modal-input select-input">
+                  <option value="" disabled>Select mandate...</option>
+                  <option v-for="m in gadMandates" :key="m.id" :value="m.id" class="dark-option">{{ m.title }}</option>
+                </select>
               </div>
               <div class="info-item" style="grid-column: span 2;">
                 <span class="info-label">Gender Issues</span>
-                <span class="info-value-white">{{ design.gender_issue || '---' }}</span>
+                <select v-model="formData.gender_issue" class="modal-input select-input">
+                  <option value="" disabled>Select gender issue...</option>
+                  <option v-for="gi in genderIssues" :key="gi.id" :value="gi.id" class="dark-option">{{ gi.title }}</option>
+                </select>
               </div>
             </div>
           </div>
@@ -433,6 +440,18 @@
                   <input type="file" @change="handleFileChange" class="file-input-hidden" accept=".pdf,.doc,.docx">
                 </label>
               </div>
+
+              <!-- Document Previews -->
+              <div class="document-previews" style="margin-top: 15px;">
+                <div v-if="design.attachment" style="margin-bottom: 20px;">
+                  <p style="color: #cbd5e1; font-size: 13px; font-weight: bold; margin-bottom: 8px;">Previous Document:</p>
+                  <iframe :src="`${api.defaults.baseURL}/files/drafts/${design.attachment}`" width="100%" height="400px" style="border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;"></iframe>
+                </div>
+                <div v-if="newFileURL">
+                  <p style="color: #b979cc; font-size: 13px; font-weight: bold; margin-bottom: 8px;">New Document Preview:</p>
+                  <iframe :src="newFileURL" width="100%" height="400px" style="border: 1px solid #b979cc; border-radius: 8px;"></iframe>
+                </div>
+              </div>
             </div>
         </section>
 
@@ -479,9 +498,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../../api';
+import PdfPreviewModal from '../../components/PdfPreviewModal.vue';
 import Swal from 'sweetalert2';
 
 const route = useRoute();
@@ -495,11 +515,20 @@ const error = ref(null);
 const venues = ref([]);
 const customVenue = ref('');
 const newFile = ref(null);
+const newFileURL = ref(null);
+
+const formTypes = ref([]);
+const activityClassifications = ref([]);
+const gadMandates = ref([]);
+const genderIssues = ref([]);
 
 const formData = ref({
   activity_title: '',
   office: '',
   form_type: '',
+  activity_classification: '',
+  gad_mandate: '',
+  gender_issue: '',
   start_date: '',
   end_date: '',
   start_time: '',
@@ -632,6 +661,55 @@ const fetchVenues = async () => {
   }
 };
 
+const fetchFormTypes = async () => {
+  try {
+    const response = await api.get('get-form-types');
+    if (response.data) formTypes.value = response.data;
+  } catch (error) {
+    console.error('Error fetching form types:', error);
+  }
+};
+
+const fetchActivityClassifications = async () => {
+  try {
+    const response = await api.get('get-activity-classifications');
+    if (response.data) activityClassifications.value = response.data;
+  } catch (error) {
+    console.error('Error fetching classifications:', error);
+  }
+};
+
+const fetchGADMandates = async () => {
+  try {
+    const response = await api.get('get-gad-mandates');
+    if (response.data) gadMandates.value = response.data;
+  } catch (error) {
+    console.error('Error fetching mandates:', error);
+  }
+};
+
+const fetchGenderIssues = async (mandateId) => {
+  try {
+    if (!mandateId) {
+      genderIssues.value = [];
+      return;
+    }
+    const response = await api.get(`get-gender-issues/${mandateId}`);
+    if (response.data) genderIssues.value = response.data;
+  } catch (error) {
+    console.error('Error fetching gender issues:', error);
+  }
+};
+
+watch(() => formData.value.gad_mandate, (newVal) => {
+  if (newVal) {
+    fetchGenderIssues(newVal);
+  } else {
+    genderIssues.value = [];
+    formData.value.gender_issue = '';
+  }
+});
+
 const fetchDesignDetails = async () => {
   loading.value = true;
   try {
@@ -639,6 +717,19 @@ const fetchDesignDetails = async () => {
     const response = await api.get(`activity-design/${id}`);
     if (response.data.success) {
       design.value = response.data.data;
+      
+      if (Number(design.value.user_id) !== Number(user.value.id)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Access Denied',
+          text: 'You are not authorized to view or edit this document.',
+          confirmButtonColor: '#b979cc'
+        }).then(() => {
+          router.push('/staff/ad-list');
+        });
+        return;
+      }
+
       // Initialize default structures
       mealsSelected.value = { breakfast: false, lunch: false, dinner: false };
       snacksSelected.value = { am: false, pm: false };
@@ -700,6 +791,9 @@ const fetchDesignDetails = async () => {
         activity_title: design.value.activity_title,
         office: design.value.office,
         form_type: design.value.form_type,
+        activity_classification: design.value.classification_id,
+        gad_mandate: design.value.gad_mandate_id,
+        gender_issue: design.value.gender_issue_id,
         start_date: design.value.start_date,
         end_date: design.value.end_date,
         start_time: design.value.start_time,
@@ -736,6 +830,11 @@ const fetchDesignDetails = async () => {
 
 const handleFileChange = (e) => {
   newFile.value = e.target.files[0];
+  if (newFile.value) {
+    newFileURL.value = URL.createObjectURL(newFile.value);
+  } else {
+    newFileURL.value = null;
+  }
 };
 
 const formatDate = (date) => date ? new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '---';
@@ -758,6 +857,9 @@ const handleUpdate = async () => {
     // Aligning keys with ActivityDesignController expectations
     submitData.append('activity_title', formData.value.activity_title);
     submitData.append('form_type', formData.value.form_type);
+    submitData.append('activity_classification_id', formData.value.activity_classification);
+    submitData.append('gad_mandate_id', formData.value.gad_mandate);
+    submitData.append('gender_issue_id', formData.value.gender_issue);
     submitData.append('start_date', formData.value.start_date);
     submitData.append('end_date', formData.value.end_date);
     submitData.append('start_time', formData.value.start_time);
@@ -827,6 +929,9 @@ onMounted(() => {
     router.push('/login');
   } else {
     fetchVenues();
+    fetchFormTypes();
+    fetchActivityClassifications();
+    fetchGADMandates();
     fetchDesignDetails();
   }
 });

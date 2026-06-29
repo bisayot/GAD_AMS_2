@@ -122,21 +122,23 @@ class AccomplishmentReportController extends BaseController
         $db = \Config\Database::connect();
 
         $active = $db->table('accomplishment_report as ar')
-            ->select('ar.id, ar.status, cn.control_number as control, ar.activity_title as title, DATE(ar.created_at) as date, office_units.office_name as office, users.full_name as submitter_name, ad.form_type as formLabel')
+            ->select('ar.id, ar.status, cn.control_number as control, ar.activity_title as title, DATE(ar.created_at) as date, office_units.office_name as office, users.full_name as submitter_name, form_types.name as formLabel')
             ->join('users', 'users.id = ar.user_id', 'left')
             ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number as cn', 'cn.control_number = ar.control_number', 'left')
             ->join('archived_activity_designs as ad', 'ad.original_act_design_id = cn.act_design_id', 'left')
+            ->join('form_types', 'form_types.id = ad.form_type', 'left')
             ->where('ar.status !=', 'Verified')
             ->where('ar.deleted_at', null)
             ->get()->getResultArray();
 
         $archived = $db->table('archived_accomplishment_reports as aar')
-            ->select('aar.original_report_id as id, aar.status, cn.control_number as control, aar.activity_title as title, DATE(aar.created_at) as date, office_units.office_name as office, users.full_name as submitter_name, ad.form_type as formLabel')
+            ->select('aar.original_report_id as id, aar.status, cn.control_number as control, aar.activity_title as title, DATE(aar.created_at) as date, office_units.office_name as office, users.full_name as submitter_name, form_types.name as formLabel')
             ->join('users', 'users.id = aar.user_id', 'left')
             ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number as cn', 'cn.control_number = aar.control_number', 'left')
             ->join('archived_activity_designs as ad', 'ad.original_act_design_id = cn.act_design_id', 'left')
+            ->join('form_types', 'form_types.id = ad.form_type', 'left')
             ->where('aar.status !=', 'Verified')
             ->get()->getResultArray();
 
@@ -230,22 +232,24 @@ class AccomplishmentReportController extends BaseController
         $db = \Config\Database::connect();
 
         $active = $db->table('accomplishment_report as ar')
-            ->select('ar.id, ar.status, cn.control_number as control, ar.activity_title as title, DATE(ar.created_at) as date, office_units.office_name as office, users.full_name as submitter_name, ad.form_type as formLabel')
+            ->select('ar.id, ar.status, cn.control_number as control, ar.activity_title as title, DATE(ar.created_at) as date, office_units.office_name as office, users.full_name as submitter_name, form_types.name as formLabel')
             ->join('users', 'users.id = ar.user_id', 'left')
             ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number as cn', 'cn.control_number = ar.control_number', 'left')
             ->join('archived_activity_designs as ad', 'ad.original_act_design_id = cn.act_design_id', 'left')
+            ->join('form_types', 'form_types.id = ad.form_type', 'left')
             ->where('ar.user_id', $userId)
             ->where('ar.status !=', 'Verified')
             ->where('ar.deleted_at', null)
             ->get()->getResultArray();
 
         $archived = $db->table('archived_accomplishment_reports as aar')
-            ->select('aar.original_report_id as id, aar.status, cn.control_number as control, aar.activity_title as title, DATE(aar.created_at) as date, office_units.office_name as office, users.full_name as submitter_name, ad.form_type as formLabel')
+            ->select('aar.original_report_id as id, aar.status, cn.control_number as control, aar.activity_title as title, DATE(aar.created_at) as date, office_units.office_name as office, users.full_name as submitter_name, form_types.name as formLabel')
             ->join('users', 'users.id = aar.user_id', 'left')
             ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number as cn', 'cn.control_number = aar.control_number', 'left')
             ->join('archived_activity_designs as ad', 'ad.original_act_design_id = cn.act_design_id', 'left')
+            ->join('form_types', 'form_types.id = ad.form_type', 'left')
             ->where('aar.user_id', $userId)
             ->where('aar.status !=', 'Verified')
             ->get()->getResultArray();

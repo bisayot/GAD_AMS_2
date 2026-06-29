@@ -63,6 +63,7 @@
                   <option value="Pending">Pending Review</option>
                   <option value="Approved">Approved</option>
                   <option value="Revision Required">Revision Required</option>
+                  <option value="Disapproved">Disapproved</option>
                 </select>
                 <span class="select-arrow">▼</span>
               </div>
@@ -201,7 +202,8 @@ const metricsStats = ref([
   { label: 'Total Designs', value: '0', icon: 'description', iconColor: 'text-purple-400', bgClass: 'bg-purple-500/10' },
   { label: 'Pending Reviews', value: '0', icon: 'schedule', iconColor: 'text-amber-400', bgClass: 'bg-amber-500/10' },
   { label: 'Approved Plans', value: '0', icon: 'verified', iconColor: 'text-green-400', bgClass: 'bg-green-500/10' },
-  { label: 'Revision Required', value: '0', icon: 'assignment_return', iconColor: 'text-red-400', bgClass: 'bg-red-500/10' }
+  { label: 'Revision Required', value: '0', icon: 'assignment_return', iconColor: 'text-red-400', bgClass: 'bg-red-500/10' },
+  { label: 'Disapproved', value: '0', icon: 'cancel', iconColor: 'text-red-600', bgClass: 'bg-red-600/10' }
 ]);
 
 const filteredDesigns = computed(() => {
@@ -222,6 +224,7 @@ const filteredDesigns = computed(() => {
 const statusBadgeClass = (status) => {
   if (status === 'Approved') return 'status-badge-approved';
   if (status === 'Revision Required') return 'status-badge-revision';
+  if (status === 'Disapproved') return 'status-badge-disapproved';
   return 'status-badge-pending';
 };
 
@@ -245,10 +248,12 @@ const fetchDesigns = async () => {
       const pending = activityDesigns.value.filter(d => d.status === 'Pending').length;
       const approved = activityDesigns.value.filter(d => d.status === 'Approved').length;
       const revision = activityDesigns.value.filter(d => d.status === 'Revision Required').length;
+      const disapproved = activityDesigns.value.filter(d => d.status === 'Disapproved').length;
       metricsStats.value[0].value = String(total);
       metricsStats.value[1].value = String(pending);
       metricsStats.value[2].value = String(approved);
       metricsStats.value[3].value = String(revision);
+      metricsStats.value[4].value = String(disapproved);
 
       paginationMeta.value.total = total;
       paginationMeta.value.from = total > 0 ? 1 : 0;
@@ -384,7 +389,7 @@ onMounted(() => {
 
 .stats-section {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1rem;
 }
 
@@ -427,11 +432,13 @@ onMounted(() => {
 .text-amber-400 { color: #fbbf24; }
 .text-green-400 { color: #4ade80; }
 .text-red-400 { color: #f87171; }
+.text-red-600 { color: #dc2626; }
 
 .bg-purple-500\/10 { background: rgba(168, 85, 247, 0.1); }
 .bg-amber-500\/10 { background: rgba(245, 158, 11, 0.1); }
 .bg-green-500\/10 { background: rgba(34, 197, 94, 0.1); }
 .bg-red-500\/10 { background: rgba(239, 68, 68, 0.1); }
+.bg-red-600\/10 { background: rgba(220, 38, 38, 0.1); }
 
 .stat-info {
   min-width: 0;
@@ -704,6 +711,12 @@ onMounted(() => {
   background: rgba(239, 68, 68, 0.2);
   color: #f87171;
   border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.status-badge-disapproved {
+  background: rgba(220, 38, 38, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(220, 38, 38, 0.3);
 }
 
 .pagination-container {

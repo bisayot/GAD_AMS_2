@@ -36,7 +36,10 @@
               </div>
               <div class="info-item">
                 <span class="info-label">Date Submitted</span>
-                <span class="info-value-white">{{ report.date || '---' }}</span>
+                <div class="flex items-center gap-2" style="display: flex; align-items: center; gap: 8px;">
+                  <span class="info-value-white">{{ report.date || '---' }}</span>
+                  <span v-if="isLateSubmission" class="late-badge" style="background-color: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">Late Submission</span>
+                </div>
               </div>
               <div class="info-item">
                 <span class="info-label">Category</span>
@@ -59,13 +62,21 @@
                   <label class="info-label">Title</label>
                   <p class="text-sm-light mt-1">{{ report.activity_design.activity_title }}</p>
                 </div>
-                <div>
-                  <label class="info-label">Form Type</label>
-                  <p class="text-sm-light mt-1">{{ report.activity_design.form_type }}</p>
+                <div class="full-width-info">
+                  <label class="info-label">Activity Classification</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.activity_classification || '---' }}</p>
                 </div>
                 <div>
-                  <label class="info-label">GPB/GAD ID</label>
-                  <p class="text-sm-light mt-1">{{ report.activity_design.gpb_id || 'N/A' }}</p>
+                  <label class="info-label">Form Type</label>
+                  <p class="text-sm-light mt-1 uppercase">{{ report.activity_design.form_type_name || report.activity_design.form_type || '---' }}</p>
+                </div>
+                <div class="full-width-info">
+                  <label class="info-label">GAD Mandate</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.gad_mandate || '---' }}</p>
+                </div>
+                <div class="full-width-info">
+                  <label class="info-label">Gender Issues</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.gender_issue || '---' }}</p>
                 </div>
                 <div>
                   <label class="info-label">Venue</label>
@@ -152,6 +163,18 @@
                 <div class="full-width-info">
                   <label class="info-label">Actual Activity Title</label>
                   <p class="text-sm-light mt-1">{{ report.activity_title }}</p>
+                </div>
+                <div class="full-width-info" v-if="report.activity_design">
+                  <label class="info-label">Activity Classification</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.activity_classification || '---' }}</p>
+                </div>
+                <div class="full-width-info" v-if="report.activity_design">
+                  <label class="info-label">GAD Mandate</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.gad_mandate || '---' }}</p>
+                </div>
+                <div class="full-width-info" v-if="report.activity_design">
+                  <label class="info-label">Gender Issues</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.gender_issue || '---' }}</p>
                 </div>
                 <div>
                   <label class="info-label">Start Date of Implementation</label>
@@ -352,7 +375,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import api from '../../api';
@@ -372,6 +395,15 @@ const assessmentRemarks = ref('');
 const showRevisionModal = ref(false);
 const revisionRemarks = ref('');
 const revisionDeadline = ref('');
+
+const isLateSubmission = computed(() => {
+  if (!report.value || !report.value.date || !report.value.activity_design || !report.value.activity_design.accomplishment_deadline) {
+    return false;
+  }
+  const submittedDate = new Date(report.value.date);
+  const deadlineDate = new Date(report.value.activity_design.accomplishment_deadline);
+  return submittedDate > deadlineDate;
+});
 
 const getTodayDate = () => {
   const d = new Date();
@@ -536,7 +568,6 @@ const closePdfModal = () => {
 };
 
 
-import { computed } from 'vue';
 
 const parsedADBudget = computed(() => {
   if (!report.value.activity_design || !report.value.activity_design.budget_items || report.value.activity_design.budget_items.length === 0) return [];

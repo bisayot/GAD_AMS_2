@@ -620,6 +620,102 @@ class ActivityDesignController extends BaseController
         ]);
     }
 
+    public function disapproveDesign($id = null)
+    {
+        if (!$id) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Design ID required'])->setStatusCode(400);
+        }
+
+        $body = $this->request->getJSON(true) ?? $this->request->getPost();
+        $remarks = $body['remarks'] ?? '';
+
+        $db = \Config\Database::connect();
+        
+        $updateData = [
+            'status' => 'Disapproved'
+        ];
+        
+        try {
+            $updateData['remarks'] = $remarks;
+            $db->table('activity_design')->where('act_design_id', $id)->update($updateData);
+        } catch (\Exception $e) {
+            $db->table('activity_design')->where('act_design_id', $id)->update(['status' => 'Disapproved']);
+        }
+
+        $item = $db->table('activity_design')->where('act_design_id', $id)->get()->getRowArray();
+        if ($item) {
+            $actionUserId = $this->request->getHeaderLine('X-User-Id') ?: $item['user_id'];
+            \App\Models\ActivityLogModel::log($actionUserId, 'Disapprove Document', 'disapproved Activity Design: ' . $item['activity_title']);
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Design disapproved successfully'
+        ]);
+    }
+
+    public function revertDecision($id = null)
+    {
+        if (!$id) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Design ID required'])->setStatusCode(400);
+        }
+
+        $db = \Config\Database::connect();
+        
+        // Check active table first (for Disapproved or Revision Required)
+        $activeItem = $db->table('activity_design')->where('act_design_id', $id)->get()->getRowArray();
+        if ($activeItem) {
+            if (in_array($activeItem['status'], ['Disapproved', 'Revision Required'])) {
+                try {
+                    $db->table('activity_design')->where('act_design_id', $id)->update([
+                        'status' => 'Pending',
+                        'remarks' => null
+                    ]);
+                } catch (\Exception $e) {
+                    $db->table('activity_design')->where('act_design_id', $id)->update(['status' => 'Pending']);
+                }
+
+                $actionUserId = $this->request->getHeaderLine('X-User-Id') ?: $activeItem['user_id'];
+                \App\Models\ActivityLogModel::log($actionUserId, 'Revert Decision', 'reverted decision for Activity Design: ' . $activeItem['activity_title']);
+
+                return $this->response->setJSON(['success' => true, 'message' => 'Decision reverted successfully']);
+            }
+            return $this->response->setJSON(['success' => false, 'message' => 'Cannot revert this design status from active list'])->setStatusCode(400);
+        }
+
+        // Check archived table (for Approved or Cancelled)
+        $archivedItem = $db->table('archived_activity_designs')->where('original_act_design_id', $id)->get()->getRowArray();
+        if ($archivedItem) {
+            $db->transStart();
+            
+            // Build data for moving back
+            $restoreData = $archivedItem;
+            $restoreData['act_design_id'] = $restoreData['original_act_design_id'];
+            unset($restoreData['original_act_design_id']);
+            unset($restoreData['archived_at']);
+            
+            // Reset status and remarks
+            $restoreData['status'] = 'Pending';
+            $restoreData['remarks'] = null;
+            
+            $db->table('activity_design')->insert($restoreData);
+            $db->table('archived_activity_designs')->where('original_act_design_id', $id)->delete();
+            
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Failed to revert and restore design'])->setStatusCode(500);
+            }
+
+            $actionUserId = $this->request->getHeaderLine('X-User-Id') ?: $archivedItem['user_id'];
+            \App\Models\ActivityLogModel::log($actionUserId, 'Revert Decision', 'reverted decision and restored Activity Design: ' . $archivedItem['activity_title']);
+
+            return $this->response->setJSON(['success' => true, 'message' => 'Decision reverted successfully']);
+        }
+
+        return $this->response->setJSON(['success' => false, 'message' => 'Design not found in active or archived lists'])->setStatusCode(404);
+    }
+
     public function updateDeadline($id = null)
     {
         if (!$id) {
@@ -712,5 +808,31 @@ class ActivityDesignController extends BaseController
         $builder = $db->table('activity_classifications');
         $query = $builder->get();
         return $this->response->setJSON($query->getResult());
+    }
+
+    public function getNextControlNumber()
+    {
+        $db = \Config\Database::connect();
+        $yearMonth = date('Y-m'); // e.g., 2026-06
+        
+        $result = $db->table('control_number')
+            ->select('control_number')
+            ->like('control_number', $yearMonth . '-', 'after')
+            ->orderBy('control_number', 'DESC')
+            ->limit(1)
+            ->get()->getRowArray();
+
+        if ($result && !empty($result['control_number'])) {
+            $parts = explode('-', $result['control_number']); 
+            $num = (int)end($parts);
+            $nextNum = str_pad($num + 1, 3, '0', STR_PAD_LEFT);
+        } else {
+            $nextNum = '001';
+        }
+        
+        return $this->response->setJSON([
+            'success' => true,
+            'next_control_number' => $yearMonth . '-' . $nextNum
+        ]);
     }
 }

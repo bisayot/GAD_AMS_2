@@ -77,10 +77,6 @@
                   <p class="text-sm-light mt-1">{{ report.activity_design.gender_issue || '---' }}</p>
                 </div>
                 <div>
-                  <label class="info-label">GPB/GAD ID</label>
-                  <p class="text-sm-light mt-1">{{ report.activity_design.gpb_id || 'N/A' }}</p>
-                </div>
-                <div>
                   <label class="info-label">Venue</label>
                   <p class="text-sm-light mt-1">{{ report.activity_design.venue_name || report.activity_design.venue }}</p>
                 </div>
@@ -165,6 +161,18 @@
                 <div class="full-width-info">
                   <label class="info-label">Actual Activity Title</label>
                   <p class="text-sm-light mt-1">{{ report.activity_title }}</p>
+                </div>
+                <div class="full-width-info" v-if="report.activity_design">
+                  <label class="info-label">Activity Classification</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.activity_classification || '---' }}</p>
+                </div>
+                <div class="full-width-info" v-if="report.activity_design">
+                  <label class="info-label">GAD Mandate</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.gad_mandate || '---' }}</p>
+                </div>
+                <div class="full-width-info" v-if="report.activity_design">
+                  <label class="info-label">Gender Issues</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.gender_issue || '---' }}</p>
                 </div>
                 <div>
                   <label class="info-label">Start Date of Implementation</label>
@@ -316,7 +324,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../../api';
 import PdfPreviewModal from '../../components/PdfPreviewModal.vue';
@@ -374,15 +382,13 @@ const closePdfModal = () => {
 };
 
 
-import { computed } from 'vue';
-
 const parsedADBudget = computed(() => {
   if (!report.value.activity_design || !report.value.activity_design.budget_items || report.value.activity_design.budget_items.length === 0) return [];
   const b = report.value.activity_design.budget_items[0];
-  const catering = Number(ad.meals_and_snacks || 0) + Number(ad.accommodation || 0);
-  const venue = Number(ad.function_room_venue || 0) + Number(ad.equipment_rental || 0) + Number(ad.transportation || 0);
-  const program = Number(ad.professional_fee_honoria || 0) + Number(ad.tokens || 0);
-  const materials = Number(ad.materials_and_supplies || 0);
+  const catering = Number(b.meals_and_snacks || 0) + Number(b.accommodation || 0);
+  const venue = Number(b.function_room_venue || 0) + Number(b.equipment_rental || 0) + Number(b.transportation || 0);
+  const program = Number(b.professional_fee_honoria || 0) + Number(b.tokens || 0);
+  const materials = Number(b.materials_and_supplies || 0);
 
   const items = [
     { name: 'Catering & Hospitality', total: catering },
@@ -396,10 +402,10 @@ const parsedADBudget = computed(() => {
 const parsedARBudget = computed(() => {
   if (!report.value.budget_items || report.value.budget_items.length === 0) return [];
   const b = report.value.budget_items[0];
-  const catering = Number(ad.meals_and_snacks || 0) + Number(ad.accommodation || 0);
-  const venue = Number(ad.function_room_venue || 0) + Number(ad.equipment_rental || 0) + Number(ad.transportation || 0);
-  const program = Number(ad.professional_fee_honoria || 0) + Number(ad.tokens || 0);
-  const materials = Number(ad.materials_and_supplies || 0);
+  const catering = Number(b.meals_and_snacks || 0) + Number(b.accommodation || 0);
+  const venue = Number(b.function_room_venue || 0) + Number(b.equipment_rental || 0) + Number(b.transportation || 0);
+  const program = Number(b.professional_fee_honoria || 0) + Number(b.tokens || 0);
+  const materials = Number(b.materials_and_supplies || 0);
 
   const items = [
     { name: 'Catering & Hospitality', total: catering },

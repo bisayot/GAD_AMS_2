@@ -97,6 +97,9 @@ $routes->group('api', function($routes) {
     $routes->options('get-activity-classifications', 'AuthController::handleOptions');
     $routes->get('get-activity-classifications', 'ActivityDesignController::getActivityClassifications');
 
+    $routes->options('get-next-control-number', 'AuthController::handleOptions');
+    $routes->get('get-next-control-number', 'ActivityDesignController::getNextControlNumber');
+
     $routes->options('activity-designs', 'ActivityDesignController::index');
     $routes->get('activity-designs', 'ActivityDesignController::index');
 
@@ -114,6 +117,12 @@ $routes->group('api', function($routes) {
     // Update deadline
     $routes->options('update-deadline/(:num)', 'AuthController::handleOptions');
     $routes->post('update-deadline/(:num)', 'ActivityDesignController::updateDeadline/$1');
+
+    // Disapprove and Revert
+    $routes->options('disapprove-design/(:num)', 'AuthController::handleOptions');
+    $routes->post('disapprove-design/(:num)', 'ActivityDesignController::disapproveDesign/$1');
+    $routes->options('revert-design/(:num)', 'AuthController::handleOptions');
+    $routes->post('revert-design/(:num)', 'ActivityDesignController::revertDecision/$1');
 
     // ----------------------------------------------------------------
     // MANDATES & GENDER ISSUES ROUTES
@@ -160,6 +169,8 @@ $routes->group('api', function($routes) {
     // ----------------------------------------------------------------
     $routes->options('approved-controls/(:num)', 'AuthController::handleOptions');
     $routes->get('approved-controls/(:num)', 'ApprovedControlsController::index/$1');
+    $routes->options('get-next-control-number', 'AuthController::handleOptions');
+    $routes->get('get-next-control-number', 'ActivityDesignController::getNextControlNumber');
 
     // ----------------------------------------------------------------
     // ARCHIVE ROUTES (new)
@@ -270,7 +281,9 @@ $routes->group('api', function($routes) {
     // ----------------------------------------------------------------
     // FILE SERVING ROUTES (serve PDFs from writable/uploads)
     // ----------------------------------------------------------------
+    $routes->options('files/drafts/(:segment)', 'AuthController::handleOptions');
     $routes->get('files/drafts/(:segment)', 'FileController::serveDraft/$1');
+    $routes->options('files/archived/(:segment)', 'AuthController::handleOptions');
     $routes->get('files/archived/(:segment)', 'FileController::serveArchived/$1');
     // Document Trash Endpoints
     $routes->options('documents/trashed', 'AuthController::handleOptions');

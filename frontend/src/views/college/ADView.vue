@@ -291,6 +291,7 @@ const getStatusClass = (status) => {
   if (s === 'completed' || s === 'archived') return 'completed';
   if (s === 'cancelled') return 'cancelled';
   if (s === 'revision required' || s === 'revision') return 'revision';
+  if (s === 'disapproved') return 'disapproved';
   return 'completed';
 };
 
@@ -342,6 +343,7 @@ onMounted(() => {
 .status-badge-view.pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
 .status-badge-view.approved { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
 .status-badge-view.revision { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.status-badge-view.disapproved { background: rgba(220, 38, 38, 0.15); color: #dc2626; border: 1px solid rgba(220, 38, 38, 0.3); }
 .control-number { font-size: 11px; font-weight: 700; color: #b979cc; text-transform: uppercase; margin-left: 12px; font-family: monospace; }
 .info-grid { display: flex; flex-wrap: wrap; gap: 24px; padding-top: 16px; border-top: 1px solid rgba(185, 121, 204, 0.1); }
 .info-item { display: flex; flex-direction: column; }

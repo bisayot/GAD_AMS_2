@@ -53,9 +53,21 @@
                     <label class="info-label">Title</label>
                     <p class="text-sm-light mt-1">{{ existingReport.activity_design.activity_title }}</p>
                   </div>
+                  <div class="full-width-info">
+                    <label class="info-label">Activity Classification</label>
+                    <p class="text-sm-light mt-1">{{ existingReport.activity_design.activity_classification || '---' }}</p>
+                  </div>
                   <div>
                     <label class="info-label">Form Type</label>
-                    <p class="text-sm-light mt-1">{{ existingReport.activity_design.form_type }}</p>
+                    <p class="text-sm-light mt-1 uppercase">{{ existingReport.activity_design.form_type_name || existingReport.activity_design.form_type || '---' }}</p>
+                  </div>
+                  <div class="full-width-info">
+                    <label class="info-label">GAD Mandate</label>
+                    <p class="text-sm-light mt-1">{{ existingReport.activity_design.gad_mandate || '---' }}</p>
+                  </div>
+                  <div class="full-width-info">
+                    <label class="info-label">Gender Issues</label>
+                    <p class="text-sm-light mt-1">{{ existingReport.activity_design.gender_issue || '---' }}</p>
                   </div>
                   <div>
                     <label class="info-label">GPB/GAD ID</label>
@@ -152,6 +164,21 @@
                       class="custom-input-field textarea-no-resize"
                       placeholder="Enter the complete title of the activity"
                     ></textarea>
+                  </div>
+
+                  <div class="full-width-info input-group-ar" v-if="existingReport && existingReport.activity_design">
+                    <label class="form-label-ar">Activity Classification</label>
+                    <input type="text" :value="existingReport.activity_design.activity_classification || '---'" class="custom-input-field input-disabled-ar" readonly>
+                  </div>
+                  
+                  <div class="full-width-info input-group-ar" v-if="existingReport && existingReport.activity_design">
+                    <label class="form-label-ar">GAD Mandate</label>
+                    <textarea :value="existingReport.activity_design.gad_mandate || '---'" rows="2" class="custom-input-field textarea-no-resize input-disabled-ar" readonly></textarea>
+                  </div>
+                  
+                  <div class="full-width-info input-group-ar" v-if="existingReport && existingReport.activity_design">
+                    <label class="form-label-ar">Gender Issues</label>
+                    <textarea :value="existingReport.activity_design.gender_issue || '---'" rows="2" class="custom-input-field textarea-no-resize input-disabled-ar" readonly></textarea>
                   </div>
 
                   <div class="full-width-info input-group-ar" style="display: none;">
@@ -351,12 +378,12 @@ import { useRouter, useRoute } from 'vue-router';
 import Swal from 'sweetalert2';
 import api from '../../api';
 
+const router = useRouter();
+const route = useRoute();
+
 const goBack = () => {
   router.back();
 };
-
-const router = useRouter();
-const route = useRoute();
 const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
 
 const menuItems = computed(() => {
@@ -728,6 +755,18 @@ const fetchReportDetails = async () => {
     const response = await api.get(`activity-report/${id}`);
     if (response.data.success) {
       existingReport.value = response.data.data;
+      
+      if (Number(existingReport.value.user_id) !== Number(user.value.id)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Access Denied',
+          text: 'You are not authorized to view or edit this document.',
+          confirmButtonColor: '#b979cc'
+        }).then(() => {
+          router.push('/college/ar-list');
+        });
+        return;
+      }
       const r = response.data.data;
       
       form.value.activity_title = r.activity_title || '';
