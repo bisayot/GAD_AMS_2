@@ -1086,7 +1086,7 @@ const handleLogout = async () => {
 };
 
 onMounted(() => {
-  if (!user.value.id || user.value.role !== 'twg') {
+  if (!user.value.id || user.value.role !== 'college') {
     router.push('/login');
   }
   fetchFormTypes();
