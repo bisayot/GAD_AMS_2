@@ -223,11 +223,15 @@ class ActivityDesignController extends BaseController
 
         $activityDesignModel = new ActivityDesignModel();
         $design = $activityDesignModel
-            ->select('activity_design.*, control_number.control_number as control, office_units.office_name as office, users.full_name as submitter_name, activity_design.start_date as date, venues.venue_name as venue')
+            ->select('activity_design.*, control_number.control_number as control, office_units.office_name as office, users.full_name as submitter_name, activity_design.start_date as date, venues.venue_name as venue, activity_classifications.classification_name as activity_classification, gad_mandates.title as gad_mandate, gender_issues.title as gender_issue, form_types.name as form_type_name')
             ->join('users', 'users.id = activity_design.user_id', 'left')
             ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number', 'control_number.act_design_id = activity_design.act_design_id', 'left')
             ->join('venues', 'venues.venue_id = activity_design.venue_id', 'left')
+            ->join('activity_classifications', 'activity_classifications.id = activity_design.classification_id', 'left')
+            ->join('gad_mandates', 'gad_mandates.id = activity_design.gad_mandate_id', 'left')
+            ->join('gender_issues', 'gender_issues.id = activity_design.gender_issue_id', 'left')
+            ->join('form_types', 'form_types.id = activity_design.form_type', 'left')
             ->where('activity_design.act_design_id', $id)
             ->first();
 
@@ -235,12 +239,15 @@ class ActivityDesignController extends BaseController
             // Try searching in archive fallback
             $db = \Config\Database::connect();
             $design = $db->table('archived_activity_designs as aad')
-                ->select('aad.*, aad.original_act_design_id as act_design_id, aad.activity_title as title, form_types.name as formLabel, office_units.office_name as office, users.full_name as submitter_name, aad.start_date as date, venues.venue_name as venue')
+                ->select('aad.*, aad.original_act_design_id as act_design_id, aad.activity_title as title, form_types.name as formLabel, office_units.office_name as office, users.full_name as submitter_name, aad.start_date as date, venues.venue_name as venue, activity_classifications.classification_name as activity_classification, gad_mandates.title as gad_mandate, gender_issues.title as gender_issue, form_types.name as form_type_name')
                 ->join('users', 'users.id = aad.user_id', 'left')
                 ->join('office_units', 'office_units.office_id = users.office_id', 'left')
                 ->join('control_number as cn', 'cn.act_design_id = aad.original_act_design_id', 'left')
                 ->join('venues', 'venues.venue_id = aad.venue_id', 'left')
                 ->join('form_types', 'form_types.id = aad.form_type', 'left')
+                ->join('activity_classifications', 'activity_classifications.id = aad.classification_id', 'left')
+                ->join('gad_mandates', 'gad_mandates.id = aad.gad_mandate_id', 'left')
+                ->join('gender_issues', 'gender_issues.id = aad.gender_issue_id', 'left')
                 ->select('COALESCE(cn.control_number, "N/A") as control')
                 ->where('aad.original_act_design_id', $id)
                 ->get()->getRowArray();

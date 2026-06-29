@@ -61,6 +61,18 @@
                   <option value="student">Student Activity</option>
                 </select>
               </div>
+              <div class="info-item">
+                <span class="info-label">Activity Classification</span>
+                <span class="info-value-white">{{ design.activity_classification || '---' }}</span>
+              </div>
+              <div class="info-item" style="grid-column: span 2;">
+                <span class="info-label">GAD Mandate</span>
+                <span class="info-value-white">{{ design.gad_mandate || '---' }}</span>
+              </div>
+              <div class="info-item" style="grid-column: span 2;">
+                <span class="info-label">Gender Issues</span>
+                <span class="info-value-white">{{ design.gender_issue || '---' }}</span>
+              </div>
             </div>
           </div>
 
@@ -810,7 +822,7 @@ const handleUpdate = async () => {
 };
 
 onMounted(() => {
-  if (!user.value.id || user.value.role !== 'college') {
+  if (!user.value.id || !['twg', 'non-twg'].includes(user.value.role)) {
     router.push('/login');
   } else {
     fetchVenues();

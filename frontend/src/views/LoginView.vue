@@ -170,7 +170,8 @@ const handleLogin = async () => {
           return { path: '/admin/dashboard' };
         case 'gad_staff':
           return { path: '/staff/dashboard' };
-        case 'college':
+        case 'twg':
+        case 'non-twg':
           return { path: '/college/dashboard' };
         default:
           return { path: '/' };

@@ -134,15 +134,15 @@ class AuthController extends ResourceController
         }
 
         // Map user_role from frontend to actual database role
-        $role = 'college'; // Default
+        $role = 'twg'; // Default
         if (isset($data['user_role'])) {
             switch ($data['user_role']) {
                 case 'Director': $role = 'admin'; break;
                 case 'Staff': $role = 'gad_staff'; break;
-                case 'TWG':
-                case 'Non-TWG':
+                case 'TWG': $role = 'twg'; break;
+                case 'Non-TWG': $role = 'non-twg'; break;
                 default:
-                    $role = 'college'; break;
+                    $role = 'twg'; break;
             }
         }
 

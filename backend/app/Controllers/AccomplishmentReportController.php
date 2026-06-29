@@ -199,9 +199,13 @@ class AccomplishmentReportController extends BaseController
             if ($controlNumber) {
                 $db = \Config\Database::connect();
                 $ad = $db->table('archived_activity_designs as aad')
-                    ->select('aad.*, venues.venue_name')
+                    ->select('aad.*, venues.venue_name, activity_classifications.classification_name as activity_classification, gad_mandates.title as gad_mandate, gender_issues.title as gender_issue, form_types.name as form_type_name')
                     ->join('control_number as cn', 'cn.act_design_id = aad.original_act_design_id', 'left')
                     ->join('venues', 'venues.venue_id = aad.venue_id', 'left')
+                    ->join('activity_classifications', 'activity_classifications.id = aad.classification_id', 'left')
+                    ->join('gad_mandates', 'gad_mandates.id = aad.gad_mandate_id', 'left')
+                    ->join('gender_issues', 'gender_issues.id = aad.gender_issue_id', 'left')
+                    ->join('form_types', 'form_types.id = aad.form_type', 'left')
                     ->where('cn.control_number', $controlNumber)
                     ->get()->getRowArray();
                 

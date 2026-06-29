@@ -60,9 +60,21 @@
                   <label class="info-label">Title</label>
                   <p class="text-sm-light mt-1">{{ report.activity_design.activity_title }}</p>
                 </div>
+                <div class="full-width-info">
+                  <label class="info-label">Activity Classification</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.activity_classification || '---' }}</p>
+                </div>
                 <div>
                   <label class="info-label">Form Type</label>
-                  <p class="text-sm-light mt-1">{{ report.activity_design.form_type }}</p>
+                  <p class="text-sm-light mt-1 uppercase">{{ report.activity_design.form_type_name || report.activity_design.form_type || '---' }}</p>
+                </div>
+                <div class="full-width-info">
+                  <label class="info-label">GAD Mandate</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.gad_mandate || '---' }}</p>
+                </div>
+                <div class="full-width-info">
+                  <label class="info-label">Gender Issues</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.gender_issue || '---' }}</p>
                 </div>
                 <div>
                   <label class="info-label">GPB/GAD ID</label>
@@ -367,15 +379,16 @@ import { computed } from 'vue';
 const parsedADBudget = computed(() => {
   if (!report.value.activity_design || !report.value.activity_design.budget_items || report.value.activity_design.budget_items.length === 0) return [];
   const b = report.value.activity_design.budget_items[0];
+  const catering = Number(ad.meals_and_snacks || 0) + Number(ad.accommodation || 0);
+  const venue = Number(ad.function_room_venue || 0) + Number(ad.equipment_rental || 0) + Number(ad.transportation || 0);
+  const program = Number(ad.professional_fee_honoria || 0) + Number(ad.tokens || 0);
+  const materials = Number(ad.materials_and_supplies || 0);
+
   const items = [
-    { name: 'Meals and Snacks (AM/PM)', total: b.meals_and_snacks },
-    { name: 'Function Room/Venue', total: b.function_room_venue },
-    { name: 'Accommodation', total: b.accommodation },
-    { name: 'Equipment Rental', total: b.equipment_rental },
-    { name: 'Professional Fee/Honoraria', total: b.professional_fee_honoria },
-    { name: 'Tokens', total: b.tokens },
-    { name: 'Materials and Supplies', total: b.materials_and_supplies },
-    { name: 'Transportation', total: b.transportation }
+    { name: 'Catering & Hospitality', total: catering },
+    { name: 'Venue & Logistics', total: venue },
+    { name: 'Program & Speakers', total: program },
+    { name: 'Materials & Miscellaneous', total: materials }
   ];
   return items.filter(i => parseFloat(i.total) > 0);
 });
@@ -383,15 +396,16 @@ const parsedADBudget = computed(() => {
 const parsedARBudget = computed(() => {
   if (!report.value.budget_items || report.value.budget_items.length === 0) return [];
   const b = report.value.budget_items[0];
+  const catering = Number(ad.meals_and_snacks || 0) + Number(ad.accommodation || 0);
+  const venue = Number(ad.function_room_venue || 0) + Number(ad.equipment_rental || 0) + Number(ad.transportation || 0);
+  const program = Number(ad.professional_fee_honoria || 0) + Number(ad.tokens || 0);
+  const materials = Number(ad.materials_and_supplies || 0);
+
   const items = [
-    { name: 'Meals and Snacks (AM/PM)', total: b.meals_and_snacks },
-    { name: 'Function Room/Venue', total: b.function_room_venue },
-    { name: 'Accommodation', total: b.accommodation },
-    { name: 'Equipment Rental', total: b.equipment_rental },
-    { name: 'Professional Fee/Honoraria', total: b.professional_fee_honoria },
-    { name: 'Tokens', total: b.tokens },
-    { name: 'Materials and Supplies', total: b.materials_and_supplies },
-    { name: 'Transportation', total: b.transportation }
+    { name: 'Catering & Hospitality', total: catering },
+    { name: 'Venue & Logistics', total: venue },
+    { name: 'Program & Speakers', total: program },
+    { name: 'Materials & Miscellaneous', total: materials }
   ];
   return items.filter(i => parseFloat(i.total) > 0);
 });

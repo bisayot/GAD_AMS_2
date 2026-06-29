@@ -206,7 +206,7 @@ const displayName = computed(() => {
   if (user.value.full_name && user.value.full_name.trim() !== '') {
     return user.value.full_name;
   }
-  return '(TWG)';
+  return user.value.role === 'twg' ? '(TWG)' : '(Non-TWG)';
 });
 
 const calendarBaseDate = ref(new Date());
@@ -311,7 +311,7 @@ const fetchSubmissions = async () => {
     const [adRes, arRes, archiveRes] = await Promise.all([
       api.get(`activity-designs/${user.value.id}`),
       api.get(`activity-reports/${user.value.id}`),
-      api.get(`archives?user_id=${user.value.id}&role=${user.value.role || 'college'}`)
+      api.get(`archives?user_id=${user.value.id}&role=${user.value.role}`)
     ]);
     
     let pendingCount = 0;

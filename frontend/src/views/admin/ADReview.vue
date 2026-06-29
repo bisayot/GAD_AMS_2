@@ -61,10 +61,22 @@
               <span class="info-label">Category</span>
                 <span class="info-value-white">Activity Design</span>
             </div>
-            <div class="info-item">
-              <span class="info-label">Form Type</span>
-                <span class="info-value-white uppercase">{{ formatFormType(design.form_type) }}</span>
-            </div>
+            <div class="info-item" style="grid-column: span 2;">
+                <span class="info-label">Activity Classification</span>
+                <span class="info-value-white">{{ design.activity_classification || '---' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Form Type</span>
+                <span class="info-value-white uppercase">{{ design.form_type_name || formatFormType(design.form_type) || '---' }}</span>
+              </div>
+              <div class="info-item" style="grid-column: span 2;">
+                <span class="info-label">GAD Mandate</span>
+                <span class="info-value-white">{{ design.gad_mandate || '---' }}</span>
+              </div>
+              <div class="info-item" style="grid-column: span 2;">
+                <span class="info-label">Gender Issues</span>
+                <span class="info-value-white">{{ design.gender_issue || '---' }}</span>
+              </div>
           </div>
         </div>
 
@@ -566,15 +578,16 @@ const parsedBudget = computed(() => {
   const d = design.value;
   if (!d || !d.act_design_id) return [];
 
+  const catering = Number(d.meals_and_snacks || 0) + Number(d.accommodation || 0);
+  const venue = Number(d.function_room_venue || 0) + Number(d.equipment_rental || 0) + Number(d.transportation || 0);
+  const program = Number(d.professional_fee_honoria || 0) + Number(d.tokens || 0);
+  const materials = Number(d.materials_and_supplies || 0);
+
   const items = [
-    { name: 'Meals and Snacks (AM/PM)', total: d.meals_and_snacks },
-    { name: 'Function Room/Venue', total: d.function_room_venue },
-    { name: 'Accommodation', total: d.accommodation },
-    { name: 'Equipment Rental', total: d.equipment_rental },
-    { name: 'Professional Fee/Honoria', total: d.professional_fee_honoria },
-    { name: 'Token/s', total: d.tokens },
-    { name: 'Materials and Supplies', total: d.materials_and_supplies },
-    { name: 'Transportation', total: d.transportation }
+    { name: 'Catering & Hospitality', total: catering },
+    { name: 'Venue & Logistics', total: venue },
+    { name: 'Program & Speakers', total: program },
+    { name: 'Materials & Miscellaneous', total: materials }
   ];
 
   return items.filter(item => Number(item.total) > 0);

@@ -181,7 +181,7 @@ const handleLogout = async () => {
 };
 
 onMounted(() => {
-  if (!user.value.id || user.value.role !== 'college') {
+  if (!user.value.id || !['twg', 'non-twg'].includes(user.value.role)) {
     router.push('/login');
   }
 });

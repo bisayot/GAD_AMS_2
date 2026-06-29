@@ -1,72 +1,60 @@
 <template>
-      <main class="flex-1 overflow-y-autobg-transparent">
+      <main class="flex-1 overflow-y-auto bg-transparent">
         <div class="max-w-7xl mx-auto">
 
-            <div class="stats-container">
+          <div class="stats-container">
 
             <div class="stat-card-purple">
-                <div class="stat-card-inner">
+              <div class="stat-card-inner">
                 <div class="stat-icon-wrapper purple">
-                    <span class="material-symbols-outlined">description</span>
+                  <span class="material-symbols-outlined">inventory</span>
                 </div>
                 <div class="stat-content">
-                    <h3 class="stat-number-purple">{{ totalActive }}</h3>
-                    <p class="stat-label-purple">TOTALLY ACTIVE</p>
+                  <h3 class="stat-number-purple">{{ totalArchived }}</h3>
+                  <p class="stat-label-purple">TOTAL ARCHIVED</p>
                 </div>
-                </div>
+              </div>
             </div>
 
             <div class="stat-card">
-                <div class="stat-card-inner">
-                <div class="stat-icon-wrapper blue">
-                    <span class="material-symbols-outlined">description</span>
-                </div>
-                <div class="stat-content">
-                    <h3 class="stat-number">{{ totalDesigns }}</h3>
-                    <p class="stat-label">Activity Designs</p>
-                </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-card-inner">
+              <div class="stat-card-inner">
                 <div class="stat-icon-wrapper green">
-                    <span class="material-symbols-outlined">assessment</span>
+                  <span class="material-symbols-outlined">check_circle</span>
                 </div>
                 <div class="stat-content">
-                    <h3 class="stat-number">{{ totalReports }}</h3>
-                    <p class="stat-label">Accomplishment Reports</p>
+                  <h3 class="stat-number">{{ approvedDesigns }}</h3>
+                  <p class="stat-label">Approved Designs</p>
                 </div>
-                </div>
+              </div>
             </div>
 
             <div class="stat-card">
-                <div class="stat-card-inner">
-                <div class="stat-icon-wrapper amber">
-                    <span class="material-symbols-outlined">schedule</span>
+              <div class="stat-card-inner">
+                <div class="stat-icon-wrapper blue">
+                  <span class="material-symbols-outlined">celebration</span>
                 </div>
                 <div class="stat-content">
-                    <h3 class="stat-number">{{ pendingCount }}</h3>
-                    <p class="stat-label">PENDING REVIEW</p>
+                  <h3 class="stat-number">{{ completedReports }}</h3>
+                  <p class="stat-label">Completed Reports</p>
                 </div>
-                </div>
+              </div>
             </div>
-            </div><br>
+          </div><br>
 
           <div class="tabs-container">
             <div class="tabs-header">
               <button 
-                @click="activeTab = 'design'" 
+                @click="activeTab = 'designs'" 
                 class="tab-btn"
-                :class="{ 'tab-active': activeTab === 'design', 'tab-inactive': activeTab !== 'design' }"
+                :class="{ 'tab-active': activeTab === 'designs', 'tab-inactive': activeTab !== 'designs' }"
               >
                 Activity Designs
                 <span class="tab-badge">{{ totalDesigns }}</span>
               </button>
               <button 
-                @click="activeTab = 'report'" 
+                @click="activeTab = 'reports'" 
                 class="tab-btn"
-                :class="{ 'tab-active': activeTab === 'report', 'tab-inactive': activeTab !== 'report' }"
+                :class="{ 'tab-active': activeTab === 'reports', 'tab-inactive': activeTab !== 'reports' }"
               >
                 Accomplishment Reports
                 <span class="tab-badge">{{ totalReports }}</span>
@@ -80,8 +68,8 @@
                 <label class="filter-label">STATUS</label>
                 <select v-model="filters.status" class="filter-select-custom" @change="applyFilters">
                   <option value="all">All Status</option>
-                  <option value="pending">Pending Review</option>
-                  <option value="revision">For Revision</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
                 </select>
               </div>
 
@@ -124,7 +112,7 @@
 
           <div v-if="loading" class="loading-state">
             <div class="loading-spinner"></div>
-            <p>Loading submissions...</p>
+            <p>Loading archive records...</p>
           </div>
 
           <div v-else class="data-table">
@@ -135,26 +123,26 @@
                     <th class="table-header-cell">TYPE</th>
                     <th class="table-header-cell">CONTROL NUMBER</th>
                     <th class="table-header-cell">ACTIVITY TITLE</th>
-                    <th class="table-header-cell">FORMAT TYPE</th>
+                    <th class="table-header-cell">DATE ARCHIVED</th>
                     <th class="table-header-cell">STATUS</th>
-                   </tr>
+                  </tr>
                 </thead>
                 <tbody>
                   <tr v-if="paginatedItems.length === 0" class="empty-row">
                     <td colspan="5" class="empty-cell">
                       <div class="empty-content">
                         <span class="empty-emoji">📭</span>
-                        <p>No records found matching your criteria</p>
+                        <p>No archived records found</p>
                         <button class="btn-secondary-custom" @click="resetFilters">Clear Filters</button>
                       </div>
                     </td>
-                   </tr>
-                    <tr 
-                      v-for="item in paginatedItems" 
-                      :key="item.id"
-                      class="clickable-row"
-                      @click="viewItem(item)"
-                    >
+                  </tr>
+                  <tr 
+                    v-for="item in paginatedItems" 
+                    :key="item.id"
+                    class="clickable-row"
+                    @click="viewItem(item)"
+                  >
                     <td class="table-cell">
                       <span class="type-badge" :class="item.type === 'design' ? 'type-design' : 'type-report'">
                         {{ item.type === 'design' ? 'Activity Design' : 'Accomplishment Report' }}
@@ -162,22 +150,20 @@
                     </td>
                     <td class="table-cell">
                       <div class="control-number">{{ item.control }}</div>
-                      <div class="item-date">{{ item.date }}</div>
+                      <div class="item-date">{{ item.dateArchived }}</div>
                     </td>
                     <td class="table-cell">
                       <div class="item-title">{{ item.title }}</div>
                     </td>
                     <td class="table-cell">
-                      <span class="form-badge" :class="item.formClass">
-                        {{ item.formLabel }}
-                      </span>
+                      <div class="item-date">{{ item.dateArchived }}</div>
                     </td>
                     <td class="table-cell">
                       <span class="status-badge" :class="item.statusClass">
                         {{ item.statusText }}
                       </span>
                     </td>
-                   </tr>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -217,21 +203,50 @@ import api from '../../api';
 const router = useRouter();
 const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
 
-const submissions = ref([]);
+const archivedDesigns = ref([]);
+const archivedReports = ref([]);
 const loading = ref(false);
-const activeTab = ref('design');
+const activeTab = ref('designs');
 
 const filters = ref({
   status: 'all',
-  sort: 'date_asc',
+  sort: 'date_desc',
   search: ''
 });
 
 const currentPage = ref(1);
 const itemsPerPage = 10;
 
+const totalArchived = computed(() => {
+  return archivedDesigns.value.length + archivedReports.value.length;
+});
+
+const approvedDesigns = computed(() => {
+  return archivedDesigns.value.length;
+});
+
+const completedReports = computed(() => {
+  return archivedReports.value.length;
+});
+
+const totalDesigns = computed(() => {
+  return archivedDesigns.value.length;
+});
+
+const totalReports = computed(() => {
+  return archivedReports.value.length;
+});
+
+const pendingCount = computed(() => {
+  return 0;
+});
+
+const currentSourceData = computed(() => {
+  return activeTab.value === 'designs' ? archivedDesigns.value : archivedReports.value;
+});
+
 const filteredItems = computed(() => {
-  let items = submissions.value.filter(item => item.type === activeTab.value);
+  let items = [...currentSourceData.value];
   
   if (filters.value.status !== 'all') {
     items = items.filter(item => item.status === filters.value.status);
@@ -246,21 +261,6 @@ const filteredItems = computed(() => {
   }
   
   const sorted = [...items];
-  const sortByDateAsc = (a, b) => {
-    if (activeTab.value === 'design') {
-      return a.id - b.id;
-    }
-    const byDate = new Date(a.dateRaw) - new Date(b.dateRaw);
-    return byDate !== 0 ? byDate : a.id - b.id;
-  };
-  const sortByDateDesc = (a, b) => {
-    if (activeTab.value === 'design') {
-      return b.id - a.id;
-    }
-    const byDate = new Date(b.dateRaw) - new Date(a.dateRaw);
-    return byDate !== 0 ? byDate : b.id - a.id;
-  };
-
   switch (filters.value.sort) {
     case 'control_asc':
       sorted.sort((a, b) => a.control.localeCompare(b.control));
@@ -269,29 +269,13 @@ const filteredItems = computed(() => {
       sorted.sort((a, b) => b.control.localeCompare(a.control));
       break;
     case 'date_asc':
-      sorted.sort(sortByDateAsc);
+      sorted.sort((a, b) => new Date(a.dateRaw) - new Date(b.dateRaw));
       break;
     default:
-      sorted.sort(sortByDateDesc);
+      sorted.sort((a, b) => new Date(b.dateRaw) - new Date(a.dateRaw));
   }
   
   return sorted;
-});
-
-const totalActive = computed(() => {
-  return submissions.value.filter(item => item.status === 'pending' || item.status === 'revision').length;
-});
-
-const totalDesigns = computed(() => {
-  return submissions.value.filter(item => item.type === 'design').length;
-});
-
-const totalReports = computed(() => {
-  return submissions.value.filter(item => item.type === 'report').length;
-});
-
-const pendingCount = computed(() => {
-  return submissions.value.filter(item => item.status === 'pending').length;
 });
 
 const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage));
@@ -316,61 +300,21 @@ const visiblePages = computed(() => {
   return pages;
 });
 
-const fetchSubmissions = async () => {
+const fetchArchives = async () => {
   loading.value = true;
   try {
-    const userId = user.value.id;
-    if (!userId) throw new Error('No user ID found');
-
-    const [designsRes, reportsRes] = await Promise.all([
-      api.get(`activity-designs/${userId}`),
-      api.get(`activity-reports/${userId}`)
-    ]);
-
-    const mapStatus = (status) => {
-      const s = (status || '').toLowerCase();
-      if (s === 'revision required') return 'revision';
-      return s;
-    };
-
-    const designs = (designsRes.data.data || []).map(d => {
-      const st = mapStatus(d.status);
-      return {
-        type: 'design',
-        id: d.act_design_id,
-        status: st,
-        title: d.title || d.activity_title || 'Untitled',
-        control: d.control || 'NO CONTROL NUMBER',
-        dateRaw: d.date,
-        date: d.date,
-        formClass: 'badge-purple',
-        formLabel: d.formLabel || 'Activity Design',
-        statusClass: `status-${st.replace(' ', '-')}`,
-        statusText: d.status
-      };
-    });
-
-    const reports = (reportsRes.data.data || []).map(r => {
-      const st = mapStatus(r.status);
-      return {
-        type: 'report',
-        id: r.id,
-        status: st,
-        title: r.title || r.activity_title || 'Untitled',
-        control: r.control || 'NO CONTROL NUMBER',
-        dateRaw: r.date,
-        date: r.date,
-        formClass: 'badge-blue',
-        formLabel: 'Accomplishment Report',
-        statusClass: `status-${st.replace(' ', '-')}`,
-        statusText: r.status
-      };
-    });
-
-    submissions.value = [...designs, ...reports];
-    
+    const response = await api.get(`archives?user_id=${user.value.id}&role=${user.value.role}`);
+    const allData = (response.data.data || []).map(item => ({
+      ...item,
+      id: item.original_id,
+      dateArchived: item.dateRaw ? new Date(item.dateRaw).toLocaleDateString() : 'N/A',
+      statusText: item.status,
+      statusClass: (item.status === 'Approved' || item.status === 'Verified') ? 'status-approved' : 'status-cancelled'
+    }));
+    archivedDesigns.value = allData.filter(item => item.type === 'design');
+    archivedReports.value = allData.filter(item => item.type === 'report');
   } catch (error) {
-    console.error('Error fetching submissions:', error);
+    console.error('Error fetching archive records:', error);
   } finally {
     loading.value = false;
   }
@@ -383,7 +327,7 @@ const applyFilters = () => {
 const resetFilters = () => {
   filters.value = {
     status: 'all',
-    sort: 'date_asc',
+    sort: 'date_desc',
     search: ''
   };
   currentPage.value = 1;
@@ -397,17 +341,9 @@ const changePage = (page) => {
 
 const viewItem = (item) => {
   if (item.type === 'design') {
-    if (item.status === 'revision') {
-      router.push(`/college/ad-revision/${item.id}`);
-    } else {
-      router.push(`/college/ad-view/${item.id}`);
-    }
+    router.push(`/college/ad-view/${item.id}`);
   } else {
-    if (item.status === 'revision') {
-      router.push(`/college/ar-revision/${item.id}`);
-    } else {
-      router.push(`/college/ar-view/${item.id}`);
-    }
+    router.push(`/college/ar-view/${item.id}`);
   }
 };
 
@@ -423,10 +359,10 @@ const handleLogout = async () => {
 };
 
 onMounted(() => {
-  if (!user.value.id || user.value.role !== 'college') {
+  if (!user.value.id || !['twg', 'non-twg'].includes(user.value.role)) {
     router.push('/login');
   }
-  fetchSubmissions();
+  fetchArchives();
 });
 </script>
 
@@ -522,7 +458,7 @@ onMounted(() => {
 }
 
 .stat-label {
-  font-size: 14px;
+  font-size: 10px;
   font-weight: 700;
   color: #1a1a2e;
   text-transform: uppercase;
@@ -539,7 +475,7 @@ onMounted(() => {
 }
 
 .stat-label-purple {
-  font-size: 14px;
+  font-size: 10px;
   font-weight: 700;
   color: #d4a3e3;
   text-transform: uppercase;
@@ -587,25 +523,25 @@ onMounted(() => {
 }
 
 .tab-active {
-  border-bottom: 3px solid #c084fc;
-  color: #d8b4fe;
-  background: rgba(153, 13, 209, 0.1);
+  border-bottom: 3px solid #990dd1;
+  color: #71009e;
+  background: rgba(153, 13, 209, 0.04);
 }
 
 .tab-inactive {
   border-bottom: 3px solid transparent;
-  color: #000000;
+  color: #94a3b8;
 }
 
 .tab-inactive:hover {
   border-bottom: 3px solid #b979cc;
-  color: #d8b4fe;
-  background: rgba(153, 13, 209, 0.05);
+  color: #990dd1;
+  background: rgba(153, 13, 209, 0.02);
 }
 
 .tab-badge {
-  background: rgba(255, 255, 255, 0.1);
-  color: #cbd5e1;
+  background: #f1f5f9;
+  color: #94a3b8;
   padding: 0.125rem 0.5rem;
   border-radius: 30px;
   font-size: 0.95rem;
@@ -659,7 +595,7 @@ onMounted(() => {
   padding: 0.5rem 0.75rem;
   border-radius: 0.75rem;
   border: 1px solid rgba(185, 121, 204, 0.15);
-  background:  #16213e;
+  background: #16213e;
   font-size: 0.8rem;
   color: #ffffff;
   cursor: pointer;
@@ -690,13 +626,13 @@ onMounted(() => {
   padding: 0.5rem 0.75rem 0.5rem 2rem;
   border-radius: 0.75rem;
   border: 1px solid rgba(185, 121, 204, 0.15);
-  background:  #16213e;
+  background: #16213e;
   font-size: 0.8rem;
   color: #ffffff;
 }
 
 .search-input::placeholder {
-  color: #ffffff;
+  color: #94a3b8;
 }
 
 .search-input:focus {
@@ -763,13 +699,13 @@ onMounted(() => {
 
 .count-number {
   font-weight: 700;
-  color: #990dd1;
+  color: #b979cc;
   font-size: 0.8rem;
 }
 
 /* Loading State */
 .loading-state {
-  background: #ffffff;
+  background: #cbd5e1;
   border-radius: 1.25rem;
   padding: 3rem;
   text-align: center;
@@ -797,11 +733,11 @@ onMounted(() => {
 
 /* Data Table */
 .data-table {
-  background: #1e293b;
+  background: #cbd5e1;
   border-radius: 1.25rem;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .overflow-x-auto {
@@ -815,13 +751,13 @@ onMounted(() => {
 
 .table-header-row {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .table-header-cell {
   padding: 1rem 1.5rem;
   text-align: left;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -831,16 +767,15 @@ onMounted(() => {
 .clickable-row {
   cursor: pointer;
   transition: all 0.2s ease;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .clickable-row:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: #faf5ff;
 }
 
 .table-cell {
   padding: 1rem 1.5rem;
-  color: #f1f5f9;
 }
 
 /* Badges */
@@ -870,8 +805,8 @@ onMounted(() => {
   border-radius: 30px;
   font-size: 0.9rem;
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.1);
-  color: #f1f5f9;
+  background: #f1f5f9;
+  color: #cbd5e1;
 }
 
 .status-badge {
@@ -883,13 +818,19 @@ onMounted(() => {
   font-weight: 700;
 }
 
-.status-badge.status-pending {
-  background: #fef3c7;
-  color: #d97706;
-  border: 1px solid #fde68a;
+.status-badge.status-approved {
+  background: #d1fae5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
 }
 
-.status-badge.status-revision {
+.status-badge.status-completed {
+  background: #e0f2fe;
+  color: #0284c7;
+  border: 1px solid #bae6fd;
+}
+
+.status-badge.status-cancelled {
   background: #fee2e2;
   color: #dc2626;
   border: 1px solid #fecaca;
@@ -897,22 +838,23 @@ onMounted(() => {
 
 .control-number {
   font-family: monospace;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #7e22ce;
-  letter-spacing: 0.03em;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #6b21a8;
+  letter-spacing: 0.05em;
 }
 
 .item-date {
-  font-size: 0.9rem;
-  color: #94a3b8;
-  margin-top: 0.25rem;
+  font-size: 0.95rem;
+  color: #334155;
+  font-weight: 700;
+  margin-top: 0.35rem;
 }
 
 .item-title {
-  font-weight: 600;
-  color: #f8fafc;
-  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+  font-size: 1.1rem;
   line-height: 1.4;
 }
 
@@ -948,7 +890,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid #e2e8f0;
   flex-wrap: wrap;
   gap: 1rem;
 }
@@ -965,7 +907,7 @@ onMounted(() => {
 
 .info-total {
   font-weight: 700;
-  color: #f8fafc;
+  color: #1e293b;
 }
 
 .pagination-buttons {
@@ -1005,13 +947,13 @@ onMounted(() => {
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .stats-grid {
+  .stats-container {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 768px) {
-  .stats-grid {
+  .stats-container {
     grid-template-columns: 1fr;
   }
   
