@@ -229,7 +229,7 @@
                 <button v-if="design && design.status === 'Pending'" @click="showCancelModal = true" class="btn-cancel-req">
                   <span class="material-symbols-outlined">cancel</span> DISAPPROVE
                 </button>
-                <button v-if="design && design.status !== 'Pending'" @click="handleRevertDecision" class="btn-cancel-req" style="background: #f59e0b;">
+                <button v-if="design && design.status === 'Disapproved'" @click="handleRevertDecision" class="btn-cancel-req" style="background: #f59e0b;">
                   <span class="material-symbols-outlined">undo</span> REVERT DECISION
                 </button>
                 <button @click="handleTrash" class="btn-trash">

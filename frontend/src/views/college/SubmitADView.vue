@@ -255,7 +255,7 @@
                     <div class="attachment-display-grid">
                       <div class="attachment-upload-column">
                         <div class="upload-dropzone" @click="$refs.fileInput.click()">
-                          <input ref="fileInput" type="file" @change="handleFileUpload" accept=".pdf" required style="display: none;" />
+                          <input ref="fileInput" type="file" @change="handleFileUpload" accept=".pdf" style="display: none;" />
                           <span class="upload-icon">📤</span>
                           <p class="upload-text">Upload Activity Design Document</p>
                           <p class="upload-hint">PDF format (Max 10MB)</p>

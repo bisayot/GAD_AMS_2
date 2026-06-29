@@ -513,7 +513,6 @@
                         type="file" 
                         @change="handleFileUpload" 
                         accept=".pdf" 
-                        required 
                         class="file-input-hidden" 
                         multiple 
                       />
@@ -852,6 +851,16 @@ const submitReport = async () => {
       });
       return;
     }
+  }
+
+  if (uploadedFiles.value.length === 0) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Missing Document',
+      text: 'Please upload the Accomplishment Report and any attachments.',
+      confirmButtonColor: '#b979cc'
+    });
+    return;
   }
 
   try {
