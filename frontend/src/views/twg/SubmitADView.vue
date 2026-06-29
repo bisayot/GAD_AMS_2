@@ -138,7 +138,7 @@
                           </button>
                           <transition name="fade-pop">
                             <div v-if="helpState.startDate" class="simple-popup">
-                              Must be scheduled on working days from Monday to Thursday.
+                              Must be scheduled at least 3 days in advance. Submissions ideally require a 14-day lead time.
                             </div>
                           </transition>
                         </div>
@@ -160,7 +160,7 @@
                           </button>
                           <transition name="fade-pop">
                             <div v-if="helpState.endDate" class="simple-popup">
-                              Date must not exceed a week.
+                              The end date of your activity. Durations exceeding 31 days will trigger a warning.
                             </div>
                           </transition>
                         </div>
@@ -597,6 +597,7 @@ const todayDate = ref(getTodayDate());
 
 const minStartDate = computed(() => {
   const d = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" }));
+  d.setDate(d.getDate() + 3);
   return d.toISOString().split('T')[0];
 });
 
@@ -666,7 +667,9 @@ const isValidActivityDate = (dateString, checkLeadTime = false) => {
     const diffTime = targetDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffDays < 14) {
+    if (diffDays < 3) {
+       return { valid: false, reason: `Activities must be scheduled at least 3 days in advance.` };
+    } else if (diffDays < 14) {
        return { valid: true, reason: `Activities should ideally be scheduled at least 14 days in advance.`, isWarning: true };
     }
   }

@@ -88,7 +88,6 @@
                       <input 
                         type="date" 
                         v-model="form.start_date" 
-                        :min="todayDate"
                         required 
                         class="custom-input-field code-icon-calendar"
                       >
@@ -110,7 +109,6 @@
                       <input 
                         type="date" 
                         v-model="form.end_date" 
-                        :min="todayDate"
                         required 
                         class="custom-input-field code-icon-calendar"
                       >
@@ -185,7 +183,7 @@
                       type="number" 
                       v-model="form.attendees" 
                       required 
-                      min="50"
+                      min="0"
                       class="custom-input-field input-disabled-ar"
                       placeholder="0"
                       readonly
@@ -638,47 +636,7 @@ const isHoliday = (dateString) => {
   return holidays.value.includes(dateString);
 };
 
-const isCurrentYear = (dateString) => {
-  const date = new Date(dateString + 'T00:00:00');
-  const currentYear = new Date().getFullYear();
-  return date.getFullYear() === currentYear;
-};
-
-const isValidActivityDate = (dateString) => {
-  if (!isCurrentYear(dateString)) {
-    const currentYear = new Date().getFullYear();
-    return { valid: false, reason: `Activities can only be scheduled in ${currentYear}. Please select a date within the current year.` };
-  }
-  if (isWeekend(dateString)) {
-    return { valid: false, reason: 'Activities cannot be scheduled on Friday, Saturday, or Sunday.' };
-  }
-  if (isHoliday(dateString)) {
-    return { valid: false, reason: 'This date is a holiday. Please select another date.' };
-  }
-  return { valid: true, reason: '' };
-};
-
-const isValidActivityDuration = (startDateString, endDateString) => {
-  if (!startDateString || !endDateString) {
-    return { valid: true, reason: '' };
-  }
-  const startDate = new Date(startDateString + 'T00:00:00');
-  const endDate = new Date(endDateString + 'T00:00:00');
-  
-  if (endDate < startDate) {
-    return { valid: false, reason: 'End date cannot be before start date.' };
-  }
-  
-  const diffTime = endDate - startDate;
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
-  if (diffDays > 7) {
-    return { valid: false, reason: 'The duration of the activity must not exceed a week (maximum of 7 calendar days).' };
-  }
-  
-  return { valid: true, reason: '' };
-};
-
+// Validations are minimal since AD is already approved
 const form = ref({
   activity_title: '',
   control_number: '',
@@ -777,6 +735,23 @@ watch(() => form.value.control_number, (newVal) => {
     form.value.gad_mandate = selected.gad_mandate || 'N/A';
     form.value.gender_issue = selected.gender_issue || 'N/A';
     selectedProposedBudget.value = Number(selected.proposed_budget) || 0;
+
+    if (selected.budget_items && selected.budget_items.length > 0) {
+      const dbBudget = selected.budget_items[0];
+      form.value.budget_items.forEach(item => {
+        switch (item.name) {
+          case 'Meals': item.total = Number(dbBudget.meals_and_snacks) || ''; break;
+          case 'Snacks': item.total = ''; break;
+          case 'Function Room/Venue': item.total = Number(dbBudget.function_room_venue) || ''; break;
+          case 'Accommodation': item.total = Number(dbBudget.accommodation) || ''; break;
+          case 'Equipment Rental': item.total = Number(dbBudget.equipment_rental) || ''; break;
+          case 'Professional Fee/Honoraria': item.total = Number(dbBudget.professional_fee_honoria) || ''; break;
+          case 'Token/s': item.total = Number(dbBudget.tokens) || ''; break;
+          case 'Materials and Supplies': item.total = Number(dbBudget.materials_and_supplies) || ''; break;
+          case 'Transportation': item.total = Number(dbBudget.transportation) || ''; break;
+        }
+      });
+    }
   } else {
     selectedProposedBudget.value = 0;
     form.value.activity_classification = '';
@@ -795,61 +770,7 @@ watch(() => form.value.budget_items, (newItems) => {
   form.value.proposed_budget = total;
 }, { deep: true });
 
-watch(() => form.value.start_date, (newDate) => {
-  if (newDate) {
-    const validation = isValidActivityDate(newDate);
-    if (!validation.valid) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Invalid Date',
-        text: validation.reason,
-        confirmButtonColor: '#b979cc'
-      });
-      form.value.start_date = '';
-      return;
-    }
-    if (form.value.end_date) {
-      const durationValidation = isValidActivityDuration(newDate, form.value.end_date);
-      if (!durationValidation.valid) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Invalid Duration',
-          text: durationValidation.reason,
-          confirmButtonColor: '#b979cc'
-        });
-        form.value.start_date = '';
-      }
-    }
-  }
-});
-
-watch(() => form.value.end_date, (newDate) => {
-  if (newDate) {
-    const validation = isValidActivityDate(newDate);
-    if (!validation.valid) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Invalid Date',
-        text: validation.reason,
-        confirmButtonColor: '#b979cc'
-      });
-      form.value.end_date = '';
-      return;
-    }
-    if (form.value.start_date) {
-      const durationValidation = isValidActivityDuration(form.value.start_date, newDate);
-      if (!durationValidation.valid) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Invalid Duration',
-          text: durationValidation.reason,
-          confirmButtonColor: '#b979cc'
-        });
-        form.value.end_date = '';
-      }
-    }
-  }
-});
+// Removed strict start_date and end_date watchers in AR
 
 watch([() => form.value.male, () => form.value.female], ([newMale, newFemale]) => {
   const m = parseInt(newMale) || 0;
@@ -918,51 +839,19 @@ const submitReport = async () => {
     return;
   }
 
-  // Validate start date
-  const startValidation = isValidActivityDate(form.value.start_date);
-  if (!startValidation.valid) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Invalid Start Date',
-      text: startValidation.reason,
-      confirmButtonColor: '#b979cc'
-    });
-    return;
-  }
-
-  // Validate end date
-  const endValidation = isValidActivityDate(form.value.end_date);
-  if (!endValidation.valid) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Invalid End Date',
-      text: endValidation.reason,
-      confirmButtonColor: '#b979cc'
-    });
-    return;
-  }
-
-  // Validate activity duration (max 7 days)
-  const durationValidation = isValidActivityDuration(form.value.start_date, form.value.end_date);
-  if (!durationValidation.valid) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Invalid Duration',
-      text: durationValidation.reason,
-      confirmButtonColor: '#b979cc'
-    });
-    return;
-  }
-
-  // Validate number of attendees (min 50)
-  if (form.value.attendees < 50) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Invalid Participants',
-      text: 'Participants must be 50 and above.',
-      confirmButtonColor: '#b979cc'
-    });
-    return;
+  // Minimal validation for start and end date
+  if (form.value.start_date && form.value.end_date) {
+    const startDate = new Date(form.value.start_date + 'T00:00:00');
+    const endDate = new Date(form.value.end_date + 'T00:00:00');
+    if (endDate < startDate) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Duration',
+        text: 'End date cannot be before start date.',
+        confirmButtonColor: '#b979cc'
+      });
+      return;
+    }
   }
 
   try {

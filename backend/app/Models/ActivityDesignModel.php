@@ -16,6 +16,9 @@ class ActivityDesignModel extends Model // No change needed here, class name is 
 	protected $protectFields        = true;
 
     protected $allowedFields = [
+        "classification_id",
+        "gad_mandate_id",
+        "gender_issue_id",
         "form_type",
         "activity_title",
         "start_date",

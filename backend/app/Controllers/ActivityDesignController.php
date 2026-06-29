@@ -545,6 +545,9 @@ class ActivityDesignController extends BaseController
             'assessment_date'          => $assessmentDate,
             'accomplishment_deadline'  => $accomplishmentDeadline,
             'remarks'                  => $remarks,
+            'classification_id'        => $item['classification_id'] ?? null,
+            'gad_mandate_id'           => $item['gad_mandate_id'] ?? null,
+            'gender_issue_id'          => $item['gender_issue_id'] ?? null,
         ];
         $db->table('archived_activity_designs')->insert($archiveData);
 
