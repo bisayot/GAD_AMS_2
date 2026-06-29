@@ -1,0 +1,3831 @@
+
+--- DIFF FOR src/components/Footer.vue ---
+diff --git "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/components/Footer.vue" "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/components/Footer.vue"
+index 0be36c3..72eab74 100644
+--- "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/components/Footer.vue"
++++ "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/components/Footer.vue"
+@@ -3,9 +3,6 @@
+     <div class="flex flex-col md:flex-row justify-between items-center w-full px-12 py-10 gap-6 max-w-screen-2xl mx-auto">
+       <div class="flex flex-col gap-2">
+         <span class="font-headline font-extrabold text-purple-900 dark:text-purple-100 text-lg uppercase tracking-wider">BSU GAD Office</span>
+-        <p class="font-body text-sm leading-relaxed text-slate-500 dark:text-slate-400 max-w-md">
+-          ┬⌐ 2024 Benguet State University Gender and Development Office. All rights reserved.
+-        </p>
+       </div>
+       <div class="flex flex-wrap justify-center gap-8 font-body text-sm leading-relaxed">
+         <a class="text-slate-500 dark:text-slate-400 hover:text-purple-700 dark:hover:text-purple-400 underline transition-all opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+
+--- DIFF FOR src/views/AdminAnnualReport.vue ---
+diff --git "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/AdminAnnualReport.vue" "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/AdminAnnualReport.vue"
+index af37796..cc2c21e 100644
+--- "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/AdminAnnualReport.vue"
++++ "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/AdminAnnualReport.vue"
+@@ -20,7 +20,7 @@
+         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+           <div class="bg-gradient-to-br from-primary to-primary-container p-6 rounded-2xl shadow-lg text-white">
+             <p class="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-2">Total GAD Budget</p>
+-            <h3 class="text-2xl font-headline font-extrabold">Γé▒{{ formatCurrency(totalBudget) }}</h3>
++            <h3 class="text-2xl font-headline font-extrabold">Γé▒243,541,950.62</h3>
+           </div>
+           <div class="bg-white p-6 rounded-2xl shadow-sm border border-outline-variant/15">
+             <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Total Beneficiaries</p>
+@@ -107,27 +107,9 @@
+ import { ref, computed, onMounted } from 'vue';
+ import { useRouter } from 'vue-router';
+ 
+-import api from '../api';
+-
+ const router = useRouter();
+ const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
+ const selectedYear = ref(2026);
+-const totalBudget = ref(0);
+-
+-const fetchBudgetSummary = async () => {
+-  try {
+-    const res = await api.get('budget/summary');
+-    if (res.data.success) {
+-      totalBudget.value = res.data.data.total_budget;
+-    }
+-  } catch (err) {
+-    console.error('Error fetching budget summary:', err);
+-  }
+-};
+-
+-const formatCurrency = (val) => {
+-  return Number(val || 0).toLocaleString('en-US', { maximumFractionDigits: 0 });
+-};
+ 
+ const annualReportData = {
+   2026: {
+@@ -172,7 +154,6 @@ onMounted(() => {
+   if (!user.value.id || user.value.role !== 'admin') {
+     router.push('/login');
+   }
+-  fetchBudgetSummary();
+ });
+ </script>
+ 
+
+--- DIFF FOR src/views/ContactView.vue ---
+diff --git "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/ContactView.vue" "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/ContactView.vue"
+index 6351ce1..7c14fa2 100644
+--- "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/ContactView.vue"
++++ "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/ContactView.vue"
+@@ -9,12 +9,12 @@
+               University Directory & Support Hub
+             </h1>
+             <p class="text-xl text-on-surface-variant max-w-2xl leading-relaxed">
+-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
++              The Gender and Development office is committed to providing accessible support and resources across all colleges. Reach out to our dedicated focal persons or visit the main office.
+             </p>
+           </div>
+           <div class="lg:col-span-5 hidden lg:block">
+             <div class="h-64 rounded-xl overflow-hidden ambient-shadow relative border border-outline-variant/10">
+-              <img alt="BSU GAD Office Environment" class="w-full h-full object-cover grayscale opacity-40 hover:grayscale-0 transition-all duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJMFB0V6BJxKILLaObo8EeoeP54iI0gQBX_xEuLB50u8LzHbFqNIeNt7D6SCBt3V-b5vVGIvRRxNDteKPhXcKGcFmA9aT2f5N-405q63120iKPsbSJZBpSqCmFG0pqcF_dxOJUYTTAgYdI8EvR7xDbaSdpy2u3W132D4Zb1HMlg2DXo8yM9pF3vcRDx01yZGFwOqPKashQtxTL4MgSbMvgGHRxqsBIyLyqRy6Vts-2_mx-iUeElxWkXf7DK87aWrlh-ROfVUBo6OmK"/>
++              <img alt="BSU GAD Office Environment" class="w-full h-full object-cover grayscale opacity-40 hover:grayscale-0 transition-all duration-700" src="/images/img_3.jpg"/>
+               <div class="absolute inset-0 bg-primary/10 mix-blend-multiply"></div>
+             </div>
+           </div>
+@@ -63,7 +63,7 @@
+           </div>
+           <div class="rounded-xl overflow-hidden h-64 grayscale-0 contrast-125 ambient-shadow border border-outline-variant/15">
+             <div class="w-full h-full bg-surface-container-highest relative flex items-center justify-center overflow-hidden">
+-              <img class="absolute inset-0 w-full h-full object-cover opacity-20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAueGXkEMRk4J-bnXRl0jwhvdtGyu_w2MclS4gmOPbguVDT1_D7zWgrtINGvHQTjC9aGPZGrxi4nwaWr6Ux033HFFXoJIz8GtgyEldmaGxJmJXOvBn8mRgZnb-yymRLYCNZHqtwYIAj0ShqYHd79M6rkRlIovKtuS6uh56xWys5mxhByPOVEBjIMACN4w6F82B_QxqcwG0PWpOakiugtpFv5JHHcx7yK_OB-dsr278qgt57bOGVDFjZI8-o0qDAf8YpG5EED5yNBJPH"/>
++              <img class="absolute inset-0 w-full h-full object-cover opacity-20" src="/images/img_4.jpg"/>
+               <div class="relative z-10 text-center">
+                 <span class="material-symbols-outlined text-primary text-4xl mb-2">map</span>
+                 <p class="text-primary font-headline font-bold">BSU Main Campus Map</p>
+@@ -219,4 +219,10 @@ const submitForm = () => {
+ </script>
+ 
+ <style scoped>
++.ambient-shadow {
++  box-shadow: 0 8px 24px rgba(26, 28, 29, 0.04);
++}
++.fill-icon {
++  font-variation-settings: 'FILL' 1;
++}
+ </style>
+
+--- DIFF FOR src/views/ResourcesView.vue ---
+diff --git "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/ResourcesView.vue" "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/ResourcesView.vue"
+index 53e47e0..b7531ba 100644
+--- "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/ResourcesView.vue"
++++ "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/ResourcesView.vue"
+@@ -1,81 +1,112 @@
+ <template>
+-  <div class="resources-page bg-background text-on-surface font-body pt-20">
+-    <!-- Formal Header -->
+-    <section class="py-20 border-b border-outline-variant/10 bg-surface-container-lowest px-12 text-center">
+-      <div class="max-w-screen-2xl mx-auto space-y-4">
+-        <span class="text-secondary font-label font-bold uppercase text-xs tracking-[0.3em]">Gender and Development</span>
+-        <h1 class="text-5xl font-headline font-black text-primary tracking-tight">Issues & Mandates</h1>
+-        <p class="text-lg text-on-surface-variant max-w-3xl mx-auto leading-relaxed">
+-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+-        </p>
+-      </div>
+-    </section>
++  <div class="resources-page bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed pt-20 pb-24 max-w-7xl mx-auto px-8">
++    <!-- Hero Section -->
++      <section class="mb-20">
++        <div class="grid lg:grid-cols-2 gap-12 items-center">
++          <div class="space-y-6">
++            <span class="inline-block px-4 py-1.5 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-bold uppercase tracking-widest">Legal Frameworks</span>
++            <h1 class="text-5xl md:text-6xl font-headline font-extrabold text-primary leading-tight tracking-tight">Resources & <br/>Mandates</h1>
++            <p class="text-on-surface-variant text-lg max-w-lg leading-relaxed">
++              Access the fundamental legal documents, international treaties, and institutional policies that shape the Gender and Development landscape at Benguet State University.
++            </p>
++          </div>
++          <div class="relative h-[400px] rounded-xl overflow-hidden shadow-2xl">
++            <img alt="Academic Library" class="w-full h-full object-cover" src="/images/img_17.jpg"/>
++            <div class="absolute inset-0 bg-primary/20 mix-blend-multiply"></div>
++          </div>
++        </div>
++      </section>
+ 
+-    <!-- Repository Layout -->
+-    <section class="py-16 px-12 bg-background">
+-      <div class="max-w-screen-2xl mx-auto space-y-16">
+-        <!-- Search and Filter -->
+-        <div class="flex flex-col md:flex-row items-center gap-4 justify-between">
+-          <input v-model="searchQuery" class="bg-surface-container-low border border-outline-variant/30 rounded px-6 py-2 text-sm w-full md:w-96" placeholder="Search laws or mandates..." />
+-          <div class="flex gap-2">
+-            <button v-for="cat in categories" :key="cat" @click="activeCategory = cat" :class="activeCategory === cat ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface-variant'" class="px-4 py-1.5 rounded text-xs font-bold uppercase tracking-widest transition-colors">{{ cat }}</button>
++      <!-- Filter & Search Bar -->
++      <section class="mb-16">
++        <div class="bg-surface-container-lowest p-6 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-outline-variant/15 flex flex-col md:flex-row gap-4 items-center justify-between">
++          <div class="relative w-full md:max-w-md">
++            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
++            <input v-model="searchQuery" class="w-full pl-12 pr-4 py-3 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary text-on-surface placeholder:text-outline/60" placeholder="Search laws, policies, or mandates..." type="text"/>
++          </div>
++          <div class="flex gap-3 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
++            <button v-for="cat in categories" :key="cat" @click="activeCategory = cat" :class="activeCategory === cat ? 'bg-primary text-white' : 'bg-surface-container-high text-on-surface/70 hover:bg-primary-fixed'" class="px-5 py-2 rounded-full transition-colors font-label text-sm whitespace-nowrap">
++              {{ cat }}
++            </button>
+           </div>
+         </div>
++      </section>
+ 
+-        <!-- Mandates Grid -->
+-        <div class="grid lg:grid-cols-12 gap-12">
+-          <div class="lg:col-span-8 space-y-8">
+-            <div class="flex items-center gap-4">
+-              <h2 class="text-2xl font-headline font-extrabold text-on-surface">Legal Mandates</h2>
+-              <div class="h-px flex-1 bg-outline-variant/10"></div>
+-            </div>
+-            <div class="grid md:grid-cols-2 gap-6">
+-            <div v-for="mandate in filteredMandates" :key="mandate.title" class="p-6 bg-surface-container-low rounded border border-outline-variant/10 flex flex-col">
+-                <div class="flex items-center gap-3 text-primary mb-4">
+-                   <span class="material-symbols-outlined text-xl">{{ mandate.icon }}</span>
+-                   <span class="text-[10px] font-black uppercase tracking-widest opacity-70">{{ mandate.type }}</span>
++      <!-- Bento Grid Layout -->
++      <div class="grid grid-cols-1 md:grid-cols-12 gap-8 mb-20">
++        <!-- International Mandates -->
++        <div class="md:col-span-12 lg:col-span-8 space-y-8">
++          <div class="flex items-center gap-4 mb-2">
++            <h2 class="text-2xl font-headline font-bold text-primary">International Mandates</h2>
++            <div class="h-px flex-grow bg-outline-variant/20"></div>
++          </div>
++          <div class="grid md:grid-cols-2 gap-6">
++            <div v-for="mandate in filteredMandates" :key="mandate.title" class="group bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/10 hover:shadow-xl transition-all duration-300">
++              <div class="flex justify-between items-start mb-6">
++                <div class="w-12 h-12 academic-gradient rounded-lg flex items-center justify-center text-white">
++                  <span class="material-symbols-outlined">{{ mandate.icon }}</span>
+                 </div>
+-                <h4 class="font-headline font-bold text-on-surface mb-2">{{ mandate.title }}</h4>
+-                <p class="text-xs text-on-surface-variant leading-relaxed mb-6">{{ mandate.description }}</p>
+-                <button class="text-[10px] font-black text-secondary uppercase tracking-widest border-b border-secondary/30 pb-0.5 hover:border-secondary transition-colors">Download PDF</button>
++                <span class="material-symbols-outlined text-outline/40 group-hover:text-primary transition-colors">{{ mandate.fileIcon }}</span>
++              </div>
++              <h3 class="text-xl font-headline font-bold mb-3 group-hover:text-primary transition-colors">{{ mandate.title }}</h3>
++              <p class="text-sm text-on-surface-variant leading-relaxed mb-6">{{ mandate.description }}</p>
++              <div class="flex items-center justify-between mt-auto">
++                <span class="text-xs font-label uppercase tracking-widest font-bold text-secondary">{{ mandate.type }}</span>
++                <a class="text-primary font-label text-sm font-bold underline underline-offset-4 decoration-2" href="#">{{ mandate.action }}</a>
+               </div>
+             </div>
+           </div>
+-          
+-          <div class="lg:col-span-4 p-8 bg-surface-container-low border border-outline-variant/10 rounded">
+-            <h3 class="text-xs font-black uppercase tracking-widest text-primary mb-8">National Policy Spotlight</h3>
++        </div>
++
++        <!-- Sidebar / National Focus -->
++        <div class="md:col-span-12 lg:col-span-4 bg-primary text-white p-8 rounded-xl relative overflow-hidden flex flex-col">
++          <div class="relative z-10">
++            <h2 class="text-2xl font-headline font-bold mb-6">National Policy Spotlight</h2>
+             <ul class="space-y-6">
+-              <li v-for="policy in nationalPolicies" :key="policy.id" class="group cursor-pointer border-b border-outline-variant/10 pb-4 last:border-0">
+-                <span class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-1">{{ policy.id }}</span>
+-                <span class="font-headline font-bold text-on-surface group-hover:text-primary transition-colors">{{ policy.title }}</span>
++              <li v-for="policy in nationalPolicies" :key="policy.id" class="group cursor-pointer">
++                <p class="text-primary-fixed font-bold text-xs uppercase tracking-widest mb-1">{{ policy.id }}</p>
++                <p class="font-headline font-semibold text-lg group-hover:translate-x-1 transition-transform">{{ policy.title }}</p>
+               </li>
+             </ul>
++            <button class="mt-12 w-full py-4 rounded-full bg-white text-primary font-bold font-headline text-sm hover:bg-primary-fixed transition-colors">View All National Laws</button>
+           </div>
++          <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-primary-container rounded-full opacity-30 blur-3xl"></div>
+         </div>
++      </div>
+ 
+-        <!-- GAD Issues -->
+-        <div class="space-y-8">
+-          <div class="flex items-center gap-4">
+-            <h2 class="text-2xl font-headline font-extrabold text-on-surface">GAD Issues</h2>
+-            <div class="h-px flex-1 bg-outline-variant/10"></div>
+-          </div>
+-          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+-            <div v-for="(item, index) in visibleIssues" :key="index" class="p-6 bg-surface-container-low rounded border border-outline-variant/10 flex flex-col">
+-              <div class="text-secondary mb-4 flex items-center justify-between">
+-                <span class="material-symbols-outlined text-2xl">{{ item.icon }}</span>
++      <!-- Institutional Policies -->
++      <div class="md:col-span-12 mb-20">
++        <div class="flex items-center gap-4 mb-8">
++          <h2 class="text-2xl font-headline font-bold text-primary">Institutional Policies</h2>
++          <div class="h-px flex-grow bg-outline-variant/20"></div>
++        </div>
++        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
++          <div v-for="policy in institutionalPolicies" :key="policy.title" class="flex flex-col gap-4 p-1 bg-surface-container rounded-2xl">
++            <div class="bg-surface-container-lowest p-6 rounded-xl h-full">
++              <div class="flex items-center gap-3 mb-4">
++                <span class="material-symbols-outlined text-secondary">{{ policy.icon }}</span>
++                <span class="font-label text-xs font-bold text-secondary uppercase tracking-widest">{{ policy.tag }}</span>
++              </div>
++              <h4 class="font-headline font-bold text-lg mb-2">{{ policy.title }}</h4>
++              <p class="text-sm text-on-surface-variant mb-6">{{ policy.description }}</p>
++              <div class="flex items-center gap-4 text-xs font-bold text-primary">
++                <span class="material-symbols-outlined text-lg">{{ policy.actionIcon }}</span>
++                <span>{{ policy.actionText }}</span>
+               </div>
+-              <h4 class="font-headline font-bold text-on-surface mb-2 text-sm">{{ item.mandate }}</h4>
+-              <p class="text-xs text-on-surface-variant leading-relaxed mb-6">{{ item.issue }}</p>
+             </div>
+           </div>
+-          <div class="flex justify-center mt-8">
+-            <button @click="showAllIssues = !showAllIssues" class="px-8 py-3 border border-primary text-primary text-xs font-black uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-all rounded">
+-              {{ showAllIssues ? 'See Less' : 'See All' }}
+-            </button>
+-          </div>
+         </div>
+       </div>
+-    </section>
++
++      <!-- Help Section -->
++      <section class="mt-24 bg-surface-container-low rounded-3xl p-12 text-center max-w-4xl mx-auto">
++        <h2 class="text-3xl font-headline font-extrabold text-primary mb-4">Cannot find a specific document?</h2>
++        <p class="text-on-surface-variant mb-8 text-lg">Our office maintains an extensive physical archive of gender-related legislations and university memos. Please reach out if you need assistance.</p>
++        <div class="flex flex-col sm:flex-row justify-center gap-4">
++          <button class="px-8 py-3 rounded-full bg-primary text-white font-bold font-headline hover:opacity-90 transition-all">Request Document</button>
++          <button class="px-8 py-3 rounded-full border border-primary text-primary font-bold font-headline hover:bg-primary/5 transition-all">Contact GAD Office</button>
++        </div>
++      </section>
+   </div>
+ </template>
+ 
+@@ -84,188 +115,62 @@ import { ref, computed } from 'vue';
+ 
+ const searchQuery = ref('');
+ const activeCategory = ref('All Resources');
+-const showAllIssues = ref(false);
+ const categories = ['All Resources', 'International', 'National', 'Institutional'];
+ 
+ const mandates = [
+-  {
+-    title: 'Republic Act 9710',
+-    description: 'The Magna Carta of Women, mandating gender mainstreaming as a strategy for implementing gender-responsive governance.',
+-    icon: 'gavel',
+-    type: 'National Law',
+-    category: 'National'
+-  },
+-  {
+-    title: 'Republic Act 10931',
+-    description: 'Universal Access to Quality Tertiary Education Act, ensuring equitable access and participation through Affirmative Action Programs.',
+-    icon: 'school',
+-    type: 'National Law',
+-    category: 'National'
+-  },
+-  {
+-    title: 'Republic Act 11313',
+-    description: 'The Safe Spaces Act (Bawal Bastos Law) which defines and penalizes gender-based sexual harassment in various settings.',
+-    icon: 'security',
+-    type: 'National Law',
+-    category: 'National'
+-  },
+-  {
+-    title: 'Institutional Goals & Mandates',
+-    description: 'Formal objectives for transformative education, innovative research, and inclusive governance as defined in the University Strategic Plan.',
+-    icon: 'policy',
+-    type: 'Institutional',
+-    category: 'Institutional'
++  { 
++    title: 'CEDAW', 
++    description: 'Convention on the Elimination of All Forms of Discrimination Against Women. Often described as an international bill of rights for women.', 
++    icon: 'public', 
++    fileIcon: 'picture_as_pdf', 
++    type: 'UN Treaty', 
++    action: 'Download Document',
++    category: 'International'
++  },
++  { 
++    title: 'BPFA', 
++    description: "Beijing Platform for Action. An agenda for women's empowerment that aims at accelerating the implementation of the Nairobi Forward-looking Strategies.", 
++    icon: 'flag', 
++    fileIcon: 'link', 
++    type: 'Strategic Agenda', 
++    action: 'View Reference',
++    category: 'International'
+   }
+ ];
+ 
+ const nationalPolicies = [
+   { id: 'Republic Act 9710', title: 'Magna Carta of Women' },
+-  { id: 'Republic Act 11313', title: 'Safe Spaces Act' },
+-  { id: 'Republic Act 10931', title: 'Universal Access Act' },
+-  { id: 'Republic Act 7877', title: 'Anti-Sexual Harassment Act' },
+-  { id: 'Republic Act 10028', title: 'Breastfeeding Promotion Act' },
+-  { id: 'Republic Act 10121', title: 'DRRM Act' }
++  { id: 'Administrative Order', title: 'GAD Budget Guidelines' },
++  { id: 'Republic Act 7877', title: 'Anti-Sexual Harassment Act' }
+ ];
+ 
+-const gadIssues = [
+-  {
+-    mandate: 'RA 10931, Section 8; CHED Memo Orders',
+-    issue: 'Extraordinary life situations (disasters, calamities, socio-cultural discrimination); high tuition fees compounded by expectations for women to prioritize domestic roles over education.',
+-    icon: 'diversity_3',
+-    office: 'OSS, OUR, UHS'
+-  },
+-  {
+-    mandate: 'CHED Memorandum Order No. 01, series 2015',
+-    issue: 'Limited activities to increase awareness of men and women students on GAD-related information and limited understanding of student leaders on GAD.',
+-    icon: 'campaign',
+-    office: 'OSS & GAD Office'
+-  },
+-  {
+-    mandate: 'Part VII of CHED Memorandum Order No. 1, series 2015',
+-    issue: 'Presence of gender inequality, poverty, and GAD-related concerns in the community; limited gender-responsive research and extension.',
+-    icon: 'biotech',
+-    office: 'Research and Extension'
+-  },
+-  {
+-    mandate: 'DBM-DSWD Joint Circular No. 2003-01',
+-    issue: 'Limited access of PWDs and lack of senior citizens\' access to gender-responsive programs and services.',
+-    icon: 'accessible',
+-    office: 'HRMO, OSS & GAD Office'
+-  },
++const institutionalPolicies = [
+   {
+-    mandate: 'MCW-IRR Section 14',
+-    issue: 'Low number of women\'s participation in competitive and non-competitive sports.',
+-    icon: 'sports_handball',
+-    office: 'College of Human Kinetics (CHK)'
++    title: 'BSU GAD Guidelines',
++    description: 'Internal operational frameworks for gender mainstreaming across all BSU campuses.',
++    icon: 'school',
++    tag: 'BSU Specific',
++    actionIcon: 'download',
++    actionText: 'PDF (2.4 MB)'
+   },
+   {
+-    mandate: 'CSC Res No. 010112; BOR Res. No. 2316 s. 2014',
+-    issue: 'Low recognition and appreciation of gender mainstreaming implementation in the University.',
+-    icon: 'military_tech',
+-    office: 'HRDO, HRMO & GAD Office'
++    title: 'Safe Spaces Act Implementation',
++    description: 'Localized implementation protocols for the BSU community regarding safe spaces.',
++    icon: 'policy',
++    tag: 'Code of Conduct',
++    actionIcon: 'open_in_new',
++    actionText: 'External Portal'
+   },
+   {
+-    mandate: 'Magna Carta of Women (RA 9710); CHED Memo 2015-1',
+-    issue: 'Limited application of GAD mainstreaming in instruction, research, extension, and production.',
++    title: 'GAD 5-Year Strategic Roadmap',
++    description: 'Future objectives and developmental milestones for gender parity at BSU.',
+     icon: 'history_edu',
+-    office: 'All Colleges & OQAA'
+-  },
+-  {
+-    mandate: 'MCW IRR Section 37; RA 10028',
+-    issue: 'Productivity of employees affected by filial obligations; inadequate support for breastfeeding mothers.',
+-    icon: 'child_care',
+-    office: 'GAD Office & HRDO'
+-  },
+-  {
+-    mandate: 'Executive Order No. 340 s. 1997',
+-    issue: 'Problems of parents and students related to child care for children under five years of age.',
+-    icon: 'escalator_warning',
+-    office: 'GAD Office'
+-  },
+-  {
+-    mandate: 'Magna Carta of Women (RA 9710)',
+-    issue: 'Low integration of gender mainstreaming in BSU operations and monitoring efforts.',
+-    icon: 'monitoring',
+-    office: 'GAD Office'
+-  },
+-  {
+-    mandate: 'Magna Carta of Women IRR Section 37-C',
+-    issue: 'Low level of GFPS capacity to develop and implement GAD programs due to new members.',
+-    icon: 'groups',
+-    office: 'GAD Office'
+-  },
+-  {
+-    mandate: 'Section 37-C2 Rule VI of MCW IRR; CHED Memo 2015-1',
+-    issue: 'Compliance to regular monitoring of gender mainstreaming; no plantilla personnel assigned full-time to plan and monitor GAD PAPs.',
+-    icon: 'assignment_late',
+-    office: 'GAD Office'
+-  },
+-  {
+-    mandate: 'RA 9710; CHED Memo 2015-1',
+-    issue: 'Low level of awareness on gender mainstreaming among newly hired personnel.',
+-    icon: 'person_add',
+-    office: 'HRDO & GAD Office'
+-  },
+-  {
+-    mandate: 'Part V, Rule II, Section 4 of CHED CMO 01, s. 2015',
+-    issue: 'Limited number of GAD library and related learning materials across various disciplines.',
+-    icon: 'menu_book',
+-    office: 'University Library (ULIS)'
+-  },
+-  {
+-    mandate: 'Institutional Mainstreaming Mandate',
+-    issue: 'Presence of Gender Based Violence (GBV) issues, reports, and cases in the university.',
+-    icon: 'report_problem',
+-    office: 'UPAO & GAD Office'
+-  },
+-  {
+-    mandate: 'RA 9710, Section 36 (Sex-Disaggregated Database)',
+-    issue: 'Minimal awareness and appreciation of the relevance of a centralized sex-disaggregated database.',
+-    icon: 'database',
+-    office: 'ICT & GAD Office'
+-  },
+-  {
+-    mandate: 'MCW Chapter IV Section 10; RA 10121',
+-    issue: 'Limited resources for transient student residents; limited appreciation of women\'s role in nation building.',
+-    icon: 'emergency_home',
+-    office: 'NSTP & HDRO'
+-  },
+-  {
+-    mandate: 'MCW RA 9710 Section 18; RA 8187; RA 8972',
+-    issue: 'Employees may require special leaves due to parental obligations, health concerns, and other circumstances.',
+-    icon: 'event_busy',
+-    office: 'HRMO & CBOO'
+-  },
+-  {
+-    mandate: 'Proclamation 227; Proclamation 1172; RA 11313',
+-    issue: 'Need to highlight women\'s rights and provide platforms against VAW and gender-based violence (Safe Spaces Act).',
+-    icon: 'security',
+-    office: 'GAD Office'
+-  },
+-  {
+-    mandate: 'RA 9710; PCW-NEDA-DBM JC 2012-01',
+-    issue: 'Low level of employees\' understanding of gender issues and concepts to promote equality.',
+-    icon: 'psychology',
+-    office: 'GAD Office'
+-  },
+-  {
+-    mandate: 'Part V of CMO 01 s. 2015; CHED Memo 2015-1',
+-    issue: 'Limited subjects for GAD integration in gender-responsive instruction and curriculum development.',
+-    icon: 'school',
+-    office: 'All Colleges & GAD Office'
+-  },
+-  {
+-    mandate: 'Section 37-C2 of the Magna Carta of Women IRR',
+-    issue: 'Need to sustain a functional and gender-responsive GAD Focal Point System and GAD Office.',
+-    icon: 'account_balance',
+-    office: 'GAD Office'
++    tag: 'Strategic Plan',
++    actionIcon: 'download',
++    actionText: 'PDF (5.1 MB)'
+   }
+ ];
+ 
+-const visibleIssues = computed(() => {
+-  return showAllIssues.value ? gadIssues : gadIssues.slice(0, 6);
+-});
+-
+ const filteredMandates = computed(() => {
+   return mandates.filter(m => {
+     const matchesSearch = m.title.toLowerCase().includes(searchQuery.value.toLowerCase()) || 
+@@ -277,4 +182,7 @@ const filteredMandates = computed(() => {
+ </script>
+ 
+ <style scoped>
++.academic-gradient {
++  background: linear-gradient(135deg, #422b68 0%, #5a4281 100%);
++}
+ </style>
+
+--- DIFF FOR src/views/admin/BudgetView.vue ---
+diff --git "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/admin/BudgetView.vue" "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/admin/BudgetView.vue"
+index 9b75ff7..1d0c027 100644
+--- "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/admin/BudgetView.vue"
++++ "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/admin/BudgetView.vue"
+@@ -33,18 +33,6 @@
+         </div>
+       </div>
+ 
+-      <div class="stat-card">
+-        <div class="stat-card-inner">
+-          <div class="stat-icon bg-amber">
+-            <span class="material-symbols-outlined text-amber">hourglass_empty</span>
+-          </div>
+-          <div class="stat-info">
+-            <h3 class="stat-value">{{ pendingApproved }}</h3>
+-            <p class="stat-label">Pending Approved Budget</p>
+-          </div>
+-        </div>
+-      </div>
+-
+       <div class="stat-card">
+         <div class="stat-card-inner">
+           <div class="stat-icon bg-pink">
+@@ -144,13 +132,11 @@
+ </template>
+ 
+ <script setup>
+-import { ref, onMounted } from 'vue';
+-import api from '../../api';
++import { ref } from 'vue';
+ 
+ // Metric Aggregates (Staged to bind directly to database totals later)
+ const totalBudget = ref('Γé▒0');
+ const totalUtilized = ref('Γé▒0');
+-const pendingApproved = ref('Γé▒0');
+ const remainingBalance = ref('Γé▒0');
+ const utilizationRate = ref('0.00%');
+ 
+@@ -158,56 +144,9 @@ const utilizationRate = ref('0.00%');
+ const mandates = ref([]);
+ 
+ // Sidebar Dynamic Context Parameters
+-const currentFrameworkStatus = ref('Active');
+-const statusDescription = ref('The university GAD plan is currently being executed for the current fiscal year.');
+-const systemNoticeText = ref('Budget balances are synchronized in real-time with submitted activity designs and accomplishment reports.');
+-
+-const fetchBudgetData = async () => {
+-  try {
+-    const [summaryRes, planRes, archivesRes] = await Promise.all([
+-      api.get('budget/summary'),
+-      api.get('budget/gad-plan'),
+-      api.get('archives')
+-    ]);
+-
+-    if (summaryRes.data.success) {
+-      const b = summaryRes.data.data;
+-      totalBudget.value = 'Γé▒' + Number(b.total_budget).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+-      totalUtilized.value = 'Γé▒' + Number(b.total_utilized).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+-      pendingApproved.value = 'Γé▒' + Number(b.total_pending_approved).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+-      remainingBalance.value = 'Γé▒' + Number(b.remaining_balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+-      utilizationRate.value = Number(b.utilization_rate).toFixed(2) + '%';
+-    }
+-
+-    if (planRes.data.success) {
+-      const approvedDesigns = archivesRes.data.success ? (archivesRes.data.data || []).filter(item => item.type === 'design') : [];
+-      
+-      mandates.value = planRes.data.data.map(item => {
+-        const utilizedForThisGpb = approvedDesigns
+-          .filter(d => Number(d.gpb_id) === Number(item.gpb_id))
+-          .reduce((sum, d) => sum + (Number(d.proposed_budget) || 0), 0);
+-
+-        const allocated = Number(item.gad_budget) || 0;
+-        const rate = allocated > 0 ? (utilizedForThisGpb / allocated) * 100 : 0;
+-
+-        return {
+-          id: item.gpb_id,
+-          title: item.gender_issue_mandate || 'No Mandate Title',
+-          desc: item.gad_activity || 'No Activity Description',
+-          utilized: 'Γé▒' + utilizedForThisGpb.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+-          total: 'Γé▒' + allocated.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+-          percent: rate.toFixed(2) + '%'
+-        };
+-      });
+-    }
+-  } catch (err) {
+-    console.error('Error fetching budget data:', err);
+-  }
+-};
+-
+-onMounted(() => {
+-  fetchBudgetData();
+-});
++const currentFrameworkStatus = ref('');
++const statusDescription = ref('');
++const systemNoticeText = ref('');
+ </script>
+ 
+ <style scoped>
+@@ -247,7 +186,7 @@ onMounted(() => {
+ /* Master Stats Grid Setup */
+ .stats-section {
+   display: grid;
+-  grid-template-columns: repeat(5, 1fr);
++  grid-template-columns: repeat(4, 1fr);
+   gap: 1.5rem;
+ }
+ 
+@@ -293,13 +232,11 @@ onMounted(() => {
+ .text-blue { color: #60a5fa; }
+ .text-emerald { color: #34d399; }
+ .text-pink { color: #f472b6; }
+-.text-amber { color: #fbbf24; }
+ 
+ .bg-purple { background: rgba(168, 85, 247, 0.1); }
+ .bg-blue { background: rgba(59, 130, 246, 0.1); }
+ .bg-emerald { background: rgba(16, 185, 129, 0.1); }
+ .bg-pink { background: rgba(244, 114, 182, 0.1); }
+-.bg-amber { background: rgba(245, 158, 11, 0.1); }
+ 
+ .stat-info {
+   min-width: 0;
+
+--- DIFF FOR src/views/admin/SubmittedListView.vue ---
+diff --git "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/admin/SubmittedListView.vue" "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/admin/SubmittedListView.vue"
+index abbb5b5..3cc94be 100644
+--- "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/admin/SubmittedListView.vue"
++++ "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/admin/SubmittedListView.vue"
+@@ -80,6 +80,9 @@
+                   <tr class="table-header-row">
+                     <th class="table-header-cell table-header-number">#</th>
+                     <th class="table-header-cell">College / Office / Unit</th>
++                    <th class="table-header-cell table-header-center">TWG</th>
++                    <th class="table-header-cell table-header-center">Non-TWG</th>
++                    <th class="table-header-cell table-header-center">Staff</th>
+                     <th class="table-header-cell table-header-center">Activity Designs</th>
+                     <th class="table-header-cell table-header-center">Accomplishment Reports</th>
+                     <th class="table-header-cell table-header-center">Total Status</th>
+@@ -87,7 +90,7 @@
+                 </thead>
+                 <tbody class="table-body">
+                   <tr v-if="filteredUnits.length === 0">
+-                    <td colspan="5" class="empty-state">
++                    <td colspan="8" class="empty-state">
+                       No matching Technical Working Group records or submissions discovered in the repository.
+                     </td>
+                   </tr>
+@@ -96,15 +99,22 @@
+                     v-else
+                     v-for="(unit, index) in filteredUnits" 
+                     :key="unit.id"
+-                    class="table-row clickable-row"
+-                    @click="openDetailsModal(unit)"
++                    class="table-row"
+                   >
+                     <td class="table-cell table-cell-number">
+                       {{ (currentPage - 1) * perPage + index + 1 }}
+                     </td>
+                     <td class="table-cell">
+                       <div class="unit-name">{{ unit.name }}</div>
+-                      <div class="unit-code">{{ unit.code }}</div>
++                    </td>
++                    <td class="table-cell table-cell-center table-cell-count">
++                      {{ unit.twg_count || 0 }}
++                    </td>
++                    <td class="table-cell table-cell-center table-cell-count">
++                      {{ unit.nontwg_count || 0 }}
++                    </td>
++                    <td class="table-cell table-cell-center table-cell-count">
++                      {{ unit.staff_count || 0 }}
+                     </td>
+                     <td class="table-cell table-cell-center table-cell-count">
+                       {{ unit.activity_designs_count || 0 }}
+@@ -165,70 +175,6 @@
+ 
+         </div>
+       </main>
+-
+-    <div v-if="isModalOpen" class="modal-overlay" @click.self="closeModal">
+-      <div class="modal-window glass-card">
+-        <div class="modal-header">
+-          <div class="header-info">
+-            <h2 class="modal-title">{{ selectedUnit?.name }}</h2>
+-            <p class="modal-subtitle">Submissions History & Overview</p>
+-          </div>
+-          <button class="close-btn" @click="closeModal">
+-            <span class="material-symbols-outlined">close</span>
+-          </button>
+-        </div>
+-
+-        <div class="modal-body custom-scrollbar">
+-          <div v-if="modalLoading" class="modal-loader">
+-            <div class="spinner"></div>
+-            <p>Loading unit records...</p>
+-          </div>
+-
+-          <div v-else class="modal-sections">
+-            <div class="modal-section">
+-              <div class="section-banner design-banner">
+-                <span class="material-symbols-outlined">description</span>
+-                <h3>Activity Designs ({{ unitDesigns.length }})</h3>
+-              </div>
+-              <div class="item-list">
+-                <div v-for="design in unitDesigns" :key="design.act_design_id" class="item-entry">
+-                  <div class="item-info">
+-                    <div class="item-title-row">
+-                      <span class="item-title">{{ design.activity_title }}</span>
+-                      <span class="mini-status" :class="getStatusClass(design.status)">{{ design.status }}</span>
+-                    </div>
+-                    <span class="item-meta">{{ design.control || 'No Control #' }} ΓÇó {{ formatDate(design.start_date) }}</span>
+-                  </div>
+-                  <button class="item-action-btn" @click.stop="router.push(`/admin/ad-view/${design.act_design_id}`)">View</button>
+-                </div>
+-                <p v-if="unitDesigns.length === 0" class="empty-note">No designs found.</p>
+-              </div>
+-            </div>
+-
+-            <div class="modal-section">
+-              <div class="section-banner report-banner">
+-                <span class="material-symbols-outlined">analytics</span>
+-                <h3>Accomplishment Reports ({{ unitReports.length }})</h3>
+-              </div>
+-              <div class="item-list">
+-                <div v-for="report in unitReports" :key="report.id" class="item-entry">
+-                  <div class="item-info">
+-                    <div class="item-title-row">
+-                      <span class="item-title">{{ report.activity_title }}</span>
+-                      <span class="mini-status" :class="getStatusClass(report.status)">{{ report.status }}</span>
+-                    </div>
+-                    <span class="item-meta">{{ report.control_number || 'No Control #' }} ΓÇó {{ formatDate(report.start_date) }}</span>
+-                  </div>
+-                  <button class="item-action-btn" @click.stop="router.push(`/admin/ar-view/${report.id}`)">View</button>
+-                </div>
+-                <p v-if="unitReports.length === 0" class="empty-note">No reports found.</p>
+-              </div>
+-            </div>
+-          </div>
+-
+-        </div>
+-      </div>
+-    </div>
+ </template>
+ 
+ <script setup>
+@@ -246,53 +192,6 @@ const twgUnits = ref([]);
+ const currentPage = ref(1);
+ const perPage = ref(10);
+ 
+- const isModalOpen = ref(false);
+-const selectedUnit = ref(null);
+-const unitDesigns = ref([]);
+-const unitReports = ref([]);
+-const modalLoading = ref(false);
+-
+-const openDetailsModal = async (unit) => {
+-  selectedUnit.value = unit;
+-  isModalOpen.value = true;
+-  modalLoading.value = true;
+-  
+-  try {
+-    const [designsRes, reportsRes] = await Promise.all([
+-      api.get(`activity-design/user/${unit.id}`),
+-      api.get(`accomplishment-report/user/${unit.id}`)
+-    ]);
+-    
+-    unitDesigns.value = designsRes.data.data || [];
+-    unitReports.value = reportsRes.data.data || [];
+-  } catch (err) {
+-    console.error('Error fetching unit submissions:', err);
+-  } finally {
+-    modalLoading.value = false;
+-  }
+-};
+-
+-const closeModal = () => {
+-  isModalOpen.value = false;
+-  selectedUnit.value = null;
+-  unitDesigns.value = [];
+-  unitReports.value = [];
+-};
+-
+-const formatDate = (date) => {
+-  if (!date) return '---';
+-  return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+-};
+-
+-const getStatusClass = (status) => {
+-  if (!status) return '';
+-  const s = status.toLowerCase();
+-  if (s === 'approved' || s === 'completed' || s === 'verified') return 'mini-status-success';
+-  if (s === 'pending') return 'mini-status-pending';
+-  if (s.includes('revision') || s === 'cancelled') return 'mini-status-danger';
+-  return '';
+-};
+-
+ const paginationMeta = ref({
+   total: 0,
+   from: 0,
+@@ -300,6 +199,37 @@ const paginationMeta = ref({
+   last_page: 1
+ });
+ 
++const GAD_OFFICE_ID = 1;
++
++const normalizeSubmissionUnits = (units) => {
++  const gadStaffUnit = units.find(
++    (unit) => (unit.office_name || '').toLowerCase() === 'gad.staff'
++  );
++  const filtered = units.filter(
++    (unit) => (unit.office_name || '').toLowerCase() !== 'gad.staff'
++  );
++
++  if (!gadStaffUnit) {
++    return filtered;
++  }
++
++  return filtered.map((unit) => {
++    if (unit.id !== GAD_OFFICE_ID) {
++      return unit;
++    }
++
++    return {
++      ...unit,
++      twg_count: (unit.twg_count || 0) + (gadStaffUnit.twg_count || 0),
++      nontwg_count: (unit.nontwg_count || 0) + (gadStaffUnit.nontwg_count || 0),
++      staff_count: (unit.staff_count || 0) + (gadStaffUnit.staff_count || 0),
++      activity_designs_count: (unit.activity_designs_count || 0) + (gadStaffUnit.activity_designs_count || 0),
++      accomplishment_reports_count: (unit.accomplishment_reports_count || 0) + (gadStaffUnit.accomplishment_reports_count || 0),
++      total_submissions: (unit.total_submissions || 0) + (gadStaffUnit.total_submissions || 0),
++    };
++  });
++};
++
+ const metricsStats = ref([
+   { label: 'Total TWGs', value: '0', icon: 'groups', iconColor: 'text-green-400', bgClass: 'bg-green-500/10' },
+   { label: 'Total Non-TWG', value: '0', icon: 'person_search', iconColor: 'text-amber-400', bgClass: 'bg-amber-500/10' },
+@@ -313,8 +243,7 @@ const filteredUnits = computed(() => {
+   if (searchQuery.value) {
+     const query = searchQuery.value.toLowerCase();
+     records = records.filter(unit => 
+-      unit.name.toLowerCase().includes(query) ||
+-      unit.code.toLowerCase().includes(query)
++      unit.name.toLowerCase().includes(query)
+     );
+   }
+ 
+@@ -329,16 +258,21 @@ const filteredUnits = computed(() => {
+ 
+ const fetchTWGSubmissions = async (page = 1) => {
+   try {
++    // Staged to fetch live data records matching your endpoint framework
+     const response = await api.get(`admin/twg-submissions?page=${page}&per_page=${perPage.value}`);
+-    twgUnits.value = response.data.data.map(unit => ({
++    const normalized = normalizeSubmissionUnits(response.data.data);
++    twgUnits.value = normalized.map(unit => ({
+       ...unit,
+-      name: unit.username, 
+-      code: `UNIT-${unit.id}` 
++      name: unit.office_name,
+     }));
+-    paginationMeta.value = response.data.meta;
++    paginationMeta.value = {
++      ...response.data.meta,
++      total: normalized.length,
++    };
+     currentPage.value = page;
+ 
+-    metricsStats.value[0].value = response.data.meta.total || 0;
++    metricsStats.value[0].value = response.data.meta.total_twg || 0;
++    metricsStats.value[1].value = response.data.meta.total_nontwg || 0;
+     metricsStats.value[2].value = response.data.meta.total_designs || 0;
+     metricsStats.value[3].value = response.data.meta.total_reports || 0;
+   } catch (err) {
+@@ -382,112 +316,592 @@ onMounted(() => {
+ </script>
+ 
+ <style scoped>
+-.twg-submissions { min-height: 100vh; display: flex; color: #cbd5e1; font-family: system-ui, -apple-system, sans-serif; }
+-.twg-submissions ::selection { background: rgba(153, 13, 209, 0.3); color: white; }
+-.twg-main-container { flex-grow: 1; margin-left: 256px; display: flex; flex-direction: column; min-height: 100vh; }
+-.twg-main-content { padding-left: 0; flex-grow: 1; }
+-.twg-content-wrapper { display: flex; flex-direction: column; gap: 24px; }
+-.twg-header { padding: 0 4px; }
+-.twg-title { font-size: 24px; font-weight: 900; letter-spacing: -0.025em; color: #1a1a2e; }
+-.twg-subtitle { font-size: 14px; color: #475569; margin-top: 4px; }
+-.stats-section { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+-.stat-card { padding: 16px; border-radius: 16px; border: 1px solid rgba(185, 121, 204, 0.15); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); backdrop-filter: blur(8px); transition: all 0.3s; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+-.stat-card:hover { transform: translateY(-4px); }
+-.stat-card-inner { display: flex; align-items: center; gap: 12px; }
+-.stat-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+-.stat-icon-symbol { font-weight: 500; font-size: 18px; }
++.twg-submissions {
++  min-height: 100vh;
++  display: flex;
++  color: #cbd5e1;
++  font-family: system-ui, -apple-system, sans-serif;
++}
++
++.twg-submissions ::selection {
++  background: rgba(153, 13, 209, 0.3);
++  color: white;
++}
++
++.twg-main-container {
++  flex-grow: 1;
++  margin-left: 256px;
++  display: flex;
++  flex-direction: column;
++  min-height: 100vh;
++}
++
++.twg-main-content {
++  padding-left: 0;
++  flex-grow: 1;
++}
++
++.twg-content-wrapper {
++  display: flex;
++  flex-direction: column;
++  gap: 1.5rem;
++}
++
++.twg-header {
++  padding: 0 0.25rem;
++}
++
++.twg-title {
++  font-size: 1.5rem;
++  font-weight: 900;
++  letter-spacing: -0.025em;
++  color: #1a1a2e;
++}
++
++.twg-subtitle {
++  font-size: 1rem;
++  color: #475569;
++  margin-top: 0.25rem;
++}
++
++.stats-section {
++  display: grid;
++  grid-template-columns: repeat(4, 1fr);
++  gap: 1rem;
++}
++
++.stat-card {
++  padding: 1rem;
++  border-radius: 1rem;
++  border: 1px solid rgba(185, 121, 204, 0.15);
++  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
++  backdrop-filter: blur(8px);
++  transition: all 0.3s;
++  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
++}
++
++.stat-card:hover {
++  transform: translateY(-4px);
++}
++
++.stat-card-inner {
++  display: flex;
++  align-items: center;
++  gap: 0.75rem;
++}
++
++.stat-icon {
++  width: 40px;
++  height: 40px;
++  border-radius: 0.75rem;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  flex-shrink: 0;
++}
++
++.stat-icon-symbol {
++  font-weight: 500;
++  font-size: 1.125rem;
++}
++
++/* Icon Colors */
+ .text-green-400 { color: #4ade80; }
+ .text-amber-400 { color: #fbbf24; }
+ .text-purple-400 { color: #c084fc; }
+ .text-blue-400 { color: #60a5fa; }
++
++/* Background Classes */
+ .bg-green-500\/10 { background: rgba(34, 197, 94, 0.1); }
+ .bg-amber-500\/10 { background: rgba(245, 158, 11, 0.1); }
+ .bg-purple-500\/10 { background: rgba(168, 85, 247, 0.1); }
+ .bg-blue-500\/10 { background: rgba(59, 130, 246, 0.1); }
+-.stat-info { min-width: 0; }
+-.stat-value { font-size: 20px; font-weight: 900; letter-spacing: -0.025em; color: white; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+-.stat-label { font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(203, 213, 225, 0.7); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+-.filter-section { padding: 16px; border-radius: 16px; border: 1px solid rgba(185, 121, 204, 0.15); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25); backdrop-filter: blur(8px); display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 16px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+-.filter-controls { display: flex; flex-direction: row; align-items: center; gap: 12px; width: auto; }
+-.search-wrapper { position: relative; width: 288px; }
+-.search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 14px; }
+-.search-input { width: 100%; padding: 8px 16px 8px 36px; border-radius: 12px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(185, 121, 204, 0.2); font-size: 14px; font-weight: 600; color: white; transition: all 0.3s; }
+-.search-input:focus { outline: none; border-color: rgba(185, 121, 204, 0.5); }
+-.search-input::placeholder { color: #94a3b8; }
+-.select-wrapper { position: relative; width: 176px; }
+-.filter-select { width: 100%; padding: 8px 12px; border-radius: 12px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(185, 121, 204, 0.2); font-size: 14px; font-weight: 600; color: white; appearance: none; cursor: pointer; transition: all 0.3s; }
+-.filter-select:focus { outline: none; border-color: rgba(185, 121, 204, 0.5); }
+-.select-arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 14px; pointer-events: none; }
+-.per-page-controls { display: flex; align-items: center; gap: 8px; }
+-.per-page-label { font-size: 14px; color: #94a3b8; font-weight: 500; }
+-.per-page-select { padding: 6px 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(185, 121, 204, 0.2); font-size: 14px; font-weight: 700; color: white; cursor: pointer; transition: all 0.3s; }
+-.per-page-select:focus { outline: none; border-color: rgba(185, 121, 204, 0.5); }
+-.table-container { border-radius: 16px; border: 1px solid rgba(185, 121, 204, 0.15); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25); overflow: hidden; backdrop-filter: blur(8px); background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+-.table-wrapper { overflow-x: auto; }
+-.data-table { width: 100%; text-align: left; border-collapse: collapse; }
+-.table-header-row { border-bottom: 1px solid rgba(185, 121, 204, 0.1); background: rgba(0, 0, 0, 0.3); }
+-.table-header-cell { padding: 16px 24px; font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #b979cc; }
+-.table-header-number { width: 48px; text-align: center; }
+-.table-header-center { text-align: center; }
+-.table-header-right { text-align: right; }
+-.table-body { display: table-row-group; }
+-.empty-state { padding: 48px 24px; text-align: center; font-size: 14px; color: #94a3b8; font-weight: 500; }
+-.table-row { transition: all 0.3s; border-bottom: 1px solid rgba(185, 121, 204, 0.05); }
+-.clickable-row { cursor: pointer; }
+-.table-row:hover { background: rgba(255, 255, 255, 0.05); }
+-.table-cell { padding: 16px 24px; font-size: 14px; }
+-.table-cell-number { font-size: 14px; font-family: monospace; font-weight: 700; color: #94a3b8; text-align: center; }
+-.table-cell-center { text-align: center; }
+-.table-cell-right { text-align: right; }
+-.table-cell-count { font-family: monospace; font-size: 14px; font-weight: 700; color: #cbd5e1; }
+-.unit-name { font-weight: 700; color: #e2e8f0; font-size: 14px; }
+-.unit-code { font-size: 14px; color: #b979cc; font-weight: 500; letter-spacing: 0.025em; text-transform: uppercase; margin-top: 2px; }
+-.submission-badge { display: inline-block; padding: 4px 12px; border-radius: 8px; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; }
+-.submission-badge-active { background: rgba(153, 13, 209, 0.2); color: #b979cc; border: 1px solid rgba(153, 13, 209, 0.3); }
+-.submission-badge-empty { background: rgba(0, 0, 0, 0.3); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.05); }
+-.view-details-btn { padding: 8px 16px; border-radius: 12px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: white; transition: all 0.3s; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(185, 121, 204, 0.15); }
+-.view-details-btn:hover { color: #b979cc; }
+-.pagination-container { padding: 16px 24px; border-top: 1px solid rgba(185, 121, 204, 0.1); background: rgba(0, 0, 0, 0.1); display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 16px; }
+-.pagination-info { font-size: 14px; color: #94a3b8; font-weight: 500; }
+-.pagination-highlight { font-weight: 700; color: white; }
+-.pagination-controls { display: flex; align-items: center; gap: 6px; }
+-.pagination-btn { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: white; border: 1px solid rgba(185, 121, 204, 0.1); background: rgba(0, 0, 0, 0.3); cursor: pointer; transition: all 0.2s; }
+-.pagination-btn:hover:not(:disabled) { border-color: rgba(185, 121, 204, 0.4); }
+-.pagination-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+-.pagination-page { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; transition: all 0.2s; cursor: pointer; color: #94a3b8; border: 1px solid rgba(185, 121, 204, 0.1); background: rgba(0, 0, 0, 0.2); }
+-.pagination-page:hover { border-color: rgba(185, 121, 204, 0.3); }
+-.pagination-page-active { color: white; background: linear-gradient(135deg, #990dd1 0%, #b979cc 100%); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: none; }
+-.footer-note { text-align: center; padding-top: 8px; }
+-.footer-text { font-size: 14px; font-weight: 500; letter-spacing: 0.05em; color: #94a3b8; text-transform: uppercase; }
+-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+-.modal-window { width: 100%; max-width: 700px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+-.glass-card { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 24px; border: 1px solid rgba(185, 121, 204, 0.2); }
+-.modal-header { padding: 24px; border-bottom: 1px solid rgba(185, 121, 204, 0.15); display: flex; justify-content: space-between; align-items: center; }
+-.modal-title { font-size: 20px; font-weight: 800; color: white; }
+-.modal-subtitle { font-size: 14px; color: #b979cc; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+-.close-btn { background: none; border: none; color: #94a3b8; cursor: pointer; transition: color 0.2s; }
+-.close-btn:hover { color: white; }
+-.modal-body { padding: 24px; overflow-y: auto; }
+-.modal-loader { text-align: center; padding: 40px; color: #94a3b8; }
+-.section-banner { display: flex; align-items: center; gap: 10px; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; background: rgba(0, 0, 0, 0.3); }
+-.section-banner h3 { font-size: 14px; font-weight: 800; text-transform: uppercase; margin: 0; }
+-.design-banner { color: #c084fc; border-left: 4px solid #c084fc; }
+-.report-banner { color: #60a5fa; border-left: 4px solid #60a5fa; margin-top: 30px; }
+-.item-entry { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+-.item-title { display: block; color: white; font-weight: 600; font-size: 14px; }
+-.item-meta { display: block; font-size: 14px; color: #94a3b8; margin-top: 2px; }
+-.item-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+-.mini-status { font-size: 14px; padding: 1px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; background: rgba(255, 255, 255, 0.1); color: #94a3b8; }
+-.mini-status-success { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+-.mini-status-pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+-.mini-status-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+-.item-action-btn { background: rgba(185, 121, 204, 0.1); border: 1px solid rgba(185, 121, 204, 0.2); color: #b979cc; padding: 4px 12px; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; }
+-.item-action-btn:hover { background: #b979cc; color: white; }
+-.empty-note { color: #64748b; font-size: 14px; font-style: italic; padding: 10px; }
+-::-webkit-scrollbar { width: 6px; height: 6px; }
+-::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); }
+-::-webkit-scrollbar-thumb { background: rgba(185, 121, 204, 0.3); border-radius: 99px; }
+-::-webkit-scrollbar-thumb:hover { background: rgba(153, 13, 209, 0.5); }
+-@media (max-width: 1024px) { .twg-main-container { margin-left: 0; } .stats-section { grid-template-columns: repeat(2, 1fr); } .filter-section { flex-direction: column; align-items: stretch; } .filter-controls { width: 100%; flex-direction: column; } .search-wrapper, .select-wrapper { width: 100%; } .pagination-container { flex-direction: column; } }
+-@media (max-width: 768px) { .twg-content-wrapper { padding: 20px; } .stats-section { grid-template-columns: 1fr; } }
+-</style>
+\ No newline at end of file
++
++.stat-info {
++  min-width: 0;
++}
++
++.stat-value {
++  font-size: 1.25rem;
++  font-weight: 900;
++  letter-spacing: -0.025em;
++  color: white;
++  line-height: 1.25;
++  white-space: nowrap;
++  overflow: hidden;
++  text-overflow: ellipsis;
++}
++
++.stat-label {
++  font-size: 0.85rem;
++  font-weight: 800;
++  text-transform: uppercase;
++  letter-spacing: 0.05em;
++  color: rgba(203, 213, 225, 0.7);
++  margin-top: 0.125rem;
++  white-space: nowrap;
++  overflow: hidden;
++  text-overflow: ellipsis;
++}
++
++/* Filter Section */
++.filter-section {
++  padding: 1rem;
++  border-radius: 1rem;
++  border: 1px solid rgba(185, 121, 204, 0.15);
++  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25);
++  backdrop-filter: blur(8px);
++  display: flex;
++  flex-direction: row;
++  align-items: center;
++  justify-content: space-between;
++  gap: 1rem;
++  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
++}
++
++.filter-controls {
++  display: flex;
++  flex-direction: row;
++  align-items: center;
++  gap: 0.75rem;
++  width: auto;
++}
++
++.search-wrapper {
++  position: relative;
++  width: 288px;
++}
++
++.search-icon {
++  position: absolute;
++  left: 14px;
++  top: 50%;
++  transform: translateY(-50%);
++  color: #94a3b8;
++  font-size: 1rem;
++}
++
++.search-input {
++  width: 100%;
++  padding: 0.5rem 1rem 0.5rem 2.25rem;
++  border-radius: 0.75rem;
++  background: rgba(0, 0, 0, 0.4);
++  border: 1px solid rgba(185, 121, 204, 0.2);
++  font-size: 1rem;
++  font-weight: 600;
++  color: white;
++  transition: all 0.3s;
++}
++
++.search-input:focus {
++  outline: none;
++  border-color: rgba(185, 121, 204, 0.5);
++}
++
++.search-input::placeholder {
++  color: #94a3b8;
++}
++
++.select-wrapper {
++  position: relative;
++  width: 176px;
++}
++
++.filter-select {
++  width: 100%;
++  padding: 0.5rem 0.75rem;
++  border-radius: 0.75rem;
++  background: rgba(0, 0, 0, 0.4);
++  border: 1px solid rgba(185, 121, 204, 0.2);
++  font-size: 1rem;
++  font-weight: 600;
++  color: white;
++  appearance: none;
++  cursor: pointer;
++  transition: all 0.3s;
++}
++
++.filter-select:focus {
++  outline: none;
++  border-color: rgba(185, 121, 204, 0.5);
++}
++
++.select-arrow {
++  position: absolute;
++  right: 12px;
++  top: 50%;
++  transform: translateY(-50%);
++  color: #94a3b8;
++  font-size: 0.85rem;
++  pointer-events: none;
++}
++
++.per-page-controls {
++  display: flex;
++  align-items: center;
++  gap: 0.5rem;
++}
++
++.per-page-label {
++  font-size: 0.9rem;
++  color: #94a3b8;
++  font-weight: 500;
++}
++
++.per-page-select {
++  padding: 0.375rem 0.625rem;
++  border-radius: 0.5rem;
++  background: rgba(0, 0, 0, 0.4);
++  border: 1px solid rgba(185, 121, 204, 0.2);
++  font-size: 1rem;
++  font-weight: 700;
++  color: white;
++  cursor: pointer;
++  transition: all 0.3s;
++}
++
++.per-page-select:focus {
++  outline: none;
++  border-color: rgba(185, 121, 204, 0.5);
++}
++
++/* Table Container */
++.table-container {
++  border-radius: 1rem;
++  border: 1px solid rgba(185, 121, 204, 0.15);
++  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25);
++  overflow: hidden;
++  backdrop-filter: blur(8px);
++  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
++}
++
++.table-wrapper {
++  overflow-x: auto;
++}
++
++.data-table {
++  width: 100%;
++  text-align: left;
++  border-collapse: collapse;
++}
++
++.table-header-row {
++  border-bottom: 1px solid rgba(185, 121, 204, 0.1);
++  background: rgba(0, 0, 0, 0.3);
++}
++
++.table-header-cell {
++  padding: 1rem 1.5rem;
++  font-size: 0.85rem;
++  font-weight: 900;
++  text-transform: uppercase;
++  letter-spacing: 0.1em;
++  color: #b979cc;
++}
++
++.table-header-number {
++  width: 48px;
++  text-align: center;
++}
++
++.table-header-center {
++  text-align: center;
++}
++
++.table-header-right {
++  text-align: right;
++}
++
++.table-body {
++  display: table-row-group;
++}
++
++.empty-state {
++  padding: 3rem 1.5rem;
++  text-align: center;
++  font-size: 1rem;
++  color: #94a3b8;
++  font-weight: 500;
++}
++
++.table-row {
++  transition: all 0.3s;
++  border-bottom: 1px solid rgba(185, 121, 204, 0.05);
++}
++
++.table-row:hover {
++  background: rgba(255, 255, 255, 0.05);
++}
++
++.table-cell {
++  padding: 1rem 1.5rem;
++}
++
++.table-cell-number {
++  font-size: 1rem;
++  font-family: monospace;
++  font-weight: 700;
++  color: #94a3b8;
++  text-align: center;
++}
++
++.table-cell-center {
++  text-align: center;
++}
++
++.table-cell-right {
++  text-align: right;
++}
++
++.table-cell-count {
++  font-family: monospace;
++  font-size: 1rem;
++  font-weight: 700;
++  color: #cbd5e1;
++}
++
++.unit-name {
++  font-weight: 700;
++  color: #e2e8f0;
++}
++
++.unit-code {
++  font-size: 0.85rem;
++  color: #b979cc;
++  font-weight: 500;
++  letter-spacing: 0.025em;
++  text-transform: uppercase;
++  margin-top: 0.125rem;
++}
++
++.role-badge {
++  display: inline-block;
++  padding: 0.2rem 0.5rem;
++  border-radius: 0.375rem;
++  font-size: 0.75rem;
++  font-weight: 800;
++  text-transform: uppercase;
++  letter-spacing: 0.05em;
++}
++
++.badge-twg {
++  background: rgba(153, 13, 209, 0.2);
++  color: #b979cc;
++  border: 1px solid rgba(153, 13, 209, 0.3);
++}
++
++.badge-staff {
++  background: rgba(59, 130, 246, 0.2);
++  color: #60a5fa;
++  border: 1px solid rgba(59, 130, 246, 0.3);
++}
++
++.badge-nontwg {
++  background: rgba(245, 158, 11, 0.2);
++  color: #fbbf24;
++  border: 1px solid rgba(245, 158, 11, 0.3);
++}
++
++.badge-gad-office {
++  background: rgba(236, 72, 153, 0.2);
++  color: #f472b6;
++  border: 1px solid rgba(236, 72, 153, 0.3);
++}
++
++.submission-badge {
++  display: inline-block;
++  padding: 0.25rem 0.75rem;
++  border-radius: 0.5rem;
++  font-size: 0.8rem;
++  font-weight: 900;
++  text-transform: uppercase;
++  letter-spacing: 0.05em;
++}
++
++.submission-badge-active {
++  background: rgba(153, 13, 209, 0.2);
++  color: #b979cc;
++  border: 1px solid rgba(153, 13, 209, 0.3);
++}
++
++.submission-badge-empty {
++  background: rgba(0, 0, 0, 0.3);
++  color: #94a3b8;
++  border: 1px solid rgba(255, 255, 255, 0.05);
++}
++
++.view-details-btn {
++  padding: 0.5rem 1rem;
++  border-radius: 0.75rem;
++  font-size: 1rem;
++  font-weight: 700;
++  text-transform: uppercase;
++  letter-spacing: 0.05em;
++  color: white;
++  transition: all 0.3s;
++  display: inline-flex;
++  align-items: center;
++  gap: 0.375rem;
++  cursor: pointer;
++  background: rgba(0, 0, 0, 0.3);
++  border: 1px solid rgba(185, 121, 204, 0.15);
++}
++
++.view-details-btn:hover {
++  color: #b979cc;
++}
++
++/* Pagination */
++.pagination-container {
++  padding: 1rem 1.5rem;
++  border-top: 1px solid rgba(185, 121, 204, 0.1);
++  background: rgba(0, 0, 0, 0.1);
++  display: flex;
++  flex-direction: row;
++  justify-content: space-between;
++  align-items: center;
++  gap: 1rem;
++}
++
++.pagination-info {
++  font-size: 1rem;
++  color: #94a3b8;
++  font-weight: 500;
++}
++
++.pagination-highlight {
++  font-weight: 700;
++  color: white;
++}
++
++.pagination-controls {
++  display: flex;
++  align-items: center;
++  gap: 0.375rem;
++}
++
++.pagination-btn {
++  width: 32px;
++  height: 32px;
++  border-radius: 0.5rem;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  font-size: 1rem;
++  font-weight: 700;
++  color: white;
++  border: 1px solid rgba(185, 121, 204, 0.1);
++  background: rgba(0, 0, 0, 0.3);
++  cursor: pointer;
++  transition: all 0.2s;
++}
++
++.pagination-btn:hover:not(:disabled) {
++  border-color: rgba(185, 121, 204, 0.4);
++}
++
++.pagination-btn:disabled {
++  opacity: 0.3;
++  cursor: not-allowed;
++}
++
++.pagination-page {
++  width: 32px;
++  height: 32px;
++  border-radius: 0.5rem;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  font-size: 1rem;
++  font-weight: 700;
++  transition: all 0.2s;
++  cursor: pointer;
++  color: #94a3b8;
++  border: 1px solid rgba(185, 121, 204, 0.1);
++  background: rgba(0, 0, 0, 0.2);
++}
++
++.pagination-page:hover {
++  border-color: rgba(185, 121, 204, 0.3);
++}
++
++.pagination-page-active {
++  color: white;
++  background: linear-gradient(135deg, #990dd1 0%, #b979cc 100%);
++  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
++  border: none;
++}
++
++/* Footer Note */
++.footer-note {
++  text-align: center;
++  padding-top: 0.5rem;
++}
++
++.footer-text {
++  font-size: 0.85rem;
++  font-weight: 500;
++  letter-spacing: 0.05em;
++  color: #94a3b8;
++  text-transform: uppercase;
++}
++
++/* Scrollbar */
++::-webkit-scrollbar {
++  width: 6px;
++  height: 6px;
++}
++
++::-webkit-scrollbar-track {
++  background: rgba(0, 0, 0, 0.1);
++}
++
++::-webkit-scrollbar-thumb {
++  background: rgba(185, 121, 204, 0.3);
++  border-radius: 99px;
++}
++
++::-webkit-scrollbar-thumb:hover {
++  background: rgba(153, 13, 209, 0.5);
++}
++
++/* Responsive */
++@media (max-width: 1024px) {
++  .twg-main-container {
++    margin-left: 0;
++  }
++  
++  .stats-section {
++    grid-template-columns: repeat(2, 1fr);
++  }
++  
++  .filter-section {
++    flex-direction: column;
++    align-items: stretch;
++  }
++  
++  .filter-controls {
++    width: 100%;
++    flex-direction: column;
++  }
++  
++  .search-wrapper,
++  .select-wrapper {
++    width: 100%;
++  }
++  
++  .pagination-container {
++    flex-direction: column;
++  }
++}
++
++@media (max-width: 768px) {
++  .twg-content-wrapper {
++    padding: 20px;
++  }
++  
++  .stats-section {
++    grid-template-columns: 1fr;
++  }
++}
++</style>
+
+--- DIFF FOR src/views/staff/ADRevision.vue ---
+diff --git "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/staff/ADRevision.vue" "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/staff/ADRevision.vue"
+index 534ee24..f802e14 100644
+--- "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/staff/ADRevision.vue"
++++ "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/staff/ADRevision.vue"
+@@ -611,7 +611,7 @@ watch(
+ 
+ const fetchVenues = async () => {
+   try {
+-    const response = await api.get('get-venues');
++    const response = await api.get('venues');
+     if (response.data && response.data.success) {
+       venues.value = response.data.data || [];
+     }
+@@ -744,24 +744,20 @@ const handleUpdate = async () => {
+     const submitData = new FormData();
+     
+     // Aligning keys with ActivityDesignController expectations
+-    submitData.append('activity-title', formData.value.activity_title);
+-    submitData.append('form-type', formData.value.form_type);
+-    submitData.append('start-date', formData.value.start_date);
+-    submitData.append('end-date', formData.value.end_date);
+-    submitData.append('start-time', formData.value.start_time);
+-    submitData.append('end-time', formData.value.end_time);
+-    submitData.append('proposed-budget', formData.value.proposed_budget);
+-    submitData.append('target-participants', formData.value.target_participants);
++    submitData.append('activity_title', formData.value.activity_title);
++    submitData.append('form_type', formData.value.form_type);
++    submitData.append('start_date', formData.value.start_date);
++    submitData.append('end_date', formData.value.end_date);
++    submitData.append('start_time', formData.value.start_time);
++    submitData.append('end_time', formData.value.end_time);
++    submitData.append('proposed_budget', formData.value.proposed_budget);
++    submitData.append('target_participants', formData.value.target_participants);
+ 
+     // Venue Logic
+     if (formData.value.venue && formData.value.venue !== 'Other') {
+-      submitData.append('venue-id', formData.value.venue);
+-      // Use the venue name from the venues array or fall back to the existing design name
+-      const v = venues.value.find(v => v.venue_id == formData.value.venue);
+-      submitData.append('venue-name', v ? v.venue_name : formData.value.venue);
++      submitData.append('venue', formData.value.venue);
+     } else if (formData.value.venue === 'Other') {
+-      submitData.append('venue-id', '');
+-      submitData.append('venue-name', customVenue.value || '');
++      submitData.append('venue', customVenue.value || '');
+     }
+ 
+     const transItem = formData.value.budget_items.find(i => i.name === 'Transportation');
+@@ -775,113 +771,18 @@ const handleUpdate = async () => {
+       return;
+     }
+ 
+-    // Construct normalized budget rows
+-    const finalBudgetItems = [];
+-
+-    const categoryMapping = {
+-      'Meals': 'Catering & Hospitality',
+-      'Snacks': 'Catering & Hospitality',
+-      'Function Room/Venue': 'Venue & Logistics',
+-      'Accommodation': 'Venue & Logistics',
+-      'Equipment Rental': 'Venue & Logistics',
+-      'Professional Fee/Honoria': 'Program & Speakers',
+-      'Token/s': 'Program & Speakers',
+-      'Materials and Supplies': 'Materials & Miscellaneous',
+-      'Transportation': 'Venue & Logistics',
+-      'Others': 'Materials & Miscellaneous'
++    const budgetObj = {
++      meals_and_snacks: (Number(formData.value.budget_items.find(i => i.name === 'Meals')?.total || 0) + Number(formData.value.budget_items.find(i => i.name === 'Snacks')?.total || 0)),
++      function_room_venue: Number(formData.value.budget_items.find(i => i.name === 'Function Room/Venue')?.total || 0),
++      accommodation: Number(formData.value.budget_items.find(i => i.name === 'Accommodation')?.total || 0),
++      equipment_rental: Number(formData.value.budget_items.find(i => i.name === 'Equipment Rental')?.total || 0),
++      professional_fee_honoria: Number(formData.value.budget_items.find(i => i.name === 'Professional Fee/Honoria')?.total || 0),
++      tokens: Number(formData.value.budget_items.find(i => i.name === 'Token/s')?.total || 0),
++      materials_and_supplies: Number(formData.value.budget_items.find(i => i.name === 'Materials and Supplies')?.total || 0) + Number(formData.value.budget_items.find(i => i.name === 'Others')?.total || 0),
++      transportation: Number(formData.value.budget_items.find(i => i.name === 'Transportation')?.total || 0)
+     };
+ 
+-    // Meals
+-    const mealsSelectedKeys = Object.keys(mealsSelected.value).filter(k => mealsSelected.value[k]);
+-    if (mealsSelectedKeys.length > 0) {
+-      const baseMeals = formData.value.budget_items.find(i => i.name === 'Meals');
+-      const baseMealsTotal = Number(baseMeals?.total) || 0;
+-      if (baseMealsTotal > 0) {
+-        const amountPerMeal = baseMealsTotal / mealsSelectedKeys.length;
+-        mealsSelectedKeys.forEach(key => {
+-          const capitalized = key.charAt(0).toUpperCase() + key.slice(1);
+-          finalBudgetItems.push({
+-            category: 'Catering & Hospitality',
+-            name: 'Meals',
+-            sub_item: capitalized,
+-            amount: amountPerMeal
+-          });
+-        });
+-      }
+-    }
+-
+-    // Snacks
+-    const snacksSelectedKeys = Object.keys(snacksSelected.value).filter(k => snacksSelected.value[k]);
+-    if (snacksSelectedKeys.length > 0) {
+-      const baseSnacks = formData.value.budget_items.find(i => i.name === 'Snacks');
+-      const baseSnacksTotal = Number(baseSnacks?.total) || 0;
+-      if (baseSnacksTotal > 0) {
+-        const amountPerSnack = baseSnacksTotal / snacksSelectedKeys.length;
+-        snacksSelectedKeys.forEach(key => {
+-          const capitalized = key === 'am' ? 'AM Snack' : 'PM Snack';
+-          finalBudgetItems.push({
+-            category: 'Catering & Hospitality',
+-            name: 'Snacks',
+-            sub_item: capitalized,
+-            amount: amountPerSnack
+-          });
+-        });
+-      }
+-    }
+-
+-    formData.value.budget_items.forEach(item => {
+-      if (item.name === 'Meals' || item.name === 'Snacks') return;
+-
+-      const category = categoryMapping[item.name] || 'Miscellaneous';
+-      const totalAmt = Number(item.total) || 0;
+-
+-      if (item.name === 'Professional Fee/Honoria') {
+-        finalBudgetItems.push({
+-          category,
+-          name: item.name,
+-          sub_item: null,
+-          pax: Number(pfPax.value) || null,
+-          amount: totalAmt
+-        });
+-      } else if (item.name === 'Token/s') {
+-        finalBudgetItems.push({
+-          category,
+-          name: item.name,
+-          sub_item: null,
+-          pax: Number(tokensPax.value) || null,
+-          amount: totalAmt
+-        });
+-      } else if (item.name === 'Others') {
+-        if (othersList.value && othersList.value.length > 0) {
+-          othersList.value.forEach(other => {
+-            if (Number(other.amount) > 0) {
+-              finalBudgetItems.push({
+-                category,
+-                name: 'Others',
+-                sub_item: other.name || 'Other Item',
+-                amount: Number(other.amount)
+-              });
+-            }
+-          });
+-        } else if (totalAmt > 0) {
+-          finalBudgetItems.push({
+-            category,
+-            name: 'Others',
+-            sub_item: 'Other Item',
+-            amount: totalAmt
+-          });
+-        }
+-      } else {
+-        finalBudgetItems.push({
+-          category,
+-          name: item.name,
+-          sub_item: null,
+-          amount: totalAmt
+-        });
+-      }
+-    });
+-
+-    submitData.append('budgetary-requirements', JSON.stringify(finalBudgetItems));
++    submitData.append('budget_items', JSON.stringify(budgetObj));
+ 
+     submitData.append('status', 'Pending'); // Reset status so admin can review again
+     
+
+--- DIFF FOR src/views/staff/SubmitADView.vue ---
+diff --git "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/staff/SubmitADView.vue" "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/staff/SubmitADView.vue"
+index 931dbac..2e8bcd7 100644
+--- "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/staff/SubmitADView.vue"
++++ "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/staff/SubmitADView.vue"
+@@ -743,7 +743,7 @@ const formatBudgetName = (name) => {
+ 
+ const fetchVenues = async () => {
+   try {
+-    const response = await api.get('get-venues');
++    const response = await api.get('venues');
+     if (response.data && response.data.success) {
+       venues.value = response.data.data || [];
+     }
+@@ -1010,18 +1010,14 @@ const submitActivityDesign = async () => {
+     formData.append('start_time', form.value.start_time);
+     formData.append('end_time', form.value.end_time);
+     formData.append('user_id', user.value.id || user.value.user_id);
+-    
+-    if (form.value.venue && form.value.venue !== 'Other') {
+-      formData.append('venue-id', form.value.venue); 
+-      const selectedVenue = venues.value.find(v => v.venue_id == form.value.venue);
+-      formData.append('venue-name', selectedVenue ? selectedVenue.venue_name : '');
+-    } else if (form.value.venue === 'Other') {
+-      formData.append('venue-id', '');
+-      formData.append('venue-name', customVenue.value);
++    if (form.value.venue === 'Other') {
++      formData.append('venue_id', 'Other');
++      formData.append('custom_venue', customVenue.value);
++    } else {
++      formData.append('venue_id', form.value.venue);
+     }
+-    
+-    formData.append('target-participants', form.value.target_participants);
+-    formData.append('proposed-budget', form.value.proposed_budget);
++    formData.append('target_participants', form.value.target_participants);
++    formData.append('proposed_budget', form.value.proposed_budget);
+     
+     const transItem = form.value.budget_items.find(i => i.name === 'Transportation');
+     if (transItem && Number(transItem.total) > 20000) {
+@@ -1034,113 +1030,18 @@ const submitActivityDesign = async () => {
+       return;
+     }
+ 
+-    // Construct normalized budget rows
+-    const finalBudgetItems = [];
+-
+-    const categoryMapping = {
+-      'Meals': 'Catering & Hospitality',
+-      'Snacks': 'Catering & Hospitality',
+-      'Function Room/Venue': 'Venue & Logistics',
+-      'Accommodation': 'Venue & Logistics',
+-      'Equipment Rental': 'Venue & Logistics',
+-      'Professional Fee/Honoria': 'Program & Speakers',
+-      'Token/s': 'Program & Speakers',
+-      'Materials and Supplies': 'Materials & Miscellaneous',
+-      'Transportation': 'Venue & Logistics',
+-      'Others': 'Materials & Miscellaneous'
++    const budgetObj = {
++      meals_and_snacks: (Number(form.value.budget_items.find(i => i.name === 'Meals')?.total || 0) + Number(form.value.budget_items.find(i => i.name === 'Snacks')?.total || 0)),
++      function_room_venue: Number(form.value.budget_items.find(i => i.name === 'Function Room/Venue')?.total || 0),
++      accommodation: Number(form.value.budget_items.find(i => i.name === 'Accommodation')?.total || 0),
++      equipment_rental: Number(form.value.budget_items.find(i => i.name === 'Equipment Rental')?.total || 0),
++      professional_fee_honoria: Number(form.value.budget_items.find(i => i.name === 'Professional Fee/Honoria')?.total || 0),
++      tokens: Number(form.value.budget_items.find(i => i.name === 'Token/s')?.total || 0),
++      materials_and_supplies: Number(form.value.budget_items.find(i => i.name === 'Materials and Supplies')?.total || 0) + Number(form.value.budget_items.find(i => i.name === 'Others')?.total || 0),
++      transportation: Number(form.value.budget_items.find(i => i.name === 'Transportation')?.total || 0)
+     };
+ 
+-    // Meals
+-    const mealsSelectedKeys = Object.keys(mealsSelected.value).filter(k => mealsSelected.value[k]);
+-    if (mealsSelectedKeys.length > 0) {
+-      const baseMeals = form.value.budget_items.find(i => i.name === 'Meals');
+-      const baseMealsTotal = Number(baseMeals?.total) || 0;
+-      if (baseMealsTotal > 0) {
+-        const amountPerMeal = baseMealsTotal / mealsSelectedKeys.length;
+-        mealsSelectedKeys.forEach(key => {
+-          const capitalized = key.charAt(0).toUpperCase() + key.slice(1);
+-          finalBudgetItems.push({
+-            category: 'Catering & Hospitality',
+-            name: 'Meals',
+-            sub_item: capitalized,
+-            amount: amountPerMeal
+-          });
+-        });
+-      }
+-    }
+-
+-    // Snacks
+-    const snacksSelectedKeys = Object.keys(snacksSelected.value).filter(k => snacksSelected.value[k]);
+-    if (snacksSelectedKeys.length > 0) {
+-      const baseSnacks = form.value.budget_items.find(i => i.name === 'Snacks');
+-      const baseSnacksTotal = Number(baseSnacks?.total) || 0;
+-      if (baseSnacksTotal > 0) {
+-        const amountPerSnack = baseSnacksTotal / snacksSelectedKeys.length;
+-        snacksSelectedKeys.forEach(key => {
+-          const capitalized = key === 'am' ? 'AM Snack' : 'PM Snack';
+-          finalBudgetItems.push({
+-            category: 'Catering & Hospitality',
+-            name: 'Snacks',
+-            sub_item: capitalized,
+-            amount: amountPerSnack
+-          });
+-        });
+-      }
+-    }
+-
+-    form.value.budget_items.forEach(item => {
+-      if (item.name === 'Meals' || item.name === 'Snacks') return;
+-
+-      const category = categoryMapping[item.name] || 'Miscellaneous';
+-      const totalAmt = Number(item.total) || 0;
+-
+-      if (item.name === 'Professional Fee/Honoria') {
+-        finalBudgetItems.push({
+-          category,
+-          name: item.name,
+-          sub_item: null,
+-          pax: Number(pfPax.value) || null,
+-          amount: totalAmt
+-        });
+-      } else if (item.name === 'Token/s') {
+-        finalBudgetItems.push({
+-          category,
+-          name: item.name,
+-          sub_item: null,
+-          pax: Number(tokensPax.value) || null,
+-          amount: totalAmt
+-        });
+-      } else if (item.name === 'Others') {
+-        if (othersList.value && othersList.value.length > 0) {
+-          othersList.value.forEach(other => {
+-            if (Number(other.amount) > 0) {
+-              finalBudgetItems.push({
+-                category,
+-                name: 'Others',
+-                sub_item: other.name || 'Other Item',
+-                amount: Number(other.amount)
+-              });
+-            }
+-          });
+-        } else if (totalAmt > 0) {
+-          finalBudgetItems.push({
+-            category,
+-            name: 'Others',
+-            sub_item: 'Other Item',
+-            amount: totalAmt
+-          });
+-        }
+-      } else {
+-        finalBudgetItems.push({
+-          category,
+-          name: item.name,
+-          sub_item: null,
+-          amount: totalAmt
+-        });
+-      }
+-    });
+-
+-    formData.append('budgetary-requirements', JSON.stringify(finalBudgetItems));
++    formData.append('budget_items', JSON.stringify(budgetObj));
+ 
+     if (designFile.value) {
+       formData.append('design_file', designFile.value);
+
+--- DIFF FOR src/views/staff/SubmitARView.vue ---
+diff --git "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/staff/SubmitARView.vue" "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/staff/SubmitARView.vue"
+index cf75344..fe961af 100644
+--- "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/staff/SubmitARView.vue"
++++ "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/staff/SubmitARView.vue"
+@@ -725,7 +725,7 @@ const fetchApprovedControls = async () => {
+   loadingControls.value = true;
+   try {
+     // Fetch all values from the control_number table
+-    const res = await api.get(`get-control-numbers/${user.value.id}`);
++    const res = await api.get(`approved-controls/${user.value.id}`);
+     if (res.data.success) {
+       approvedControls.value = res.data.data;
+     }
+@@ -968,63 +968,41 @@ const submitReport = async () => {
+   try {
+     const formData = new FormData();
+     
+-    Object.keys(form.value).forEach(key => {
+-      if (key === 'budget_items') {
+-        const finalBudgetItems = [];
+-        const categoryMapping = {
+-          'Meals': 'Catering & Hospitality',
+-          'Snacks': 'Catering & Hospitality',
+-          'Function Room/Venue': 'Venue & Logistics',
+-          'Accommodation': 'Venue & Logistics',
+-          'Equipment Rental': 'Venue & Logistics',
+-          'Professional Fee/Honoria': 'Program & Speakers',
+-          'Token/s': 'Program & Speakers',
+-          'Materials and Supplies': 'Materials & Miscellaneous',
+-          'Transportation': 'Venue & Logistics',
+-          'Others': 'Materials & Miscellaneous'
+-        };
+-
+-        form.value.budget_items.forEach(item => {
+-          const totalAmt = Number(item.total) || 0;
+-          const category = categoryMapping[item.name] || 'Miscellaneous';
+-
+-          if (item.name === 'Others') {
+-            if (othersList.value && othersList.value.length > 0) {
+-              othersList.value.forEach(other => {
+-                if (Number(other.amount) > 0) {
+-                  finalBudgetItems.push({
+-                    category,
+-                    name: 'Others',
+-                    sub_item: other.name || 'Other Item',
+-                    amount: Number(other.amount)
+-                  });
+-                }
+-              });
+-            } else if (totalAmt > 0) {
+-              finalBudgetItems.push({
+-                category,
+-                name: 'Others',
+-                sub_item: 'Other Item',
+-                amount: totalAmt
+-              });
+-            }
+-          } else {
+-            finalBudgetItems.push({
+-              category,
+-              name: item.name,
+-              sub_item: null,
+-              amount: totalAmt
+-            });
+-          }
+-        });
++    const budgetObj = {
++      meals_and_snacks: (Number(form.value.budget_items.find(i => i.name === 'Meals')?.total || 0) + Number(form.value.budget_items.find(i => i.name === 'Snacks')?.total || 0)),
++      function_room_venue: Number(form.value.budget_items.find(i => i.name === 'Function Room/Venue')?.total || 0),
++      accommodation: Number(form.value.budget_items.find(i => i.name === 'Accommodation')?.total || 0),
++      equipment_rental: Number(form.value.budget_items.find(i => i.name === 'Equipment Rental')?.total || 0),
++      professional_fee_honoria: Number(form.value.budget_items.find(i => i.name === 'Professional Fee/Honoria')?.total || 0),
++      tokens: Number(form.value.budget_items.find(i => i.name === 'Token/s')?.total || 0),
++      materials_and_supplies: Number(form.value.budget_items.find(i => i.name === 'Materials and Supplies')?.total || 0) + Number(form.value.budget_items.find(i => i.name === 'Others')?.total || 0),
++      transportation: Number(form.value.budget_items.find(i => i.name === 'Transportation')?.total || 0)
++    };
++    formData.append('budget_items', JSON.stringify(budgetObj));
++
++    const evalMap = {
++      "Time Management": "time_management",
++      "Orderliness and Program Flow": "orderliness_and_program_flow",
++      "Appropriateness of the Venue": "appropriateness_of_venue",
++      "Sound System and Hall Preparation": "sound_system_and_hall_preparation",
++      "Restroom/s": "restrooms",
++      "Food and Drinks": "food_and_drinks"
++    };
++    const evalObj = {};
++    form.value.evaluation_items.forEach(item => {
++      evalObj[evalMap[item.area]] = item.rating || 0;
++    });
++    formData.append('evaluation_results', JSON.stringify(evalObj));
+ 
+-        formData.append(key, JSON.stringify(finalBudgetItems));
+-      } else if (key === 'evaluation_items') {
+-        formData.append(key, JSON.stringify(form.value[key]));
+-      } else {
++    Object.keys(form.value).forEach(key => {
++      if (key !== 'budget_items' && key !== 'evaluation_items' && key !== 'venue') {
+         formData.append(key, form.value[key]);
+       }
+     });
++
++    if (form.value.venue) {
++      formData.append('venue', form.value.venue);
++    }
+     
+     uploadedFiles.value.forEach(file => {
+       formData.append('attachment[]', file);
+
+--- DIFF FOR src/views/staff/SubmittedListView.vue ---
+diff --git "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/staff/SubmittedListView.vue" "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/staff/SubmittedListView.vue"
+index 0cb087c..ede7778 100644
+--- "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/staff/SubmittedListView.vue"
++++ "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/staff/SubmittedListView.vue"
+@@ -80,6 +80,9 @@
+                   <tr class="table-header-row">
+                     <th class="table-header-cell table-header-number">#</th>
+                     <th class="table-header-cell">College / Office / Unit</th>
++                    <th class="table-header-cell table-header-center">TWG</th>
++                    <th class="table-header-cell table-header-center">Non-TWG</th>
++                    <th class="table-header-cell table-header-center">Staff</th>
+                     <th class="table-header-cell table-header-center">Activity Designs</th>
+                     <th class="table-header-cell table-header-center">Accomplishment Reports</th>
+                     <th class="table-header-cell table-header-center">Total Status</th>
+@@ -87,7 +90,7 @@
+                 </thead>
+                 <tbody class="table-body">
+                   <tr v-if="filteredUnits.length === 0">
+-                    <td colspan="5" class="empty-state">
++                    <td colspan="8" class="empty-state">
+                       No matching Technical Working Group records or submissions discovered in the repository.
+                     </td>
+                   </tr>
+@@ -96,15 +99,22 @@
+                     v-else
+                     v-for="(unit, index) in filteredUnits" 
+                     :key="unit.id"
+-                    class="table-row clickable-row"
+-                    @click="openDetailsModal(unit)"
++                    class="table-row"
+                   >
+                     <td class="table-cell table-cell-number">
+                       {{ (currentPage - 1) * perPage + index + 1 }}
+                     </td>
+                     <td class="table-cell">
+                       <div class="unit-name">{{ unit.name }}</div>
+-                      <div class="unit-code">{{ unit.code }}</div>
++                    </td>
++                    <td class="table-cell table-cell-center table-cell-count">
++                      {{ unit.twg_count || 0 }}
++                    </td>
++                    <td class="table-cell table-cell-center table-cell-count">
++                      {{ unit.nontwg_count || 0 }}
++                    </td>
++                    <td class="table-cell table-cell-center table-cell-count">
++                      {{ unit.staff_count || 0 }}
+                     </td>
+                     <td class="table-cell table-cell-center table-cell-count">
+                       {{ unit.activity_designs_count || 0 }}
+@@ -165,70 +175,6 @@
+ 
+         </div>
+       </main>
+-
+-    <div v-if="isModalOpen" class="modal-overlay" @click.self="closeModal">
+-      <div class="modal-window glass-card">
+-        <div class="modal-header">
+-          <div class="header-info">
+-            <h2 class="modal-title">{{ selectedUnit?.name }}</h2>
+-            <p class="modal-subtitle">Submissions History & Overview</p>
+-          </div>
+-          <button class="close-btn" @click="closeModal">
+-            <span class="material-symbols-outlined">close</span>
+-          </button>
+-        </div>
+-
+-        <div class="modal-body custom-scrollbar">
+-          <div v-if="modalLoading" class="modal-loader">
+-            <div class="spinner"></div>
+-            <p>Loading unit records...</p>
+-          </div>
+-
+-          <div v-else class="modal-sections">
+-            <div class="modal-section">
+-              <div class="section-banner design-banner">
+-                <span class="material-symbols-outlined">description</span>
+-                <h3>Activity Designs ({{ unitDesigns.length }})</h3>
+-              </div>
+-              <div class="item-list">
+-                <div v-for="design in unitDesigns" :key="design.act_design_id" class="item-entry">
+-                  <div class="item-info">
+-                    <div class="item-title-row">
+-                      <span class="item-title">{{ design.activity_title }}</span>
+-                      <span class="mini-status" :class="getStatusClass(design.status)">{{ design.status }}</span>
+-                    </div>
+-                    <span class="item-meta">{{ design.control || 'No Control #' }} ΓÇó {{ formatDate(design.start_date) }}</span>
+-                  </div>
+-                  <button class="item-action-btn" @click.stop="router.push(`/staff/ad-view/${design.act_design_id}`)">View</button>
+-                </div>
+-                <p v-if="unitDesigns.length === 0" class="empty-note">No designs found.</p>
+-              </div>
+-            </div>
+-
+-            <div class="modal-section">
+-              <div class="section-banner report-banner">
+-                <span class="material-symbols-outlined">analytics</span>
+-                <h3>Accomplishment Reports ({{ unitReports.length }})</h3>
+-              </div>
+-              <div class="item-list">
+-                <div v-for="report in unitReports" :key="report.id" class="item-entry">
+-                  <div class="item-info">
+-                    <div class="item-title-row">
+-                      <span class="item-title">{{ report.activity_title }}</span>
+-                      <span class="mini-status" :class="getStatusClass(report.status)">{{ report.status }}</span>
+-                    </div>
+-                    <span class="item-meta">{{ report.control_number || 'No Control #' }} ΓÇó {{ formatDate(report.start_date) }}</span>
+-                  </div>
+-                  <button class="item-action-btn" @click.stop="router.push(`/staff/ar-view/${report.id}`)">View</button>
+-                </div>
+-                <p v-if="unitReports.length === 0" class="empty-note">No reports found.</p>
+-              </div>
+-            </div>
+-          </div>
+-
+-        </div>
+-      </div>
+-    </div>
+ </template>
+ 
+ <script setup>
+@@ -246,53 +192,6 @@ const twgUnits = ref([]);
+ const currentPage = ref(1);
+ const perPage = ref(10);
+ 
+- const isModalOpen = ref(false);
+-const selectedUnit = ref(null);
+-const unitDesigns = ref([]);
+-const unitReports = ref([]);
+-const modalLoading = ref(false);
+-
+-const openDetailsModal = async (unit) => {
+-  selectedUnit.value = unit;
+-  isModalOpen.value = true;
+-  modalLoading.value = true;
+-  
+-  try {
+-    const [designsRes, reportsRes] = await Promise.all([
+-      api.get(`activity-design/user/${unit.id}`),
+-      api.get(`accomplishment-report/user/${unit.id}`)
+-    ]);
+-    
+-    unitDesigns.value = designsRes.data.data || [];
+-    unitReports.value = reportsRes.data.data || [];
+-  } catch (err) {
+-    console.error('Error fetching unit submissions:', err);
+-  } finally {
+-    modalLoading.value = false;
+-  }
+-};
+-
+-const closeModal = () => {
+-  isModalOpen.value = false;
+-  selectedUnit.value = null;
+-  unitDesigns.value = [];
+-  unitReports.value = [];
+-};
+-
+-const formatDate = (date) => {
+-  if (!date) return '---';
+-  return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+-};
+-
+-const getStatusClass = (status) => {
+-  if (!status) return '';
+-  const s = status.toLowerCase();
+-  if (s === 'approved' || s === 'completed' || s === 'verified') return 'mini-status-success';
+-  if (s === 'pending') return 'mini-status-pending';
+-  if (s.includes('revision') || s === 'cancelled') return 'mini-status-danger';
+-  return '';
+-};
+-
+ const paginationMeta = ref({
+   total: 0,
+   from: 0,
+@@ -300,6 +199,37 @@ const paginationMeta = ref({
+   last_page: 1
+ });
+ 
++const GAD_OFFICE_ID = 1;
++
++const normalizeSubmissionUnits = (units) => {
++  const gadStaffUnit = units.find(
++    (unit) => (unit.office_name || '').toLowerCase() === 'gad.staff'
++  );
++  const filtered = units.filter(
++    (unit) => (unit.office_name || '').toLowerCase() !== 'gad.staff'
++  );
++
++  if (!gadStaffUnit) {
++    return filtered;
++  }
++
++  return filtered.map((unit) => {
++    if (unit.id !== GAD_OFFICE_ID) {
++      return unit;
++    }
++
++    return {
++      ...unit,
++      twg_count: (unit.twg_count || 0) + (gadStaffUnit.twg_count || 0),
++      nontwg_count: (unit.nontwg_count || 0) + (gadStaffUnit.nontwg_count || 0),
++      staff_count: (unit.staff_count || 0) + (gadStaffUnit.staff_count || 0),
++      activity_designs_count: (unit.activity_designs_count || 0) + (gadStaffUnit.activity_designs_count || 0),
++      accomplishment_reports_count: (unit.accomplishment_reports_count || 0) + (gadStaffUnit.accomplishment_reports_count || 0),
++      total_submissions: (unit.total_submissions || 0) + (gadStaffUnit.total_submissions || 0),
++    };
++  });
++};
++
+ const metricsStats = ref([
+   { label: 'Total TWGs', value: '0', icon: 'groups', iconColor: 'text-green-400', bgClass: 'bg-green-500/10' },
+   { label: 'Total Non-TWG', value: '0', icon: 'person_search', iconColor: 'text-amber-400', bgClass: 'bg-amber-500/10' },
+@@ -313,8 +243,7 @@ const filteredUnits = computed(() => {
+   if (searchQuery.value) {
+     const query = searchQuery.value.toLowerCase();
+     records = records.filter(unit => 
+-      unit.name.toLowerCase().includes(query) ||
+-      unit.code.toLowerCase().includes(query)
++      unit.name.toLowerCase().includes(query)
+     );
+   }
+ 
+@@ -329,16 +258,21 @@ const filteredUnits = computed(() => {
+ 
+ const fetchTWGSubmissions = async (page = 1) => {
+   try {
+-    const response = await api.get(`twg/twg-submissions?page=${page}&per_page=${perPage.value}`);
+-    twgUnits.value = response.data.data.map(unit => ({
++    // Staged to fetch live data records matching your endpoint framework
++    const response = await api.get(`admin/twg-submissions?page=${page}&per_page=${perPage.value}`);
++    const normalized = normalizeSubmissionUnits(response.data.data);
++    twgUnits.value = normalized.map(unit => ({
+       ...unit,
+-      name: unit.username, 
+-      code: `UNIT-${unit.id}` 
++      name: unit.office_name,
+     }));
+-    paginationMeta.value = response.data.meta;
++    paginationMeta.value = {
++      ...response.data.meta,
++      total: normalized.length,
++    };
+     currentPage.value = page;
+ 
+-    metricsStats.value[0].value = response.data.meta.total || 0;
++    metricsStats.value[0].value = response.data.meta.total_twg || 0;
++    metricsStats.value[1].value = response.data.meta.total_nontwg || 0;
+     metricsStats.value[2].value = response.data.meta.total_designs || 0;
+     metricsStats.value[3].value = response.data.meta.total_reports || 0;
+   } catch (err) {
+@@ -382,112 +316,592 @@ onMounted(() => {
+ </script>
+ 
+ <style scoped>
+-.twg-submissions { min-height: 100vh; display: flex; color: #cbd5e1; font-family: system-ui, -apple-system, sans-serif; }
+-.twg-submissions ::selection { background: rgba(153, 13, 209, 0.3); color: white; }
+-.twg-main-container { flex-grow: 1; margin-left: 256px; display: flex; flex-direction: column; min-height: 100vh; }
+-.twg-main-content { padding-left: 0; flex-grow: 1; }
+-.twg-content-wrapper { display: flex; flex-direction: column; gap: 24px; }
+-.twg-header { padding: 0 4px; }
+-.twg-title { font-size: 24px; font-weight: 900; letter-spacing: -0.025em; color: #1a1a2e; }
+-.twg-subtitle { font-size: 14px; color: #475569; margin-top: 4px; }
+-.stats-section { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+-.stat-card { padding: 16px; border-radius: 16px; border: 1px solid rgba(185, 121, 204, 0.15); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); backdrop-filter: blur(8px); transition: all 0.3s; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+-.stat-card:hover { transform: translateY(-4px); }
+-.stat-card-inner { display: flex; align-items: center; gap: 12px; }
+-.stat-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+-.stat-icon-symbol { font-weight: 500; font-size: 18px; }
++.twg-submissions {
++  min-height: 100vh;
++  display: flex;
++  color: #cbd5e1;
++  font-family: system-ui, -apple-system, sans-serif;
++}
++
++.twg-submissions ::selection {
++  background: rgba(153, 13, 209, 0.3);
++  color: white;
++}
++
++.twg-main-container {
++  flex-grow: 1;
++  margin-left: 256px;
++  display: flex;
++  flex-direction: column;
++  min-height: 100vh;
++}
++
++.twg-main-content {
++  padding-left: 0;
++  flex-grow: 1;
++}
++
++.twg-content-wrapper {
++  display: flex;
++  flex-direction: column;
++  gap: 1.5rem;
++}
++
++.twg-header {
++  padding: 0 0.25rem;
++}
++
++.twg-title {
++  font-size: 1.5rem;
++  font-weight: 900;
++  letter-spacing: -0.025em;
++  color: #1a1a2e;
++}
++
++.twg-subtitle {
++  font-size: 1rem;
++  color: #475569;
++  margin-top: 0.25rem;
++}
++
++.stats-section {
++  display: grid;
++  grid-template-columns: repeat(4, 1fr);
++  gap: 1rem;
++}
++
++.stat-card {
++  padding: 1rem;
++  border-radius: 1rem;
++  border: 1px solid rgba(185, 121, 204, 0.15);
++  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
++  backdrop-filter: blur(8px);
++  transition: all 0.3s;
++  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
++}
++
++.stat-card:hover {
++  transform: translateY(-4px);
++}
++
++.stat-card-inner {
++  display: flex;
++  align-items: center;
++  gap: 0.75rem;
++}
++
++.stat-icon {
++  width: 40px;
++  height: 40px;
++  border-radius: 0.75rem;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  flex-shrink: 0;
++}
++
++.stat-icon-symbol {
++  font-weight: 500;
++  font-size: 1.125rem;
++}
++
++/* Icon Colors */
+ .text-green-400 { color: #4ade80; }
+ .text-amber-400 { color: #fbbf24; }
+ .text-purple-400 { color: #c084fc; }
+ .text-blue-400 { color: #60a5fa; }
++
++/* Background Classes */
+ .bg-green-500\/10 { background: rgba(34, 197, 94, 0.1); }
+ .bg-amber-500\/10 { background: rgba(245, 158, 11, 0.1); }
+ .bg-purple-500\/10 { background: rgba(168, 85, 247, 0.1); }
+ .bg-blue-500\/10 { background: rgba(59, 130, 246, 0.1); }
+-.stat-info { min-width: 0; }
+-.stat-value { font-size: 20px; font-weight: 900; letter-spacing: -0.025em; color: white; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+-.stat-label { font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(203, 213, 225, 0.7); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+-.filter-section { padding: 16px; border-radius: 16px; border: 1px solid rgba(185, 121, 204, 0.15); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25); backdrop-filter: blur(8px); display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 16px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+-.filter-controls { display: flex; flex-direction: row; align-items: center; gap: 12px; width: auto; }
+-.search-wrapper { position: relative; width: 288px; }
+-.search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 14px; }
+-.search-input { width: 100%; padding: 8px 16px 8px 36px; border-radius: 12px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(185, 121, 204, 0.2); font-size: 14px; font-weight: 600; color: white; transition: all 0.3s; }
+-.search-input:focus { outline: none; border-color: rgba(185, 121, 204, 0.5); }
+-.search-input::placeholder { color: #94a3b8; }
+-.select-wrapper { position: relative; width: 176px; }
+-.filter-select { width: 100%; padding: 8px 12px; border-radius: 12px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(185, 121, 204, 0.2); font-size: 14px; font-weight: 600; color: white; appearance: none; cursor: pointer; transition: all 0.3s; }
+-.filter-select:focus { outline: none; border-color: rgba(185, 121, 204, 0.5); }
+-.select-arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 14px; pointer-events: none; }
+-.per-page-controls { display: flex; align-items: center; gap: 8px; }
+-.per-page-label { font-size: 14px; color: #94a3b8; font-weight: 500; }
+-.per-page-select { padding: 6px 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(185, 121, 204, 0.2); font-size: 14px; font-weight: 700; color: white; cursor: pointer; transition: all 0.3s; }
+-.per-page-select:focus { outline: none; border-color: rgba(185, 121, 204, 0.5); }
+-.table-container { border-radius: 16px; border: 1px solid rgba(185, 121, 204, 0.15); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25); overflow: hidden; backdrop-filter: blur(8px); background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+-.table-wrapper { overflow-x: auto; }
+-.data-table { width: 100%; text-align: left; border-collapse: collapse; }
+-.table-header-row { border-bottom: 1px solid rgba(185, 121, 204, 0.1); background: rgba(0, 0, 0, 0.3); }
+-.table-header-cell { padding: 16px 24px; font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #b979cc; }
+-.table-header-number { width: 48px; text-align: center; }
+-.table-header-center { text-align: center; }
+-.table-header-right { text-align: right; }
+-.table-body { display: table-row-group; }
+-.empty-state { padding: 48px 24px; text-align: center; font-size: 14px; color: #94a3b8; font-weight: 500; }
+-.table-row { transition: all 0.3s; border-bottom: 1px solid rgba(185, 121, 204, 0.05); }
+-.clickable-row { cursor: pointer; }
+-.table-row:hover { background: rgba(255, 255, 255, 0.05); }
+-.table-cell { padding: 16px 24px; font-size: 14px; }
+-.table-cell-number { font-size: 14px; font-family: monospace; font-weight: 700; color: #94a3b8; text-align: center; }
+-.table-cell-center { text-align: center; }
+-.table-cell-right { text-align: right; }
+-.table-cell-count { font-family: monospace; font-size: 14px; font-weight: 700; color: #cbd5e1; }
+-.unit-name { font-weight: 700; color: #e2e8f0; font-size: 14px; }
+-.unit-code { font-size: 14px; color: #b979cc; font-weight: 500; letter-spacing: 0.025em; text-transform: uppercase; margin-top: 2px; }
+-.submission-badge { display: inline-block; padding: 4px 12px; border-radius: 8px; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; }
+-.submission-badge-active { background: rgba(153, 13, 209, 0.2); color: #b979cc; border: 1px solid rgba(153, 13, 209, 0.3); }
+-.submission-badge-empty { background: rgba(0, 0, 0, 0.3); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.05); }
+-.view-details-btn { padding: 8px 16px; border-radius: 12px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: white; transition: all 0.3s; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(185, 121, 204, 0.15); }
+-.view-details-btn:hover { color: #b979cc; }
+-.pagination-container { padding: 16px 24px; border-top: 1px solid rgba(185, 121, 204, 0.1); background: rgba(0, 0, 0, 0.1); display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 16px; }
+-.pagination-info { font-size: 14px; color: #94a3b8; font-weight: 500; }
+-.pagination-highlight { font-weight: 700; color: white; }
+-.pagination-controls { display: flex; align-items: center; gap: 6px; }
+-.pagination-btn { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: white; border: 1px solid rgba(185, 121, 204, 0.1); background: rgba(0, 0, 0, 0.3); cursor: pointer; transition: all 0.2s; }
+-.pagination-btn:hover:not(:disabled) { border-color: rgba(185, 121, 204, 0.4); }
+-.pagination-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+-.pagination-page { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; transition: all 0.2s; cursor: pointer; color: #94a3b8; border: 1px solid rgba(185, 121, 204, 0.1); background: rgba(0, 0, 0, 0.2); }
+-.pagination-page:hover { border-color: rgba(185, 121, 204, 0.3); }
+-.pagination-page-active { color: white; background: linear-gradient(135deg, #990dd1 0%, #b979cc 100%); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: none; }
+-.footer-note { text-align: center; padding-top: 8px; }
+-.footer-text { font-size: 14px; font-weight: 500; letter-spacing: 0.05em; color: #94a3b8; text-transform: uppercase; }
+-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+-.modal-window { width: 100%; max-width: 700px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+-.glass-card { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 24px; border: 1px solid rgba(185, 121, 204, 0.2); }
+-.modal-header { padding: 24px; border-bottom: 1px solid rgba(185, 121, 204, 0.15); display: flex; justify-content: space-between; align-items: center; }
+-.modal-title { font-size: 20px; font-weight: 800; color: white; }
+-.modal-subtitle { font-size: 14px; color: #b979cc; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+-.close-btn { background: none; border: none; color: #94a3b8; cursor: pointer; transition: color 0.2s; }
+-.close-btn:hover { color: white; }
+-.modal-body { padding: 24px; overflow-y: auto; }
+-.modal-loader { text-align: center; padding: 40px; color: #94a3b8; }
+-.section-banner { display: flex; align-items: center; gap: 10px; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; background: rgba(0, 0, 0, 0.3); }
+-.section-banner h3 { font-size: 14px; font-weight: 800; text-transform: uppercase; margin: 0; }
+-.design-banner { color: #c084fc; border-left: 4px solid #c084fc; }
+-.report-banner { color: #60a5fa; border-left: 4px solid #60a5fa; margin-top: 30px; }
+-.item-entry { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+-.item-title { display: block; color: white; font-weight: 600; font-size: 14px; }
+-.item-meta { display: block; font-size: 14px; color: #94a3b8; margin-top: 2px; }
+-.item-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+-.mini-status { font-size: 14px; padding: 1px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; background: rgba(255, 255, 255, 0.1); color: #94a3b8; }
+-.mini-status-success { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+-.mini-status-pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+-.mini-status-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+-.item-action-btn { background: rgba(185, 121, 204, 0.1); border: 1px solid rgba(185, 121, 204, 0.2); color: #b979cc; padding: 4px 12px; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; }
+-.item-action-btn:hover { background: #b979cc; color: white; }
+-.empty-note { color: #64748b; font-size: 14px; font-style: italic; padding: 10px; }
+-::-webkit-scrollbar { width: 6px; height: 6px; }
+-::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); }
+-::-webkit-scrollbar-thumb { background: rgba(185, 121, 204, 0.3); border-radius: 99px; }
+-::-webkit-scrollbar-thumb:hover { background: rgba(153, 13, 209, 0.5); }
+-@media (max-width: 1024px) { .twg-main-container { margin-left: 0; } .stats-section { grid-template-columns: repeat(2, 1fr); } .filter-section { flex-direction: column; align-items: stretch; } .filter-controls { width: 100%; flex-direction: column; } .search-wrapper, .select-wrapper { width: 100%; } .pagination-container { flex-direction: column; } }
+-@media (max-width: 768px) { .twg-content-wrapper { padding: 20px; } .stats-section { grid-template-columns: 1fr; } }
+-</style>
+\ No newline at end of file
++
++.stat-info {
++  min-width: 0;
++}
++
++.stat-value {
++  font-size: 1.25rem;
++  font-weight: 900;
++  letter-spacing: -0.025em;
++  color: white;
++  line-height: 1.25;
++  white-space: nowrap;
++  overflow: hidden;
++  text-overflow: ellipsis;
++}
++
++.stat-label {
++  font-size: 0.85rem;
++  font-weight: 800;
++  text-transform: uppercase;
++  letter-spacing: 0.05em;
++  color: rgba(203, 213, 225, 0.7);
++  margin-top: 0.125rem;
++  white-space: nowrap;
++  overflow: hidden;
++  text-overflow: ellipsis;
++}
++
++/* Filter Section */
++.filter-section {
++  padding: 1rem;
++  border-radius: 1rem;
++  border: 1px solid rgba(185, 121, 204, 0.15);
++  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25);
++  backdrop-filter: blur(8px);
++  display: flex;
++  flex-direction: row;
++  align-items: center;
++  justify-content: space-between;
++  gap: 1rem;
++  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
++}
++
++.filter-controls {
++  display: flex;
++  flex-direction: row;
++  align-items: center;
++  gap: 0.75rem;
++  width: auto;
++}
++
++.search-wrapper {
++  position: relative;
++  width: 288px;
++}
++
++.search-icon {
++  position: absolute;
++  left: 14px;
++  top: 50%;
++  transform: translateY(-50%);
++  color: #94a3b8;
++  font-size: 1rem;
++}
++
++.search-input {
++  width: 100%;
++  padding: 0.5rem 1rem 0.5rem 2.25rem;
++  border-radius: 0.75rem;
++  background: rgba(0, 0, 0, 0.4);
++  border: 1px solid rgba(185, 121, 204, 0.2);
++  font-size: 1rem;
++  font-weight: 600;
++  color: white;
++  transition: all 0.3s;
++}
++
++.search-input:focus {
++  outline: none;
++  border-color: rgba(185, 121, 204, 0.5);
++}
++
++.search-input::placeholder {
++  color: #94a3b8;
++}
++
++.select-wrapper {
++  position: relative;
++  width: 176px;
++}
++
++.filter-select {
++  width: 100%;
++  padding: 0.5rem 0.75rem;
++  border-radius: 0.75rem;
++  background: rgba(0, 0, 0, 0.4);
++  border: 1px solid rgba(185, 121, 204, 0.2);
++  font-size: 1rem;
++  font-weight: 600;
++  color: white;
++  appearance: none;
++  cursor: pointer;
++  transition: all 0.3s;
++}
++
++.filter-select:focus {
++  outline: none;
++  border-color: rgba(185, 121, 204, 0.5);
++}
++
++.select-arrow {
++  position: absolute;
++  right: 12px;
++  top: 50%;
++  transform: translateY(-50%);
++  color: #94a3b8;
++  font-size: 0.85rem;
++  pointer-events: none;
++}
++
++.per-page-controls {
++  display: flex;
++  align-items: center;
++  gap: 0.5rem;
++}
++
++.per-page-label {
++  font-size: 0.9rem;
++  color: #94a3b8;
++  font-weight: 500;
++}
++
++.per-page-select {
++  padding: 0.375rem 0.625rem;
++  border-radius: 0.5rem;
++  background: rgba(0, 0, 0, 0.4);
++  border: 1px solid rgba(185, 121, 204, 0.2);
++  font-size: 1rem;
++  font-weight: 700;
++  color: white;
++  cursor: pointer;
++  transition: all 0.3s;
++}
++
++.per-page-select:focus {
++  outline: none;
++  border-color: rgba(185, 121, 204, 0.5);
++}
++
++/* Table Container */
++.table-container {
++  border-radius: 1rem;
++  border: 1px solid rgba(185, 121, 204, 0.15);
++  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25);
++  overflow: hidden;
++  backdrop-filter: blur(8px);
++  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
++}
++
++.table-wrapper {
++  overflow-x: auto;
++}
++
++.data-table {
++  width: 100%;
++  text-align: left;
++  border-collapse: collapse;
++}
++
++.table-header-row {
++  border-bottom: 1px solid rgba(185, 121, 204, 0.1);
++  background: rgba(0, 0, 0, 0.3);
++}
++
++.table-header-cell {
++  padding: 1rem 1.5rem;
++  font-size: 0.85rem;
++  font-weight: 900;
++  text-transform: uppercase;
++  letter-spacing: 0.1em;
++  color: #b979cc;
++}
++
++.table-header-number {
++  width: 48px;
++  text-align: center;
++}
++
++.table-header-center {
++  text-align: center;
++}
++
++.table-header-right {
++  text-align: right;
++}
++
++.table-body {
++  display: table-row-group;
++}
++
++.empty-state {
++  padding: 3rem 1.5rem;
++  text-align: center;
++  font-size: 1rem;
++  color: #94a3b8;
++  font-weight: 500;
++}
++
++.table-row {
++  transition: all 0.3s;
++  border-bottom: 1px solid rgba(185, 121, 204, 0.05);
++}
++
++.table-row:hover {
++  background: rgba(255, 255, 255, 0.05);
++}
++
++.table-cell {
++  padding: 1rem 1.5rem;
++}
++
++.table-cell-number {
++  font-size: 1rem;
++  font-family: monospace;
++  font-weight: 700;
++  color: #94a3b8;
++  text-align: center;
++}
++
++.table-cell-center {
++  text-align: center;
++}
++
++.table-cell-right {
++  text-align: right;
++}
++
++.table-cell-count {
++  font-family: monospace;
++  font-size: 1rem;
++  font-weight: 700;
++  color: #cbd5e1;
++}
++
++.unit-name {
++  font-weight: 700;
++  color: #e2e8f0;
++}
++
++.unit-code {
++  font-size: 0.85rem;
++  color: #b979cc;
++  font-weight: 500;
++  letter-spacing: 0.025em;
++  text-transform: uppercase;
++  margin-top: 0.125rem;
++}
++
++.role-badge {
++  display: inline-block;
++  padding: 0.2rem 0.5rem;
++  border-radius: 0.375rem;
++  font-size: 0.75rem;
++  font-weight: 800;
++  text-transform: uppercase;
++  letter-spacing: 0.05em;
++}
++
++.badge-twg {
++  background: rgba(153, 13, 209, 0.2);
++  color: #b979cc;
++  border: 1px solid rgba(153, 13, 209, 0.3);
++}
++
++.badge-staff {
++  background: rgba(59, 130, 246, 0.2);
++  color: #60a5fa;
++  border: 1px solid rgba(59, 130, 246, 0.3);
++}
++
++.badge-nontwg {
++  background: rgba(245, 158, 11, 0.2);
++  color: #fbbf24;
++  border: 1px solid rgba(245, 158, 11, 0.3);
++}
++
++.badge-gad-office {
++  background: rgba(236, 72, 153, 0.2);
++  color: #f472b6;
++  border: 1px solid rgba(236, 72, 153, 0.3);
++}
++
++.submission-badge {
++  display: inline-block;
++  padding: 0.25rem 0.75rem;
++  border-radius: 0.5rem;
++  font-size: 0.8rem;
++  font-weight: 900;
++  text-transform: uppercase;
++  letter-spacing: 0.05em;
++}
++
++.submission-badge-active {
++  background: rgba(153, 13, 209, 0.2);
++  color: #b979cc;
++  border: 1px solid rgba(153, 13, 209, 0.3);
++}
++
++.submission-badge-empty {
++  background: rgba(0, 0, 0, 0.3);
++  color: #94a3b8;
++  border: 1px solid rgba(255, 255, 255, 0.05);
++}
++
++.view-details-btn {
++  padding: 0.5rem 1rem;
++  border-radius: 0.75rem;
++  font-size: 1rem;
++  font-weight: 700;
++  text-transform: uppercase;
++  letter-spacing: 0.05em;
++  color: white;
++  transition: all 0.3s;
++  display: inline-flex;
++  align-items: center;
++  gap: 0.375rem;
++  cursor: pointer;
++  background: rgba(0, 0, 0, 0.3);
++  border: 1px solid rgba(185, 121, 204, 0.15);
++}
++
++.view-details-btn:hover {
++  color: #b979cc;
++}
++
++/* Pagination */
++.pagination-container {
++  padding: 1rem 1.5rem;
++  border-top: 1px solid rgba(185, 121, 204, 0.1);
++  background: rgba(0, 0, 0, 0.1);
++  display: flex;
++  flex-direction: row;
++  justify-content: space-between;
++  align-items: center;
++  gap: 1rem;
++}
++
++.pagination-info {
++  font-size: 1rem;
++  color: #94a3b8;
++  font-weight: 500;
++}
++
++.pagination-highlight {
++  font-weight: 700;
++  color: white;
++}
++
++.pagination-controls {
++  display: flex;
++  align-items: center;
++  gap: 0.375rem;
++}
++
++.pagination-btn {
++  width: 32px;
++  height: 32px;
++  border-radius: 0.5rem;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  font-size: 1rem;
++  font-weight: 700;
++  color: white;
++  border: 1px solid rgba(185, 121, 204, 0.1);
++  background: rgba(0, 0, 0, 0.3);
++  cursor: pointer;
++  transition: all 0.2s;
++}
++
++.pagination-btn:hover:not(:disabled) {
++  border-color: rgba(185, 121, 204, 0.4);
++}
++
++.pagination-btn:disabled {
++  opacity: 0.3;
++  cursor: not-allowed;
++}
++
++.pagination-page {
++  width: 32px;
++  height: 32px;
++  border-radius: 0.5rem;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  font-size: 1rem;
++  font-weight: 700;
++  transition: all 0.2s;
++  cursor: pointer;
++  color: #94a3b8;
++  border: 1px solid rgba(185, 121, 204, 0.1);
++  background: rgba(0, 0, 0, 0.2);
++}
++
++.pagination-page:hover {
++  border-color: rgba(185, 121, 204, 0.3);
++}
++
++.pagination-page-active {
++  color: white;
++  background: linear-gradient(135deg, #990dd1 0%, #b979cc 100%);
++  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
++  border: none;
++}
++
++/* Footer Note */
++.footer-note {
++  text-align: center;
++  padding-top: 0.5rem;
++}
++
++.footer-text {
++  font-size: 0.85rem;
++  font-weight: 500;
++  letter-spacing: 0.05em;
++  color: #94a3b8;
++  text-transform: uppercase;
++}
++
++/* Scrollbar */
++::-webkit-scrollbar {
++  width: 6px;
++  height: 6px;
++}
++
++::-webkit-scrollbar-track {
++  background: rgba(0, 0, 0, 0.1);
++}
++
++::-webkit-scrollbar-thumb {
++  background: rgba(185, 121, 204, 0.3);
++  border-radius: 99px;
++}
++
++::-webkit-scrollbar-thumb:hover {
++  background: rgba(153, 13, 209, 0.5);
++}
++
++/* Responsive */
++@media (max-width: 1024px) {
++  .twg-main-container {
++    margin-left: 0;
++  }
++  
++  .stats-section {
++    grid-template-columns: repeat(2, 1fr);
++  }
++  
++  .filter-section {
++    flex-direction: column;
++    align-items: stretch;
++  }
++  
++  .filter-controls {
++    width: 100%;
++    flex-direction: column;
++  }
++  
++  .search-wrapper,
++  .select-wrapper {
++    width: 100%;
++  }
++  
++  .pagination-container {
++    flex-direction: column;
++  }
++}
++
++@media (max-width: 768px) {
++  .twg-content-wrapper {
++    padding: 20px;
++  }
++  
++  .stats-section {
++    grid-template-columns: 1fr;
++  }
++}
++</style>
+
+--- DIFF FOR src/views/twg/ADRevision.vue ---
+diff --git "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/twg/ADRevision.vue" "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/twg/ADRevision.vue"
+index ab8cb0c..5b51701 100644
+--- "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/twg/ADRevision.vue"
++++ "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/twg/ADRevision.vue"
+@@ -611,7 +611,7 @@ watch(
+ 
+ const fetchVenues = async () => {
+   try {
+-    const response = await api.get('get-venues');
++    const response = await api.get('venues');
+     if (response.data && response.data.success) {
+       venues.value = response.data.data || [];
+     }
+@@ -742,24 +742,21 @@ const handleUpdate = async () => {
+     const submitData = new FormData();
+     
+     // Aligning keys with ActivityDesignController expectations
+-    submitData.append('activity-title', formData.value.activity_title);
+-    submitData.append('form-type', formData.value.form_type);
+-    submitData.append('start-date', formData.value.start_date);
+-    submitData.append('end-date', formData.value.end_date);
+-    submitData.append('start-time', formData.value.start_time);
+-    submitData.append('end-time', formData.value.end_time);
+-    submitData.append('proposed-budget', formData.value.proposed_budget);
+-    submitData.append('target-participants', formData.value.target_participants);
++    // Aligning keys with ActivityDesignController expectations
++    submitData.append('activity_title', formData.value.activity_title);
++    submitData.append('form_type', formData.value.form_type);
++    submitData.append('start_date', formData.value.start_date);
++    submitData.append('end_date', formData.value.end_date);
++    submitData.append('start_time', formData.value.start_time);
++    submitData.append('end_time', formData.value.end_time);
++    submitData.append('proposed_budget', formData.value.proposed_budget);
++    submitData.append('target_participants', formData.value.target_participants);
+ 
+     // Venue Logic
+     if (formData.value.venue && formData.value.venue !== 'Other') {
+-      submitData.append('venue-id', formData.value.venue);
+-      // Use the venue name from the venues array or fall back to the existing design name
+-      const v = venues.value.find(v => v.venue_id == formData.value.venue);
+-      submitData.append('venue-name', v ? v.venue_name : formData.value.venue);
++      submitData.append('venue', formData.value.venue);
+     } else if (formData.value.venue === 'Other') {
+-      submitData.append('venue-id', '');
+-      submitData.append('venue-name', customVenue.value || '');
++      submitData.append('venue', customVenue.value || '');
+     }
+ 
+     const transItem = formData.value.budget_items.find(i => i.name === 'Transportation');
+@@ -773,113 +770,18 @@ const handleUpdate = async () => {
+       return;
+     }
+ 
+-    // Construct normalized budget rows
+-    const finalBudgetItems = [];
+-
+-    const categoryMapping = {
+-      'Meals': 'Catering & Hospitality',
+-      'Snacks': 'Catering & Hospitality',
+-      'Function Room/Venue': 'Venue & Logistics',
+-      'Accommodation': 'Venue & Logistics',
+-      'Equipment Rental': 'Venue & Logistics',
+-      'Professional Fee/Honoria': 'Program & Speakers',
+-      'Token/s': 'Program & Speakers',
+-      'Materials and Supplies': 'Materials & Miscellaneous',
+-      'Transportation': 'Venue & Logistics',
+-      'Others': 'Materials & Miscellaneous'
++    const budgetObj = {
++      meals_and_snacks: (Number(formData.value.budget_items.find(i => i.name === 'Meals')?.total || 0) + Number(formData.value.budget_items.find(i => i.name === 'Snacks')?.total || 0)),
++      function_room_venue: Number(formData.value.budget_items.find(i => i.name === 'Function Room/Venue')?.total || 0),
++      accommodation: Number(formData.value.budget_items.find(i => i.name === 'Accommodation')?.total || 0),
++      equipment_rental: Number(formData.value.budget_items.find(i => i.name === 'Equipment Rental')?.total || 0),
++      professional_fee_honoria: Number(formData.value.budget_items.find(i => i.name === 'Professional Fee/Honoria')?.total || 0),
++      tokens: Number(formData.value.budget_items.find(i => i.name === 'Token/s')?.total || 0),
++      materials_and_supplies: Number(formData.value.budget_items.find(i => i.name === 'Materials and Supplies')?.total || 0) + Number(formData.value.budget_items.find(i => i.name === 'Others')?.total || 0),
++      transportation: Number(formData.value.budget_items.find(i => i.name === 'Transportation')?.total || 0)
+     };
+ 
+-    // Meals
+-    const mealsSelectedKeys = Object.keys(mealsSelected.value).filter(k => mealsSelected.value[k]);
+-    if (mealsSelectedKeys.length > 0) {
+-      const baseMeals = formData.value.budget_items.find(i => i.name === 'Meals');
+-      const baseMealsTotal = Number(baseMeals?.total) || 0;
+-      if (baseMealsTotal > 0) {
+-        const amountPerMeal = baseMealsTotal / mealsSelectedKeys.length;
+-        mealsSelectedKeys.forEach(key => {
+-          const capitalized = key.charAt(0).toUpperCase() + key.slice(1);
+-          finalBudgetItems.push({
+-            category: 'Catering & Hospitality',
+-            name: 'Meals',
+-            sub_item: capitalized,
+-            amount: amountPerMeal
+-          });
+-        });
+-      }
+-    }
+-
+-    // Snacks
+-    const snacksSelectedKeys = Object.keys(snacksSelected.value).filter(k => snacksSelected.value[k]);
+-    if (snacksSelectedKeys.length > 0) {
+-      const baseSnacks = formData.value.budget_items.find(i => i.name === 'Snacks');
+-      const baseSnacksTotal = Number(baseSnacks?.total) || 0;
+-      if (baseSnacksTotal > 0) {
+-        const amountPerSnack = baseSnacksTotal / snacksSelectedKeys.length;
+-        snacksSelectedKeys.forEach(key => {
+-          const capitalized = key === 'am' ? 'AM Snack' : 'PM Snack';
+-          finalBudgetItems.push({
+-            category: 'Catering & Hospitality',
+-            name: 'Snacks',
+-            sub_item: capitalized,
+-            amount: amountPerSnack
+-          });
+-        });
+-      }
+-    }
+-
+-    formData.value.budget_items.forEach(item => {
+-      if (item.name === 'Meals' || item.name === 'Snacks') return;
+-
+-      const category = categoryMapping[item.name] || 'Miscellaneous';
+-      const totalAmt = Number(item.total) || 0;
+-
+-      if (item.name === 'Professional Fee/Honoria') {
+-        finalBudgetItems.push({
+-          category,
+-          name: item.name,
+-          sub_item: null,
+-          pax: Number(pfPax.value) || null,
+-          amount: totalAmt
+-        });
+-      } else if (item.name === 'Token/s') {
+-        finalBudgetItems.push({
+-          category,
+-          name: item.name,
+-          sub_item: null,
+-          pax: Number(tokensPax.value) || null,
+-          amount: totalAmt
+-        });
+-      } else if (item.name === 'Others') {
+-        if (othersList.value && othersList.value.length > 0) {
+-          othersList.value.forEach(other => {
+-            if (Number(other.amount) > 0) {
+-              finalBudgetItems.push({
+-                category,
+-                name: 'Others',
+-                sub_item: other.name || 'Other Item',
+-                amount: Number(other.amount)
+-              });
+-            }
+-          });
+-        } else if (totalAmt > 0) {
+-          finalBudgetItems.push({
+-            category,
+-            name: 'Others',
+-            sub_item: 'Other Item',
+-            amount: totalAmt
+-          });
+-        }
+-      } else {
+-        finalBudgetItems.push({
+-          category,
+-          name: item.name,
+-          sub_item: null,
+-          amount: totalAmt
+-        });
+-      }
+-    });
+-
+-    submitData.append('budgetary-requirements', JSON.stringify(finalBudgetItems));
++    submitData.append('budget_items', JSON.stringify(budgetObj));
+ 
+     submitData.append('status', 'Pending'); // Reset status so admin can review again
+     
+
+--- DIFF FOR src/views/twg/ArchiveView.vue ---
+diff --git "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/twg/ArchiveView.vue" "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/twg/ArchiveView.vue"
+index 57165b9..bc25655 100644
+--- "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/twg/ArchiveView.vue"
++++ "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/twg/ArchiveView.vue"
+@@ -1,12 +1,9 @@
+ <template>
+-
+-      <main class="flex-1 overflow-y-auto">
++      <main class="flex-1 overflow-y-auto bg-transparent">
+         <div class="max-w-7xl mx-auto">
+-            <div class="page-header">
+-              <h1 class="page-title">Archives Tracker</h1>
+-              <p class="page-subtitle">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+-            </div>
++
+           <div class="stats-container">
++
+             <div class="stat-card-purple">
+               <div class="stat-card-inner">
+                 <div class="stat-icon-wrapper purple">
+@@ -14,7 +11,7 @@
+                 </div>
+                 <div class="stat-content">
+                   <h3 class="stat-number-purple">{{ totalArchived }}</h3>
+-                  <p class="stat-label-purple">TOTAL ARCHIVED ITEMS</p>
++                  <p class="stat-label-purple">TOTAL ARCHIVED</p>
+                 </div>
+               </div>
+             </div>
+@@ -153,13 +150,13 @@
+                     </td>
+                     <td class="table-cell">
+                       <div class="control-number">{{ item.control }}</div>
+-                      <div class="item-date">{{ item.date }}</div>
++                      <div class="item-date">{{ item.dateArchived }}</div>
+                     </td>
+                     <td class="table-cell">
+                       <div class="item-title">{{ item.title }}</div>
+                     </td>
+                     <td class="table-cell">
+-                      <div class="item-date">{{ formatDate(item.archived_at) }}</div>
++                      <div class="item-date">{{ item.dateArchived }}</div>
+                     </td>
+                     <td class="table-cell">
+                       <span class="status-badge" :class="item.statusClass">
+@@ -211,10 +208,10 @@ const archivedReports = ref([]);
+ const loading = ref(false);
+ const activeTab = ref('designs');
+ 
+-const filters = ref({ 
++const filters = ref({
+   status: 'all',
+   sort: 'date_desc',
+-  search: '' 
++  search: ''
+ });
+ 
+ const currentPage = ref(1);
+@@ -240,6 +237,10 @@ const totalReports = computed(() => {
+   return archivedReports.value.length;
+ });
+ 
++const pendingCount = computed(() => {
++  return 0;
++});
++
+ const currentSourceData = computed(() => {
+   return activeTab.value === 'designs' ? archivedDesigns.value : archivedReports.value;
+ });
+@@ -247,10 +248,8 @@ const currentSourceData = computed(() => {
+ const filteredItems = computed(() => {
+   let items = [...currentSourceData.value];
+   
+-  if (filters.value.status === 'completed') {
+-    items = items.filter(item => item.status.toLowerCase() === 'approved' || item.status.toLowerCase() === 'verified');
+-  } else if (filters.value.status === 'cancelled') {
+-    items = items.filter(item => item.status.toLowerCase() === 'cancelled');
++  if (filters.value.status !== 'all') {
++    items = items.filter(item => item.status === filters.value.status);
+   }
+   
+   if (filters.value.search.trim()) {
+@@ -272,7 +271,7 @@ const filteredItems = computed(() => {
+     case 'date_asc':
+       sorted.sort((a, b) => new Date(a.dateRaw) - new Date(b.dateRaw));
+       break;
+-    default: 
++    default:
+       sorted.sort((a, b) => new Date(b.dateRaw) - new Date(a.dateRaw));
+   }
+   
+@@ -304,28 +303,16 @@ const visiblePages = computed(() => {
+ const fetchArchives = async () => {
+   loading.value = true;
+   try {
+-    const response = await api.get('/archives');
+-    
+-    if (response.data.success) {
+-      // Only include records that were submitted by the current user
+-      const allData = response.data.data.filter(item => item.user_id === user.value.id);
+-
+-      archivedDesigns.value = allData.filter(i => i.type === 'design').map(d => ({
+-        id: d.original_id,
+-        ...d,
+-        statusClass: getStatusClass(d.status),
+-        statusText: d.status,
+-        formClass: getFormClass(d.form_label)
+-      }));
+-
+-      archivedReports.value = allData.filter(i => i.type === 'report').map(r => ({
+-        id: r.original_id,
+-        ...r,
+-        statusClass: getStatusClass(r.status),
+-        statusText: r.status,
+-        formClass: getFormClass(r.form_label)
+-      }));
+-    }
++    const response = await api.get(`archives?user_id=${user.value.id}&role=${user.value.role}`);
++    const allData = (response.data.data || []).map(item => ({
++      ...item,
++      id: item.original_id,
++      dateArchived: item.dateRaw ? new Date(item.dateRaw).toLocaleDateString() : 'N/A',
++      statusText: item.status,
++      statusClass: (item.status === 'Approved' || item.status === 'Verified') ? 'status-approved' : 'status-cancelled'
++    }));
++    archivedDesigns.value = allData.filter(item => item.type === 'design');
++    archivedReports.value = allData.filter(item => item.type === 'report');
+   } catch (error) {
+     console.error('Error fetching archive records:', error);
+   } finally {
+@@ -333,33 +320,6 @@ const fetchArchives = async () => {
+   }
+ };
+ 
+-const formatDate = (date) => {
+-  if (!date) return '---';
+-  return new Date(date).toLocaleDateString('en-US', { 
+-    month: 'short', 
+-    day: 'numeric', 
+-    year: 'numeric' 
+-  });
+-};
+-
+-const formatFormType = (type) => {
+-  const types = { 'inset': 'INSET', 'extension': 'Extension Program', 'employee': 'Employee Training' };
+-  return types[type] || type;
+-};
+-
+-const getFormClass = (type) => {
+-  return `form-badge-${type}`;
+-};
+-
+-const getStatusClass = (status) => {
+-  if (!status) return '';
+-  const s = status.toLowerCase();
+-  if (s === 'approved') return 'status-approved';
+-  if (s === 'verified') return 'status-completed';
+-  if (s === 'cancelled') return 'status-revision';
+-  return 'status-pending';
+-};
+-
+ const applyFilters = () => {
+   currentPage.value = 1;
+ };
+@@ -389,7 +349,7 @@ const viewItem = (item) => {
+ 
+ const handleLogout = async () => {
+   try {
+-    await api.get('/logout');
++    await api.get('logout');
+     localStorage.removeItem('user');
+     router.push('/login');
+   } catch (err) {
+@@ -407,23 +367,6 @@ onMounted(() => {
+ </script>
+ 
+ <style scoped>
+-.page-header {
+-  padding: 0 0.25rem 1.5rem 0;
+-}
+-
+-.page-title {
+-  font-size: 1.5rem;
+-  font-weight: 900;
+-  letter-spacing: -0.025em;
+-  color: #16213e;
+-}
+-
+-.page-subtitle {
+-  font-size: 0.75rem;
+-  color: #94a3b8;
+-  margin-top: 0.25rem;
+-}
+-
+ .stats-container {
+   display: grid;
+   grid-template-columns: 1fr;
+@@ -541,14 +484,14 @@ onMounted(() => {
+ }
+ 
+ .stat-sub {
+-  font-size: 0.75rem;
+-  color: #64748b;
++  font-size: 1rem;
++  color: #94a3b8;
+   opacity: 0.7;
+   margin: 0.25rem 0 0 0;
+ }
+ 
+ .stat-sub-purple {
+-  font-size: 0.75rem;
++  font-size: 1rem;
+   color: #b979cc;
+   opacity: 0.7;
+   margin: 0.25rem 0 0 0;
+@@ -587,7 +530,7 @@ onMounted(() => {
+ 
+ .tab-inactive {
+   border-bottom: 3px solid transparent;
+-  color: #64748b;
++  color: #94a3b8;
+ }
+ 
+ .tab-inactive:hover {
+@@ -598,10 +541,10 @@ onMounted(() => {
+ 
+ .tab-badge {
+   background: #f1f5f9;
+-  color: #64748b;
++  color: #94a3b8;
+   padding: 0.125rem 0.5rem;
+   border-radius: 30px;
+-  font-size: 0.7rem;
++  font-size: 0.95rem;
+   font-weight: 600;
+ }
+ 
+@@ -639,7 +582,7 @@ onMounted(() => {
+ 
+ .filter-label {
+   display: block;
+-  font-size: 0.65rem;
++  font-size: 0.9rem;
+   font-weight: 700;
+   color: #b979cc;
+   text-transform: uppercase;
+@@ -708,7 +651,7 @@ onMounted(() => {
+   color: white;
+   padding: 0.5rem 1.25rem;
+   border-radius: 0.75rem;
+-  font-size: 0.75rem;
++  font-size: 1rem;
+   font-weight: 600;
+   border: none;
+   cursor: pointer;
+@@ -750,7 +693,7 @@ onMounted(() => {
+ }
+ 
+ .record-count {
+-  font-size: 0.7rem;
++  font-size: 0.95rem;
+   color: #94a3b8;
+ }
+ 
+@@ -770,7 +713,7 @@ onMounted(() => {
+ }
+ 
+ .loading-state p {
+-  color: #475569;
++  color: #cbd5e1;
+   margin-top: 1rem;
+ }
+ 
+@@ -814,7 +757,7 @@ onMounted(() => {
+ .table-header-cell {
+   padding: 1rem 1.5rem;
+   text-align: left;
+-  font-size: 0.7rem;
++  font-size: 0.95rem;
+   font-weight: 800;
+   text-transform: uppercase;
+   letter-spacing: 0.05em;
+@@ -841,7 +784,7 @@ onMounted(() => {
+   align-items: center;
+   padding: 0.25rem 0.8rem;
+   border-radius: 30px;
+-  font-size: 0.7rem;
++  font-size: 0.95rem;
+   font-weight: 700;
+ }
+ 
+@@ -860,10 +803,10 @@ onMounted(() => {
+   align-items: center;
+   padding: 0.2rem 0.6rem;
+   border-radius: 30px;
+-  font-size: 0.65rem;
++  font-size: 0.9rem;
+   font-weight: 600;
+   background: #f1f5f9;
+-  color: #475569;
++  color: #cbd5e1;
+ }
+ 
+ .status-badge {
+@@ -871,7 +814,7 @@ onMounted(() => {
+   align-items: center;
+   padding: 0.3rem 0.8rem;
+   border-radius: 30px;
+-  font-size: 0.7rem;
++  font-size: 0.95rem;
+   font-weight: 700;
+ }
+ 
+@@ -887,36 +830,31 @@ onMounted(() => {
+   border: 1px solid #bae6fd;
+ }
+ 
+-.status-badge.status-revision { /* Reusing revision style for cancelled */
++.status-badge.status-cancelled {
+   background: #fee2e2;
+   color: #dc2626;
+   border: 1px solid #fecaca;
+ }
+ 
+-.status-badge.status-pending { /* Fallback for any other status */
+-  background: #fef3c7;
+-  color: #d97706;
+-  border: 1px solid #fde68a;
+-}
+-
+ .control-number {
+   font-family: monospace;
+-  font-size: 0.8rem;
+-  font-weight: 700;
+-  color: #7e22ce;
+-  letter-spacing: 0.03em;
++  font-size: 0.95rem;
++  font-weight: 800;
++  color: #6b21a8;
++  letter-spacing: 0.05em;
+ }
+ 
+ .item-date {
+-  font-size: 0.65rem;
+-  color: #94a3b8;
+-  margin-top: 0.25rem;
++  font-size: 0.95rem;
++  color: #334155;
++  font-weight: 700;
++  margin-top: 0.35rem;
+ }
+ 
+ .item-title {
+-  font-weight: 600;
+-  color: #1e293b;
+-  font-size: 0.85rem;
++  font-weight: 800;
++  color: #0f172a;
++  font-size: 1.1rem;
+   line-height: 1.4;
+ }
+ 
+@@ -942,7 +880,7 @@ onMounted(() => {
+ }
+ 
+ .empty-content p {
+-  color: #475569;
++  color: #cbd5e1;
+   font-size: 0.85rem;
+ }
+ 
+@@ -958,8 +896,8 @@ onMounted(() => {
+ }
+ 
+ .pagination-info {
+-  font-size: 0.75rem;
+-  color: #64748b;
++  font-size: 1rem;
++  color: #94a3b8;
+ }
+ 
+ .info-highlight {
+@@ -983,10 +921,10 @@ onMounted(() => {
+   border: 1px solid #e2e8f0;
+   border-radius: 0.6rem;
+   background: #ffffff;
+-  font-size: 0.75rem;
++  font-size: 1rem;
+   font-weight: 500;
+   cursor: pointer;
+-  color: #475569;
++  color: #cbd5e1;
+   transition: all 0.2s ease;
+ }
+ 
+
+--- DIFF FOR src/views/twg/SubmitADView.vue ---
+diff --git "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/twg/SubmitADView.vue" "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/twg/SubmitADView.vue"
+index e2830a9..c28197b 100644
+--- "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/twg/SubmitADView.vue"
++++ "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/twg/SubmitADView.vue"
+@@ -741,7 +741,7 @@ const formatBudgetName = (name) => {
+ 
+ const fetchVenues = async () => {
+   try {
+-    const response = await api.get('get-venues');
++    const response = await api.get('venues');
+     if (response.data && response.data.success) {
+       venues.value = response.data.data || [];
+     }
+@@ -1008,18 +1008,14 @@ const submitActivityDesign = async () => {
+     formData.append('start_time', form.value.start_time);
+     formData.append('end_time', form.value.end_time);
+     formData.append('user_id', user.value.id || user.value.user_id);
+-    
+-    if (form.value.venue && form.value.venue !== 'Other') {
+-      formData.append('venue-id', form.value.venue); 
+-      const selectedVenue = venues.value.find(v => v.venue_id == form.value.venue);
+-      formData.append('venue-name', selectedVenue ? selectedVenue.venue_name : '');
+-    } else if (form.value.venue === 'Other') {
+-      formData.append('venue-id', '');
+-      formData.append('venue-name', customVenue.value);
++    if (form.value.venue === 'Other') {
++      formData.append('venue_id', 'Other');
++      formData.append('custom_venue', customVenue.value);
++    } else {
++      formData.append('venue_id', form.value.venue);
+     }
+-    
+-    formData.append('target-participants', form.value.target_participants);
+-    formData.append('proposed-budget', form.value.proposed_budget);
++    formData.append('target_participants', form.value.target_participants);
++    formData.append('proposed_budget', form.value.proposed_budget);
+     
+     const transItem = form.value.budget_items.find(i => i.name === 'Transportation');
+     if (transItem && Number(transItem.total) > 20000) {
+@@ -1032,113 +1028,18 @@ const submitActivityDesign = async () => {
+       return;
+     }
+ 
+-    // Construct normalized budget rows
+-    const finalBudgetItems = [];
+-
+-    const categoryMapping = {
+-      'Meals': 'Catering & Hospitality',
+-      'Snacks': 'Catering & Hospitality',
+-      'Function Room/Venue': 'Venue & Logistics',
+-      'Accommodation': 'Venue & Logistics',
+-      'Equipment Rental': 'Venue & Logistics',
+-      'Professional Fee/Honoria': 'Program & Speakers',
+-      'Token/s': 'Program & Speakers',
+-      'Materials and Supplies': 'Materials & Miscellaneous',
+-      'Transportation': 'Venue & Logistics',
+-      'Others': 'Materials & Miscellaneous'
++    const budgetObj = {
++      meals_and_snacks: (Number(form.value.budget_items.find(i => i.name === 'Meals')?.total || 0) + Number(form.value.budget_items.find(i => i.name === 'Snacks')?.total || 0)),
++      function_room_venue: Number(form.value.budget_items.find(i => i.name === 'Function Room/Venue')?.total || 0),
++      accommodation: Number(form.value.budget_items.find(i => i.name === 'Accommodation')?.total || 0),
++      equipment_rental: Number(form.value.budget_items.find(i => i.name === 'Equipment Rental')?.total || 0),
++      professional_fee_honoria: Number(form.value.budget_items.find(i => i.name === 'Professional Fee/Honoria')?.total || 0),
++      tokens: Number(form.value.budget_items.find(i => i.name === 'Token/s')?.total || 0),
++      materials_and_supplies: Number(form.value.budget_items.find(i => i.name === 'Materials and Supplies')?.total || 0) + Number(form.value.budget_items.find(i => i.name === 'Others')?.total || 0),
++      transportation: Number(form.value.budget_items.find(i => i.name === 'Transportation')?.total || 0)
+     };
+ 
+-    // Meals
+-    const mealsSelectedKeys = Object.keys(mealsSelected.value).filter(k => mealsSelected.value[k]);
+-    if (mealsSelectedKeys.length > 0) {
+-      const baseMeals = form.value.budget_items.find(i => i.name === 'Meals');
+-      const baseMealsTotal = Number(baseMeals?.total) || 0;
+-      if (baseMealsTotal > 0) {
+-        const amountPerMeal = baseMealsTotal / mealsSelectedKeys.length;
+-        mealsSelectedKeys.forEach(key => {
+-          const capitalized = key.charAt(0).toUpperCase() + key.slice(1);
+-          finalBudgetItems.push({
+-            category: 'Catering & Hospitality',
+-            name: 'Meals',
+-            sub_item: capitalized,
+-            amount: amountPerMeal
+-          });
+-        });
+-      }
+-    }
+-
+-    // Snacks
+-    const snacksSelectedKeys = Object.keys(snacksSelected.value).filter(k => snacksSelected.value[k]);
+-    if (snacksSelectedKeys.length > 0) {
+-      const baseSnacks = form.value.budget_items.find(i => i.name === 'Snacks');
+-      const baseSnacksTotal = Number(baseSnacks?.total) || 0;
+-      if (baseSnacksTotal > 0) {
+-        const amountPerSnack = baseSnacksTotal / snacksSelectedKeys.length;
+-        snacksSelectedKeys.forEach(key => {
+-          const capitalized = key === 'am' ? 'AM Snack' : 'PM Snack';
+-          finalBudgetItems.push({
+-            category: 'Catering & Hospitality',
+-            name: 'Snacks',
+-            sub_item: capitalized,
+-            amount: amountPerSnack
+-          });
+-        });
+-      }
+-    }
+-
+-    form.value.budget_items.forEach(item => {
+-      if (item.name === 'Meals' || item.name === 'Snacks') return;
+-
+-      const category = categoryMapping[item.name] || 'Miscellaneous';
+-      const totalAmt = Number(item.total) || 0;
+-
+-      if (item.name === 'Professional Fee/Honoria') {
+-        finalBudgetItems.push({
+-          category,
+-          name: item.name,
+-          sub_item: null,
+-          pax: Number(pfPax.value) || null,
+-          amount: totalAmt
+-        });
+-      } else if (item.name === 'Token/s') {
+-        finalBudgetItems.push({
+-          category,
+-          name: item.name,
+-          sub_item: null,
+-          pax: Number(tokensPax.value) || null,
+-          amount: totalAmt
+-        });
+-      } else if (item.name === 'Others') {
+-        if (othersList.value && othersList.value.length > 0) {
+-          othersList.value.forEach(other => {
+-            if (Number(other.amount) > 0) {
+-              finalBudgetItems.push({
+-                category,
+-                name: 'Others',
+-                sub_item: other.name || 'Other Item',
+-                amount: Number(other.amount)
+-              });
+-            }
+-          });
+-        } else if (totalAmt > 0) {
+-          finalBudgetItems.push({
+-            category,
+-            name: 'Others',
+-            sub_item: 'Other Item',
+-            amount: totalAmt
+-          });
+-        }
+-      } else {
+-        finalBudgetItems.push({
+-          category,
+-          name: item.name,
+-          sub_item: null,
+-          amount: totalAmt
+-        });
+-      }
+-    });
+-
+-    formData.append('budgetary-requirements', JSON.stringify(finalBudgetItems));
++    formData.append('budget_items', JSON.stringify(budgetObj));
+ 
+     if (designFile.value) {
+       formData.append('design_file', designFile.value);
+
+--- DIFF FOR src/views/twg/SubmitARView.vue ---
+diff --git "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/twg/SubmitARView.vue" "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/twg/SubmitARView.vue"
+index 28cf761..20cbdf4 100644
+--- "a/C:\\Users\\HP\\Downloads\\GAD_AMS-main\\GAD_AMS-main\\frontend\\src/views/twg/SubmitARView.vue"
++++ "b/c:\\xampp\\htdocs\\GAD_AMS_2\\frontend\\src/views/twg/SubmitARView.vue"
+@@ -725,7 +725,7 @@ const fetchApprovedControls = async () => {
+   loadingControls.value = true;
+   try {
+     // Fetch all values from the control_number table
+-    const res = await api.get(`get-control-numbers/${user.value.id}`);
++    const res = await api.get(`approved-controls/${user.value.id}`);
+     if (res.data.success) {
+       approvedControls.value = res.data.data;
+     }
+@@ -968,63 +968,41 @@ const submitReport = async () => {
+   try {
+     const formData = new FormData();
+     
+-    Object.keys(form.value).forEach(key => {
+-      if (key === 'budget_items') {
+-        const finalBudgetItems = [];
+-        const categoryMapping = {
+-          'Meals': 'Catering & Hospitality',
+-          'Snacks': 'Catering & Hospitality',
+-          'Function Room/Venue': 'Venue & Logistics',
+-          'Accommodation': 'Venue & Logistics',
+-          'Equipment Rental': 'Venue & Logistics',
+-          'Professional Fee/Honoria': 'Program & Speakers',
+-          'Token/s': 'Program & Speakers',
+-          'Materials and Supplies': 'Materials & Miscellaneous',
+-          'Transportation': 'Venue & Logistics',
+-          'Others': 'Materials & Miscellaneous'
+-        };
+-
+-        form.value.budget_items.forEach(item => {
+-          const totalAmt = Number(item.total) || 0;
+-          const category = categoryMapping[item.name] || 'Miscellaneous';
+-
+-          if (item.name === 'Others') {
+-            if (othersList.value && othersList.value.length > 0) {
+-              othersList.value.forEach(other => {
+-                if (Number(other.amount) > 0) {
+-                  finalBudgetItems.push({
+-                    category,
+-                    name: 'Others',
+-                    sub_item: other.name || 'Other Item',
+-                    amount: Number(other.amount)
+-                  });
+-                }
+-              });
+-            } else if (totalAmt > 0) {
+-              finalBudgetItems.push({
+-                category,
+-                name: 'Others',
+-                sub_item: 'Other Item',
+-                amount: totalAmt
+-              });
+-            }
+-          } else {
+-            finalBudgetItems.push({
+-              category,
+-              name: item.name,
+-              sub_item: null,
+-              amount: totalAmt
+-            });
+-          }
+-        });
++    const budgetObj = {
++      meals_and_snacks: (Number(form.value.budget_items.find(i => i.name === 'Meals')?.total || 0) + Number(form.value.budget_items.find(i => i.name === 'Snacks')?.total || 0)),
++      function_room_venue: Number(form.value.budget_items.find(i => i.name === 'Function Room/Venue')?.total || 0),
++      accommodation: Number(form.value.budget_items.find(i => i.name === 'Accommodation')?.total || 0),
++      equipment_rental: Number(form.value.budget_items.find(i => i.name === 'Equipment Rental')?.total || 0),
++      professional_fee_honoria: Number(form.value.budget_items.find(i => i.name === 'Professional Fee/Honoria')?.total || 0),
++      tokens: Number(form.value.budget_items.find(i => i.name === 'Token/s')?.total || 0),
++      materials_and_supplies: Number(form.value.budget_items.find(i => i.name === 'Materials and Supplies')?.total || 0) + Number(form.value.budget_items.find(i => i.name === 'Others')?.total || 0),
++      transportation: Number(form.value.budget_items.find(i => i.name === 'Transportation')?.total || 0)
++    };
++    formData.append('budget_items', JSON.stringify(budgetObj));
++
++    const evalMap = {
++      "Time Management": "time_management",
++      "Orderliness and Program Flow": "orderliness_and_program_flow",
++      "Appropriateness of the Venue": "appropriateness_of_venue",
++      "Sound System and Hall Preparation": "sound_system_and_hall_preparation",
++      "Restroom/s": "restrooms",
++      "Food and Drinks": "food_and_drinks"
++    };
++    const evalObj = {};
++    form.value.evaluation_items.forEach(item => {
++      evalObj[evalMap[item.area]] = item.rating || 0;
++    });
++    formData.append('evaluation_results', JSON.stringify(evalObj));
+ 
+-        formData.append(key, JSON.stringify(finalBudgetItems));
+-      } else if (key === 'evaluation_items') {
+-        formData.append(key, JSON.stringify(form.value[key]));
+-      } else {
++    Object.keys(form.value).forEach(key => {
++      if (key !== 'budget_items' && key !== 'evaluation_items' && key !== 'venue') {
+         formData.append(key, form.value[key]);
+       }
+     });
++
++    if (form.value.venue) {
++      formData.append('venue', form.value.venue);
++    }
+     
+     uploadedFiles.value.forEach(file => {
+       formData.append('attachment[]', file);

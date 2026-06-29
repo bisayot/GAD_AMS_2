@@ -82,6 +82,21 @@ $routes->group('api', function($routes) {
     $routes->options('activity-designs/trash/(:num)', 'AuthController::handleOptions');
     $routes->delete('activity-designs/trash/(:num)', 'ActivityDesignController::trash/$1');
 
+    $routes->options('get-form-types', 'AuthController::handleOptions');
+    $routes->get('get-form-types', 'ActivityDesignController::getFormTypes');
+    
+    $routes->options('get-gad-mandates', 'AuthController::handleOptions');
+    $routes->get('get-gad-mandates', 'ActivityDesignController::getGADMandates');
+    
+    $routes->options('get-gender-issues', 'AuthController::handleOptions');
+    $routes->get('get-gender-issues', 'ActivityDesignController::getGenderIssues');
+    
+    $routes->options('get-gender-issues/(:num)', 'AuthController::handleOptions');
+    $routes->get('get-gender-issues/(:num)', 'ActivityDesignController::getGenderIssues/$1');
+    
+    $routes->options('get-activity-classifications', 'AuthController::handleOptions');
+    $routes->get('get-activity-classifications', 'ActivityDesignController::getActivityClassifications');
+
     $routes->options('activity-designs', 'ActivityDesignController::index');
     $routes->get('activity-designs', 'ActivityDesignController::index');
 
@@ -99,6 +114,22 @@ $routes->group('api', function($routes) {
     // Update deadline
     $routes->options('update-deadline/(:num)', 'AuthController::handleOptions');
     $routes->post('update-deadline/(:num)', 'ActivityDesignController::updateDeadline/$1');
+
+    // ----------------------------------------------------------------
+    // MANDATES & GENDER ISSUES ROUTES
+    // ----------------------------------------------------------------
+    $routes->options('mandates', 'AuthController::handleOptions');
+    $routes->get('mandates', 'MandateController::index');
+    $routes->post('mandates', 'MandateController::storeMandate');
+    $routes->options('mandates/(:num)', 'AuthController::handleOptions');
+    $routes->put('mandates/(:num)', 'MandateController::updateMandate/$1');
+    $routes->delete('mandates/(:num)', 'MandateController::deleteMandate/$1');
+
+    $routes->options('gender-issues', 'AuthController::handleOptions');
+    $routes->post('gender-issues', 'MandateController::storeIssue');
+    $routes->options('gender-issues/(:num)', 'AuthController::handleOptions');
+    $routes->put('gender-issues/(:num)', 'MandateController::updateIssue/$1');
+    $routes->delete('gender-issues/(:num)', 'MandateController::deleteIssue/$1');
 
     // ----------------------------------------------------------------
     // ACCOMPLISHMENT REPORT ROUTES (new)
@@ -208,6 +239,33 @@ $routes->group('api', function($routes) {
     
     $routes->options('messages/unread-count/(:num)', 'AuthController::handleOptions');
     $routes->get('messages/unread-count/(:num)', 'MessageController::getUnreadCount/$1');
+
+    // ----------------------------------------------------------------
+    // BUDGET ROUTES
+    // ----------------------------------------------------------------
+    $routes->options('budget/summary', 'BudgetController::optionsHandler');
+    $routes->get('budget/summary', 'BudgetController::getSummary');
+    $routes->options('budget/gad-plan', 'BudgetController::optionsHandler');
+    $routes->get('budget/gad-plan', 'BudgetController::getGadPlan');
+    
+    // Office Budget Utilization and Realignment Monitoring
+    $routes->options('staff/budget-monitoring', 'BudgetController::optionsHandler');
+    $routes->get('staff/budget-monitoring', 'BudgetController::getOfficeUtilization');
+    
+    $routes->options('staff/budget-monitoring/update', 'BudgetController::optionsHandler');
+    $routes->post('staff/budget-monitoring/update', 'BudgetController::updateOfficeBudget');
+    
+    $routes->options('staff/budget/available-mandates', 'BudgetController::optionsHandler');
+    $routes->get('staff/budget/available-mandates', 'BudgetController::getAvailableMandates');
+    
+    $routes->options('staff/budget/realignment-logs', 'BudgetController::optionsHandler');
+    $routes->get('staff/budget/realignment-logs', 'BudgetController::getRealignmentLogs');
+    
+    $routes->options('staff/budget/financial-meta', 'BudgetController::optionsHandler');
+    $routes->get('staff/budget/financial-meta', 'BudgetController::getFinancialMeta');
+    
+    $routes->options('staff/budget/realign', 'BudgetController::optionsHandler');
+    $routes->post('staff/budget/realign', 'BudgetController::executeRealignment');
 
     // ----------------------------------------------------------------
     // FILE SERVING ROUTES (serve PDFs from writable/uploads)
