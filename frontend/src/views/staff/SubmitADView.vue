@@ -146,7 +146,7 @@
                       <input 
                         type="date" 
                         v-model="form.start_date" 
-                        :min="todayDate"
+                        :min="minStartDate"
                         required 
                         class="custom-input-field code-icon-calendar"
                       >
@@ -168,7 +168,7 @@
                       <input 
                         type="date" 
                         v-model="form.end_date" 
-                        :min="todayDate"
+                        :min="form.start_date || minStartDate"
                         required 
                         class="custom-input-field code-icon-calendar"
                       >
@@ -233,7 +233,7 @@
                         </button>
                         <transition name="fade-pop">
                           <div v-if="helpState.targetParticipants" class="simple-popup">
-                            Participants must be 50 and above for approval of activity design.
+                            Minimum of 1 participant. If participants are below 50, catering and hospitality budgets will not be funded.
                           </div>
                         </transition>
                       </div>
@@ -245,7 +245,7 @@
                       required
                       class="custom-input-field"
                       placeholder="Enter total participants"
-                      min="50"
+                      min="1"
                     >
                   </div>
 
@@ -255,7 +255,7 @@
                     <div class="attachment-display-grid">
                       <div class="attachment-upload-column">
                         <div class="upload-dropzone" @click="$refs.fileInput.click()">
-                          <input ref="fileInput" type="file" @change="handleFileUpload" accept=".pdf" required class="file-input-hidden" />
+                          <input ref="fileInput" type="file" @change="handleFileUpload" accept=".pdf" required style="display: none;" />
                           <span class="upload-icon">📤</span>
                           <p class="upload-text">Upload Activity Design Document</p>
                           <p class="upload-hint">PDF format (Max 10MB)</p>
@@ -597,6 +597,11 @@ const getTodayDate = () => {
 };
 const todayDate = ref(getTodayDate());
 
+const minStartDate = computed(() => {
+  const d = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" }));
+  return d.toISOString().split('T')[0];
+});
+
 const helpState = ref({
   startDate: false,
   endDate: false,
@@ -646,43 +651,49 @@ const isHoliday = (dateString) => {
 
 const isCurrentYear = (dateString) => {
   const date = new Date(dateString + 'T00:00:00');
-  const currentYear = new Date().getFullYear();
+  const manilaTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" });
+  const currentYear = new Date(manilaTime).getFullYear();
   return date.getFullYear() === currentYear;
 };
 
-const isValidActivityDate = (dateString) => {
+const isValidActivityDate = (dateString, checkLeadTime = false) => {
   if (!isCurrentYear(dateString)) {
     const currentYear = new Date().getFullYear();
     return { valid: false, reason: `Activities can only be scheduled in ${currentYear}. Please select a date within the current year.` };
   }
-  if (isWeekend(dateString)) {
-    return { valid: false, reason: 'Activities cannot be scheduled on Friday, Saturday, or Sunday.' };
-  }
-  if (isHoliday(dateString)) {
-    return { valid: false, reason: 'This date is a holiday. Please select another date.' };
+  if (checkLeadTime) {
+    const targetDate = new Date(dateString + 'T00:00:00');
+    const today = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" }));
+    today.setHours(0, 0, 0, 0);
+    const diffTime = targetDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 14) {
+       return { valid: true, reason: `Activities should ideally be scheduled at least 14 days in advance.`, isWarning: true };
+    }
   }
   return { valid: true, reason: '' };
 };
 
 const isValidActivityDuration = (startDateString, endDateString) => {
   if (!startDateString || !endDateString) {
-    return { valid: true, reason: '' };
+    return { valid: true, reason: '', isWarning: false };
   }
   const startDate = new Date(startDateString + 'T00:00:00');
   const endDate = new Date(endDateString + 'T00:00:00');
   
   if (endDate < startDate) {
-    return { valid: false, reason: 'End date cannot be before start date.' };
+    return { valid: false, reason: 'End date cannot be before start date.', isWarning: false };
   }
   
   const diffTime = endDate - startDate;
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   
-  if (diffDays > 7) {
-    return { valid: false, reason: 'The duration of the activity must not exceed a week (maximum of 7 calendar days).' };
+  if (diffDays > 31) {
+    return { valid: true, reason: 'Are you sure if the activity is more than 1 month?', isWarning: true };
   }
   
-  return { valid: true, reason: '' };
+  return { valid: true, reason: '', isWarning: false };
 };
 
 const venues = ref([]);
@@ -727,7 +738,31 @@ const fileInput = ref(null);
 
 const handleFileUpload = (event) => {
   if (event.target.files.length > 0) {
-    designFile.value = event.target.files[0];
+    const file = event.target.files[0];
+    
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Invalid File Type',
+        text: 'Only PDF files are allowed.',
+        confirmButtonColor: '#b979cc'
+      });
+      removeFile();
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      Swal.fire({
+        icon: 'error',
+        title: 'File Too Large',
+        text: 'The file size must not exceed 10 MB.',
+        confirmButtonColor: '#b979cc'
+      });
+      removeFile();
+      return;
+    }
+
+    designFile.value = file;
   }
 };
 
@@ -804,8 +839,9 @@ watch(() => form.value.budget_items, (newItems) => {
 
 watch(() => form.value.start_date, (newDate) => {
   if (newDate) {
-    const validation = isValidActivityDate(newDate);
+    const validation = isValidActivityDate(newDate, true);
     if (!validation.valid) {
+      document.activeElement?.blur();
       Swal.fire({
         icon: 'warning',
         title: 'Invalid Date',
@@ -814,10 +850,19 @@ watch(() => form.value.start_date, (newDate) => {
       });
       form.value.start_date = '';
       return;
+    } else if (validation.isWarning) {
+      document.activeElement?.blur();
+      Swal.fire({
+        icon: 'info',
+        title: 'Lead Time Warning',
+        text: validation.reason,
+        confirmButtonColor: '#b979cc'
+      });
     }
     if (form.value.end_date) {
       const durationValidation = isValidActivityDuration(newDate, form.value.end_date);
       if (!durationValidation.valid) {
+        document.activeElement?.blur();
         Swal.fire({
           icon: 'warning',
           title: 'Invalid Duration',
@@ -825,6 +870,14 @@ watch(() => form.value.start_date, (newDate) => {
           confirmButtonColor: '#b979cc'
         });
         form.value.start_date = '';
+      } else if (durationValidation.isWarning) {
+        document.activeElement?.blur();
+        Swal.fire({
+          icon: 'info',
+          title: 'Long Duration',
+          text: durationValidation.reason,
+          confirmButtonColor: '#b979cc'
+        });
       }
     }
   }
@@ -832,8 +885,9 @@ watch(() => form.value.start_date, (newDate) => {
 
 watch(() => form.value.end_date, (newDate) => {
   if (newDate) {
-    const validation = isValidActivityDate(newDate);
+    const validation = isValidActivityDate(newDate, false);
     if (!validation.valid) {
+      document.activeElement?.blur();
       Swal.fire({
         icon: 'warning',
         title: 'Invalid Date',
@@ -846,6 +900,7 @@ watch(() => form.value.end_date, (newDate) => {
     if (form.value.start_date) {
       const durationValidation = isValidActivityDuration(form.value.start_date, newDate);
       if (!durationValidation.valid) {
+        document.activeElement?.blur();
         Swal.fire({
           icon: 'warning',
           title: 'Invalid Duration',
@@ -853,8 +908,47 @@ watch(() => form.value.end_date, (newDate) => {
           confirmButtonColor: '#b979cc'
         });
         form.value.end_date = '';
+      } else if (durationValidation.isWarning) {
+        document.activeElement?.blur();
+        Swal.fire({
+          icon: 'info',
+          title: 'Long Duration',
+          text: durationValidation.reason,
+          confirmButtonColor: '#b979cc'
+        });
       }
     }
+  }
+});
+
+const isValidTime = (timeStr) => {
+  if (!timeStr) return true;
+  return timeStr >= "04:00" && timeStr <= "20:00";
+};
+
+watch(() => form.value.start_time, (newTime) => {
+  if (newTime && !isValidTime(newTime)) {
+    document.activeElement?.blur();
+    Swal.fire({
+      icon: 'warning',
+      title: 'Invalid Time',
+      text: 'Must be set between 04:00 AM and 08:00 PM.',
+      confirmButtonColor: '#b979cc'
+    });
+    form.value.start_time = '';
+  }
+});
+
+watch(() => form.value.end_time, (newTime) => {
+  if (newTime && !isValidTime(newTime)) {
+    document.activeElement?.blur();
+    Swal.fire({
+      icon: 'warning',
+      title: 'Invalid Time',
+      text: 'Must be set between 04:00 AM and 08:00 PM.',
+      confirmButtonColor: '#b979cc'
+    });
+    form.value.end_time = '';
   }
 });
 
@@ -953,8 +1047,20 @@ watch(
 );
 
 const submitActivityDesign = async () => {
+  // Check if today is a weekday
+  const currentDay = new Date().getDay();
+  if (currentDay === 0 || currentDay === 6) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Submission Not Allowed',
+      text: 'Submissions are only allowed from Monday to Friday.',
+      confirmButtonColor: '#b979cc'
+    });
+    return;
+  }
+
   // Validate start date
-  const startValidation = isValidActivityDate(form.value.start_date);
+  const startValidation = isValidActivityDate(form.value.start_date, true);
   if (!startValidation.valid) {
     Swal.fire({
       icon: 'warning',
@@ -966,7 +1072,7 @@ const submitActivityDesign = async () => {
   }
 
   // Validate end date
-  const endValidation = isValidActivityDate(form.value.end_date);
+  const endValidation = isValidActivityDate(form.value.end_date, false);
   if (!endValidation.valid) {
     Swal.fire({
       icon: 'warning',
@@ -977,7 +1083,7 @@ const submitActivityDesign = async () => {
     return;
   }
 
-  // Validate activity duration (max 7 days)
+  // Validate activity duration
   const durationValidation = isValidActivityDuration(form.value.start_date, form.value.end_date);
   if (!durationValidation.valid) {
     Swal.fire({
@@ -986,6 +1092,54 @@ const submitActivityDesign = async () => {
       text: durationValidation.reason,
       confirmButtonColor: '#b979cc'
     });
+    return;
+  }
+  if (durationValidation.isWarning) {
+    const result = await Swal.fire({
+      icon: 'warning',
+      title: 'Long Duration',
+      text: durationValidation.reason,
+      showCancelButton: true,
+      confirmButtonText: 'Yes, proceed',
+      cancelButtonText: 'No, cancel',
+      confirmButtonColor: '#b979cc'
+    });
+    if (!result.isConfirmed) {
+      return;
+    }
+  }
+
+  // Validate start time and end time
+  if (!isValidTime(form.value.start_time) || !isValidTime(form.value.end_time)) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Invalid Time',
+      text: 'Must be set between 04:00 AM and 08:00 PM.',
+      confirmButtonColor: '#b979cc'
+    });
+    return;
+  }
+
+  if (!designFile.value) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Missing Document',
+      text: 'Please upload the Activity Design PDF document.',
+      confirmButtonColor: '#b979cc'
+    });
+    return;
+  }
+
+  const submitConfirm = await Swal.fire({
+    title: 'Confirm Submission',
+    text: 'Are you sure you want to submit this Activity Design?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, Submit',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#b979cc'
+  });
+  if (!submitConfirm.isConfirmed) {
     return;
   }
 

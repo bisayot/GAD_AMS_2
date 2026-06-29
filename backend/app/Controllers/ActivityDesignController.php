@@ -168,10 +168,11 @@ class ActivityDesignController extends BaseController
         $db = \Config\Database::connect();
         
         $active = $db->table('activity_design as ad')
-            ->select('ad.act_design_id, ad.status, cn.control_number as control, office_units.office_name as office, users.full_name as submitter_name, ad.activity_title as title, ad.form_type as formLabel, ad.start_date as date, ad.end_date')
+            ->select('ad.act_design_id, ad.status, cn.control_number as control, office_units.office_name as office, users.full_name as submitter_name, ad.activity_title as title, form_types.name as formLabel, ad.start_date as date, ad.end_date')
             ->join('users', 'users.id = ad.user_id', 'left')
             ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number as cn', 'cn.act_design_id = ad.act_design_id', 'left')
+            ->join('form_types', 'form_types.id = ad.form_type', 'left')
             ->where('ad.deleted_at', null)
             ->get()->getResultArray();
 
@@ -195,10 +196,11 @@ class ActivityDesignController extends BaseController
         $db = \Config\Database::connect();
         
         $active = $db->table('activity_design as ad')
-            ->select('ad.act_design_id, ad.status, cn.control_number as control, office_units.office_name as office, users.full_name as submitter_name, ad.activity_title as title, ad.form_type as formLabel, ad.start_date as date, ad.end_date')
+            ->select('ad.act_design_id, ad.status, cn.control_number as control, office_units.office_name as office, users.full_name as submitter_name, ad.activity_title as title, form_types.name as formLabel, ad.start_date as date, ad.end_date')
             ->join('users', 'users.id = ad.user_id', 'left')
             ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number as cn', 'cn.act_design_id = ad.act_design_id', 'left')
+            ->join('form_types', 'form_types.id = ad.form_type', 'left')
             ->where('ad.user_id', $userId)
             ->where('ad.deleted_at', null)
             ->get()->getResultArray();
@@ -233,11 +235,12 @@ class ActivityDesignController extends BaseController
             // Try searching in archive fallback
             $db = \Config\Database::connect();
             $design = $db->table('archived_activity_designs as aad')
-                ->select('aad.*, aad.original_act_design_id as act_design_id, aad.activity_title as title, aad.form_type as formLabel, office_units.office_name as office, users.full_name as submitter_name, aad.start_date as date, venues.venue_name as venue')
+                ->select('aad.*, aad.original_act_design_id as act_design_id, aad.activity_title as title, form_types.name as formLabel, office_units.office_name as office, users.full_name as submitter_name, aad.start_date as date, venues.venue_name as venue')
                 ->join('users', 'users.id = aad.user_id', 'left')
                 ->join('office_units', 'office_units.office_id = users.office_id', 'left')
                 ->join('control_number as cn', 'cn.act_design_id = aad.original_act_design_id', 'left')
                 ->join('venues', 'venues.venue_id = aad.venue_id', 'left')
+                ->join('form_types', 'form_types.id = aad.form_type', 'left')
                 ->select('COALESCE(cn.control_number, "N/A") as control')
                 ->where('aad.original_act_design_id', $id)
                 ->get()->getRowArray();
@@ -374,10 +377,11 @@ class ActivityDesignController extends BaseController
 
         // Fetch designs that are 'Approved' or 'Cancelled'
         $designs = $activityDesignModel
-            ->select('activity_design.*, control_number.control_number as control, office_units.office_name as office, users.full_name as submitter_name, activity_design.activity_title as title, activity_design.form_type as formLabel, activity_design.start_date as date')
+            ->select('activity_design.*, control_number.control_number as control, office_units.office_name as office, users.full_name as submitter_name, activity_design.activity_title as title, form_types.name as formLabel, activity_design.start_date as date')
             ->join('users', 'users.id = activity_design.user_id', 'left')
             ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number', 'control_number.act_design_id = activity_design.act_design_id', 'left')
+            ->join('form_types', 'form_types.id = activity_design.form_type', 'left')
             ->whereIn('activity_design.status', ['Approved', 'Cancelled'])
             ->orderBy('activity_design.act_design_id', 'DESC')
             ->findAll();
