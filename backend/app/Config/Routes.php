@@ -214,9 +214,20 @@ $routes->group('api', function($routes) {
     $routes->options('revision-report/(:num)', 'AuthController::handleOptions');
     $routes->post('revision-report/(:num)', 'AccomplishmentReportController::revisionReport/$1');
 
+    $routes->options('activity-design/mark-viewed/(:num)', 'AuthController::handleOptions');
+    $routes->post('activity-design/mark-viewed/(:num)', 'ActivityDesignController::markViewed/$1');
+    $routes->options('activity-design/unmark-viewed/(:num)', 'AuthController::handleOptions');
+    $routes->post('activity-design/unmark-viewed/(:num)', 'ActivityDesignController::unmarkViewed/$1');
+
+    $routes->options('accomplishment-report/mark-viewed/(:num)', 'AuthController::handleOptions');
+    $routes->post('accomplishment-report/mark-viewed/(:num)', 'AccomplishmentReportController::markViewed/$1');
+    $routes->options('accomplishment-report/unmark-viewed/(:num)', 'AuthController::handleOptions');
+    $routes->post('accomplishment-report/unmark-viewed/(:num)', 'AccomplishmentReportController::unmarkViewed/$1');
+
     // ----------------------------------------------------------------
     // MESSAGING ROUTES
     // ----------------------------------------------------------------
+
     $routes->options('messages/send', 'AuthController::handleOptions');
     $routes->post('messages/send', 'MessageController::send');
     $routes->options('messages/announce', 'AuthController::handleOptions');

@@ -363,6 +363,28 @@ class AccomplishmentReportController extends BaseController
                     }
                 }
 
+                // Update archived_activity_designs if fields are provided
+                $adUpdateData = [];
+                if ($this->request->getPost('activity_classification_id')) {
+                    $adUpdateData['classification_id'] = $this->request->getPost('activity_classification_id');
+                }
+                if ($this->request->getPost('gad_mandate_id')) {
+                    $adUpdateData['gad_mandate_id'] = $this->request->getPost('gad_mandate_id');
+                }
+                if ($this->request->getPost('gender_issue_id')) {
+                    $adUpdateData['gender_issue_id'] = $this->request->getPost('gender_issue_id');
+                }
+
+                if (!empty($adUpdateData) && !empty($report['control_number'])) {
+                    $db = \Config\Database::connect();
+                    $controlRecord = $db->table('control_number')->where('control_number', $report['control_number'])->get()->getRowArray();
+                    if ($controlRecord && !empty($controlRecord['act_design_id'])) {
+                        $db->table('archived_activity_designs')
+                           ->where('original_act_design_id', $controlRecord['act_design_id'])
+                           ->update($adUpdateData);
+                    }
+                }
+
                 return $this->response->setJSON([
                     'success' => true,
                     'message' => 'Accomplishment Report updated and resubmitted successfully.'
@@ -487,6 +509,38 @@ class AccomplishmentReportController extends BaseController
         ]);
     }
 
+    public function markViewed($id = null)
+    {
+        if (!$id) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Report ID required'])->setStatusCode(400);
+        }
+
+        $db = \Config\Database::connect();
+        
+        try {
+            $updated = $db->table('accomplishment_report')->where('id', $id)->update(['is_viewed_by_admin' => 1]);
+            return $this->response->setJSON(['success' => true, 'message' => 'Marked as viewed']);
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Server Error: ' . $e->getMessage()])->setStatusCode(500);
+        }
+    }
+
+    public function unmarkViewed($id = null)
+    {
+        if (!$id) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Report ID required'])->setStatusCode(400);
+        }
+
+        $db = \Config\Database::connect();
+        
+        try {
+            $updated = $db->table('accomplishment_report')->where('id', $id)->update(['is_viewed_by_admin' => 0]);
+            return $this->response->setJSON(['success' => true, 'message' => 'Unmarked as viewed']);
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Server Error: ' . $e->getMessage()])->setStatusCode(500);
+        }
+    }
+
     public function trash($id = null)
     {
         if (!$id) {
@@ -501,8 +555,14 @@ class AccomplishmentReportController extends BaseController
             return $this->response->setJSON(['success' => false, 'message' => 'Accomplishment report not found'])->setStatusCode(404);
         }
 
+        if ($report['status'] !== 'Pending' || $report['is_viewed_by_admin'] == 1) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Cannot trash this document as it is already being processed or viewed by admin.'])->setStatusCode(400);
+        }
+
+        $actionUserId = $this->request->getHeaderLine('X-User-Id') ?: $report['user_id'];
+        $model->update($id, ['deleted_by' => $actionUserId]);
+
         if ($model->delete($id)) {
-            $actionUserId = $this->request->getHeaderLine('X-User-Id') ?: $report['user_id'];
             \App\Models\ActivityLogModel::log($actionUserId, 'Trash Document', 'moved to trash Accomplishment Report: ' . $report['activity_title']);
             return $this->response->setJSON(['success' => true, 'message' => 'Accomplishment report moved to trash successfully']);
         }

@@ -47,7 +47,6 @@
               </th>
               <th class="p-4 font-bold">Document Title</th>
               <th class="p-4 font-bold">Type</th>
-              <th class="p-4 font-bold">Deleted By</th>
               <th class="p-4 font-bold">Date Deleted</th>
               <th class="p-4 font-bold text-right">Actions</th>
             </tr>
@@ -70,9 +69,6 @@
                   :class="item.doc_type === 'design' ? 'bg-purple-500/30 text-purple-200 border border-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.3)]' : 'bg-pink-500/30 text-pink-200 border border-pink-400 shadow-[0_0_10px_rgba(236,72,153,0.3)]'">
                   {{ item.doc_type === 'design' ? 'Activity Design' : 'Accomplishment Report' }}
                 </span>
-              </td>
-              <td class="p-4 text-[#e2e8f0]">
-                {{ item.deleted_by_name || 'System / Unknown' }}
               </td>
               <td class="p-4 text-[#94a3b8] font-mono text-sm">
                 {{ item.deleted_date }}
@@ -127,12 +123,20 @@ const toggleSelectAll = (e) => {
   }
 };
 
+onMounted(() => {
+  if (!user.value.id || (user.value.role !== 'twg' && user.value.role !== 'non-twg')) {
+    router.push('/login');
+  } else {
+    fetchTrashedDocuments();
+  }
+});
+
 const fetchTrashedDocuments = async () => {
   loading.value = true;
   try {
-    const res = await api.get('/documents/trashed');
+    const res = await api.get('/documents/trashed?user_id=' + user.value.id);
     if (res.data.success) {
-      items.value = res.data.data;
+      items.value = res.data.data || [];
     }
   } catch (error) {
     console.error('Error fetching trashed documents:', error);
@@ -245,14 +249,6 @@ const permanentlyDeleteItems = async (itemsToDelete) => {
     });
   }
 };
-
-onMounted(() => {
-  if (!user.value.id || user.value.role !== 'admin') {
-    router.push('/login');
-  } else {
-    fetchTrashedDocuments();
-  }
-});
 </script>
 
 <style scoped>

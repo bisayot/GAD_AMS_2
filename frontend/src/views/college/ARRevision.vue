@@ -166,19 +166,34 @@
                     ></textarea>
                   </div>
 
-                  <div class="full-width-info input-group-ar" v-if="existingReport && existingReport.activity_design">
+                  <div class="full-width-info input-group-ar">
                     <label class="form-label-ar">Activity Classification</label>
-                    <input type="text" :value="existingReport.activity_design.activity_classification || '---'" class="custom-input-field input-disabled-ar" readonly>
+                    <select v-model="form.activity_classification_id" class="custom-input-field select-arrow-fix">
+                      <option value="" disabled class="dark-option">Select Classification</option>
+                      <option v-for="classification in ActClassification" :key="classification.id" :value="classification.id" class="dark-option">
+                        {{ classification.classification_name }}
+                      </option>
+                    </select>
                   </div>
                   
-                  <div class="full-width-info input-group-ar" v-if="existingReport && existingReport.activity_design">
+                  <div class="full-width-info input-group-ar">
                     <label class="form-label-ar">GAD Mandate</label>
-                    <textarea :value="existingReport.activity_design.gad_mandate || '---'" rows="2" class="custom-input-field textarea-no-resize input-disabled-ar" readonly></textarea>
+                    <select v-model="form.gad_mandate_id" @change="onMandateChange" class="custom-input-field select-arrow-fix">
+                      <option value="" disabled class="dark-option">Select Mandate</option>
+                      <option v-for="mandate in GADMandates" :key="mandate.id" :value="mandate.id" class="dark-option">
+                        {{ mandate.code }} - {{ mandate.title }}
+                      </option>
+                    </select>
                   </div>
                   
-                  <div class="full-width-info input-group-ar" v-if="existingReport && existingReport.activity_design">
+                  <div class="full-width-info input-group-ar">
                     <label class="form-label-ar">Gender Issues</label>
-                    <textarea :value="existingReport.activity_design.gender_issue || '---'" rows="2" class="custom-input-field textarea-no-resize input-disabled-ar" readonly></textarea>
+                    <select v-model="form.gender_issue_id" class="custom-input-field select-arrow-fix">
+                      <option value="" disabled class="dark-option">Select Gender Issue</option>
+                      <option v-for="issue in genderIssues" :key="issue.id" :value="issue.id" class="dark-option">
+                        {{ issue.title }}
+                      </option>
+                    </select>
                   </div>
 
                   <div class="full-width-info input-group-ar" style="display: none;">
@@ -297,33 +312,58 @@
                   <div class="full-width-info attachment-section-container-ar mt-4">
                     <label class="form-label-ar mb-2">Upload Documents (PDF/ZIP - Multiple files allowed) *</label>
                     <div class="attachment-display-grid-ar">
-                      <div class="attachment-upload-column-ar">
+                      <div class="attachment-upload-column-ar" style="width: 100%; margin-bottom: 20px;">
                         <div class="upload-dropzone-box" @click="$refs.fileInput.click()">
-                          <input ref="fileInput" type="file" @change="handleFileUpload" accept=".pdf" class="file-input-hidden" multiple />
+                          <input ref="fileInput" type="file" @change="handleFileUpload" accept=".pdf,.zip" class="file-input-hidden" multiple />
                           <span class="upload-icon-ar">📤</span>
                           <p class="upload-text-ar">Upload Accomplishment Report & Attachments</p>
                           <p class="upload-hint-ar">Multiple files allowed (PDF, ZIP)</p>
                         </div>
                       </div>
-                      <div class="attachment-preview-column-ar">
-                        <div v-if="uploadedFiles.length > 0" class="uploaded-files-container-ar">
-                          <div v-for="(file, index) in uploadedFiles" :key="index" class="uploaded-file-tag">
-                            <span class="uploaded-file-name">📄 {{ file.name }}</span>
+                      
+                      <!-- File Tags (List of uploaded files) -->
+                      <div class="uploaded-files-container-ar" style="width: 100%; margin-bottom: 20px;">
+                          <!-- Always show previous file if it exists -->
+                          <div v-if="existingReport && existingReport.attachment" class="uploaded-file-tag">
+                            <span class="uploaded-file-name">📄 Previous: {{ existingReport.attachment }}</span>
+                            <div class="uploaded-file-actions-ar">
+                              <button type="button" @click="previewFile(existingReport.attachment, 'drafts')" class="remove-file-btn" style="color: #b979cc; border-color: #b979cc;">Preview in Modal</button>
+                            </div>
+                          </div>
+
+                          <!-- Show new files tags -->
+                          <div v-for="(file, index) in uploadedFiles" :key="'new-tag-'+index" class="uploaded-file-tag" style="background: rgba(34, 197, 94, 0.05); border-color: rgba(34, 197, 94, 0.2);">
+                            <span class="uploaded-file-name" style="color: #4ade80;">📄 New: {{ file.name }}</span>
                             <div class="uploaded-file-actions-ar">
                               <span class="uploaded-file-size-ar">({{ (file.size / 1024).toFixed(2) }} KB)</span>
                               <button type="button" @click="removeFile(index)" class="remove-file-btn">Remove</button>
                             </div>
                           </div>
+                          <p v-if="!(existingReport && existingReport.attachment) && uploadedFiles.length === 0" class="no-file-uploaded-text">No files uploaded yet.</p>
+                      </div>
+
+                      <!-- Document Previews Inline -->
+                      <div class="document-previews" style="width: 100%; display: flex; gap: 20px;">
+                        <!-- Always show previous file inline if it exists -->
+                        <div v-if="existingReport && existingReport.attachment" style="flex: 1;">
+                          <p style="color: #cbd5e1; font-size: 13px; font-weight: bold; margin-bottom: 8px;">Previous Document:</p>
+                          <div v-if="existingReport.attachment.endsWith('.zip')" style="padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); text-align: center;">
+                             <p style="color: #cbd5e1; font-size: 14px;">ZIP files cannot be previewed inline.</p>
+                             <button type="button" @click="downloadFile(existingReport.attachment, 'drafts', 'AR_Draft')" class="remove-file-btn" style="color: #b979cc; border-color: #b979cc; margin-top: 10px;">Download ZIP</button>
+                          </div>
+                          <iframe v-else :src="getExistingFileURL(existingReport.attachment)" width="100%" height="450px" style="border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;"></iframe>
                         </div>
-                        <div v-else-if="existingReport && existingReport.attachment" class="uploaded-files-container-ar">
-                          <div class="uploaded-file-tag">
-                            <span class="uploaded-file-name">📄 {{ existingReport.attachment }}</span>
-                            <div class="uploaded-file-actions-ar">
-                              <span class="uploaded-file-size-ar text-slate-400">Current Attachment</span>
+
+                        <!-- Show new files inline side-by-side -->
+                        <div v-if="uploadedFiles.length > 0" style="flex: 1;">
+                          <div v-for="(file, index) in uploadedFiles" :key="'new-iframe-'+index" style="margin-bottom: 20px;">
+                            <p style="color: #4ade80; font-size: 13px; font-weight: bold; margin-bottom: 8px;">New Document Preview ({{ file.name }}):</p>
+                            <div v-if="file.name.endsWith('.zip')" style="padding: 20px; background: rgba(34, 197, 94, 0.05); border-radius: 8px; border: 1px solid rgba(34, 197, 94, 0.2); text-align: center;">
+                               <p style="color: #4ade80; font-size: 14px;">ZIP file attached. Ready for submission.</p>
                             </div>
+                            <iframe v-else :src="getFileURL(file)" width="100%" height="450px" style="border: 1px solid #4ade80; border-radius: 8px;"></iframe>
                           </div>
                         </div>
-                        <p v-else class="no-file-uploaded-text">No files uploaded yet.</p>
                       </div>
                     </div>
                   </div>
@@ -396,6 +436,9 @@ const customVenue = ref('');
 
 const loading = ref(true);
 const form = ref({
+  activity_classification_id: '',
+  gad_mandate_id: '',
+  gender_issue_id: '',
   activity_title: '',
   control_number: '',
   act_design_id: null,
@@ -431,6 +474,41 @@ const form = ref({
 
 const approvedControls = ref([]);
 const loadingControls = ref(false);
+
+const ActClassification = ref([]);
+const GADMandates = ref([]);
+const genderIssues = ref([]);
+
+const fetchData = async () => {
+  try {
+    const [actRes, gadRes] = await Promise.all([
+      api.get('get-activity-classifications'),
+      api.get('get-gad-mandates')
+    ]);
+    ActClassification.value = actRes.data;
+    GADMandates.value = gadRes.data;
+  } catch (error) {
+    console.error('Error fetching dropdown data:', error);
+  }
+};
+
+const fetchGenderIssues = async (mandateId) => {
+  if (!mandateId) {
+    genderIssues.value = [];
+    return;
+  }
+  try {
+    const res = await api.get(`get-gender-issues/${mandateId}`);
+    genderIssues.value = res.data;
+  } catch (error) {
+    console.error('Error fetching gender issues:', error);
+  }
+};
+
+const onMandateChange = () => {
+  form.value.gender_issue_id = '';
+  fetchGenderIssues(form.value.gad_mandate_id);
+};
 
 const fetchApprovedControls = async () => {
   loadingControls.value = true;
@@ -596,6 +674,10 @@ const submitReport = async () => {
     });
     formData.append('evaluation_results', JSON.stringify(evalObj));
 
+    if (form.value.activity_classification_id) formData.append('activity_classification_id', form.value.activity_classification_id);
+    if (form.value.gad_mandate_id) formData.append('gad_mandate_id', form.value.gad_mandate_id);
+    if (form.value.gender_issue_id) formData.append('gender_issue_id', form.value.gender_issue_id);
+
     Object.keys(form.value).forEach(key => {
       if (key !== 'budget_items' && key !== 'evaluation_items' && key !== 'venue') {
         formData.append(key, form.value[key]);
@@ -690,10 +772,29 @@ const closePdfModal = () => {
   isPdfModalOpen.value = false;
 };
 
+const getFileURL = (file) => {
+  if (!file) return '';
+  return URL.createObjectURL(file);
+};
+
+const getExistingFileURL = (filename) => {
+  if (!filename) return '';
+  const base = (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace('/api/', '') : 'https://gad-ams-2-1.onrender.com');
+  // Ensuring no double slashes before api
+  const formattedBase = base.endsWith('/') ? base.slice(0, -1) : base;
+  return `${formattedBase}/api/files/drafts/${filename}`;
+};
+
 const previewFile = (filename, folder) => {
   if (!filename) return;
   const base = (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace('/api/', '') : 'https://gad-ams-2-1.onrender.com');
   pdfFileUrl.value = `${base}/api/files/${folder}/${filename}`;
+  isPdfModalOpen.value = true;
+};
+
+const previewNewFile = (file) => {
+  if (!file) return;
+  pdfFileUrl.value = URL.createObjectURL(file);
   isPdfModalOpen.value = true;
 };
 
@@ -769,6 +870,15 @@ const fetchReportDetails = async () => {
       }
       const r = response.data.data;
       
+      if (r.activity_design) {
+        form.value.activity_classification_id = r.activity_design.classification_id || '';
+        form.value.gad_mandate_id = r.activity_design.gad_mandate_id || '';
+        if (form.value.gad_mandate_id) {
+          await fetchGenderIssues(form.value.gad_mandate_id);
+        }
+        form.value.gender_issue_id = r.activity_design.gender_issue_id || '';
+      }
+
       form.value.activity_title = r.activity_title || '';
       form.value.start_date = r.start_date || '';
       form.value.end_date = r.end_date || '';
@@ -840,6 +950,7 @@ onMounted(() => {
   if (!user.value.id || !['twg', 'non-twg'].includes(user.value.role)) {
     router.push('/login');
   } else {
+    fetchData();
     fetchReportDetails();
   }
 });

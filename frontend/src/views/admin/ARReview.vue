@@ -320,7 +320,7 @@
                 <button @click="showRevisionModal = true" class="btn-revision">
                   <span class="material-symbols-outlined">edit_note</span> REVISION
                 </button>
-                <button @click="handleTrash" class="btn-trash">
+                <button @click="handleTrash" class="btn-trash" :disabled="report && report.status === 'Pending'">
                   <span class="material-symbols-outlined">delete</span> MOVE TO TRASH
                 </button>
                 <button @click="router.back()" class="btn-back">
@@ -375,7 +375,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import api from '../../api';
@@ -412,6 +412,28 @@ const getTodayDate = () => {
 };
 const todayDate = ref(getTodayDate());
 
+const handleBeforeUnload = () => {
+  if (report.value && report.value.id && report.value.status === 'Pending') {
+    const url = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/'}accomplishment-report/unmark-viewed/${report.value.id}`;
+    navigator.sendBeacon(url);
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('beforeunload', handleBeforeUnload);
+});
+
+onBeforeUnmount(async () => {
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+  if (report.value && report.value.id && report.value.status === 'Pending') {
+    try {
+      await api.post(`accomplishment-report/unmark-viewed/${report.value.id}`);
+    } catch (e) {
+      console.error('Failed to unmark viewed:', e);
+    }
+  }
+});
+
 const fetchReportDetails = async () => {
   loading.value = true;
   try {
@@ -419,6 +441,14 @@ const fetchReportDetails = async () => {
     const response = await api.get(`activity-report/${id}`);
     if (response.data.success) {
       report.value = response.data.data;
+      if (report.value.status === 'Pending' && Number(report.value.is_viewed_by_admin) === 0) {
+        try {
+          await api.post(`accomplishment-report/mark-viewed/${id}`);
+          report.value.is_viewed_by_admin = 1;
+        } catch (e) {
+          console.error('Failed to mark as viewed:', e);
+        }
+      }
     } else {
       error.value = "Accomplishment report not found.";
     }
@@ -528,6 +558,7 @@ const handleSendRevision = async () => {
 };
 
 const handleTrash = async () => {
+  if (report.value.status === 'Pending') return;
   const result = await Swal.fire({
     title: 'Move to Trash?',
     text: 'This accomplishment report will be moved to the trash bin.',

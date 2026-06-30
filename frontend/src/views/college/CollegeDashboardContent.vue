@@ -413,7 +413,8 @@ const fetchDeadlines = async () => {
              status: item.status,
              control: item.control,
              title: item.title,
-             end_date: item.end_date
+             end_date: item.end_date,
+             accomplishment_deadline: item.accomplishment_deadline
           });
         }
       });
@@ -434,9 +435,14 @@ const fetchDeadlines = async () => {
       }
       if (status === 'approved') {
          const hasReport = reports.some(r => r.act_design_id === d.act_design_id || (r.control_number && r.control_number === d.control) || (r.control && r.control === d.control));
-         if (!hasReport && d.end_date) {
-            const arDeadline = new Date(d.end_date);
-            arDeadline.setDate(arDeadline.getDate() + 3);
+         if (!hasReport && (d.end_date || d.accomplishment_deadline)) {
+            let arDeadline;
+            if (d.accomplishment_deadline) {
+               arDeadline = new Date(d.accomplishment_deadline);
+            } else {
+               arDeadline = new Date(d.end_date);
+               arDeadline.setDate(arDeadline.getDate() + 14);
+            }
             allDeadlines.push({
                id: 'ar_due_' + d.act_design_id,
                type: 'AR Due',
@@ -466,7 +472,7 @@ const fetchDeadlines = async () => {
     });
 
     allDeadlines.sort((a, b) => a.sortDate - b.sortDate);
-    deadlines.value = allDeadlines.slice(0, 5);
+    deadlines.value = allDeadlines;
   } catch (err) {
     console.error('Error fetching deadlines', err);
   }

@@ -750,6 +750,38 @@ class ActivityDesignController extends BaseController
         }
     }
 
+    public function markViewed($id = null)
+    {
+        if (!$id) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Design ID required'])->setStatusCode(400);
+        }
+
+        $db = \Config\Database::connect();
+        
+        try {
+            $updated = $db->table('activity_design')->where('act_design_id', $id)->update(['is_viewed_by_admin' => 1]);
+            return $this->response->setJSON(['success' => true, 'message' => 'Marked as viewed']);
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Server Error: ' . $e->getMessage()])->setStatusCode(500);
+        }
+    }
+
+    public function unmarkViewed($id = null)
+    {
+        if (!$id) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Design ID required'])->setStatusCode(400);
+        }
+
+        $db = \Config\Database::connect();
+        
+        try {
+            $updated = $db->table('activity_design')->where('act_design_id', $id)->update(['is_viewed_by_admin' => 0]);
+            return $this->response->setJSON(['success' => true, 'message' => 'Unmarked as viewed']);
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Server Error: ' . $e->getMessage()])->setStatusCode(500);
+        }
+    }
+
     public function trash($id = null)
     {
         if (!$id) {
@@ -764,8 +796,14 @@ class ActivityDesignController extends BaseController
             return $this->response->setJSON(['success' => false, 'message' => 'Activity design not found'])->setStatusCode(404);
         }
 
+        if ($design['status'] !== 'Pending' || $design['is_viewed_by_admin'] == 1) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Cannot trash this document as it is already being processed or viewed by admin.'])->setStatusCode(400);
+        }
+
+        $actionUserId = $this->request->getHeaderLine('X-User-Id') ?: $design['user_id'];
+        $model->update($id, ['deleted_by' => $actionUserId]);
+
         if ($model->delete($id)) {
-            $actionUserId = $this->request->getHeaderLine('X-User-Id') ?: $design['user_id'];
             \App\Models\ActivityLogModel::log($actionUserId, 'Trash Document', 'moved to trash Activity Design: ' . $design['activity_title']);
             return $this->response->setJSON(['success' => true, 'message' => 'Activity design moved to trash successfully']);
         }

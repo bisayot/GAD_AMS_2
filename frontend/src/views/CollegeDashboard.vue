@@ -67,6 +67,7 @@ const collegeMenu = ref([
   { label: 'Messages', icon: 'mail', href: '/college/messages', badge: 0 },
   { label: 'Submitted List', icon: 'list', href: '/college/submitted-list' },
   { label: 'Archives', icon: 'archive', href: '/college/archive' },
+  { label: 'Document Trash Bin', icon: 'delete', href: '/college/trashbin' },
   { label: 'Mandates', icon: 'gavel', href: '/college/mandates' },
   { label: 'User Manual', icon: 'menu_book', href: '/college/user-manual' },
   { label: 'Data Privacy Policy', icon: 'privacy_tip', href: '/college/data-privacy-policy' },

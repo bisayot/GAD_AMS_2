@@ -203,8 +203,8 @@
                 <input 
                   v-model="accomplishmentDeadline"
                   type="date" 
-                  class="modal-input disabled-input"
-                  readonly
+                  class="modal-input"
+                  :min="assessmentDate"
                 >
               </div>
 
@@ -232,7 +232,7 @@
                 <button v-if="design && design.status === 'Disapproved'" @click="handleRevertDecision" class="btn-cancel-req" style="background: #f59e0b;">
                   <span class="material-symbols-outlined">undo</span> REVERT DECISION
                 </button>
-                <button @click="handleTrash" class="btn-trash">
+                <button @click="handleTrash" class="btn-trash" :disabled="design && design.status === 'Pending'">
                   <span class="material-symbols-outlined">delete</span> MOVE TO TRASH
                 </button>
                 <button @click="router.back()" class="btn-back">
@@ -316,7 +316,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import api from '../../api';
@@ -349,11 +349,33 @@ const getTodayDate = () => {
 };
 const todayDate = ref(getTodayDate());
 
-const minAccomplishmentDeadline = computed(() => {
+const maxAccomplishmentDeadline = computed(() => {
   if (!assessmentDate.value) return todayDate.value;
   const targetDate = new Date(assessmentDate.value);
   targetDate.setDate(targetDate.getDate() + 14); // Exactly 14 days (2 weeks)
   return targetDate.toISOString().split('T')[0];
+});
+
+const handleBeforeUnload = () => {
+  if (design.value && design.value.act_design_id && design.value.status === 'Pending') {
+    const url = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/'}activity-design/unmark-viewed/${design.value.act_design_id}`;
+    navigator.sendBeacon(url);
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('beforeunload', handleBeforeUnload);
+});
+
+onBeforeUnmount(async () => {
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+  if (design.value && design.value.act_design_id && design.value.status === 'Pending') {
+    try {
+      await api.post(`activity-design/unmark-viewed/${design.value.act_design_id}`);
+    } catch (e) {
+      console.error('Failed to unmark viewed:', e);
+    }
+  }
 });
 
 const fetchDesignDetails = async () => {
@@ -383,9 +405,18 @@ const fetchDesignDetails = async () => {
         assessmentDate.value = todayDate.value;
       }
       
-      // Auto-set accomplishment deadline to 5 working days after
+      // Auto-set accomplishment deadline to 2 weeks after
       if (!accomplishmentDeadline.value) {
-        accomplishmentDeadline.value = minAccomplishmentDeadline.value;
+        accomplishmentDeadline.value = maxAccomplishmentDeadline.value;
+      }
+
+      if (design.value.status === 'Pending' && Number(design.value.is_viewed_by_admin) === 0) {
+        try {
+          await api.post(`activity-design/mark-viewed/${id}`);
+          design.value.is_viewed_by_admin = 1;
+        } catch (e) {
+          console.error('Failed to mark as viewed:', e);
+        }
       }
     } else {
       error.value = "Activity design not found.";
@@ -406,6 +437,25 @@ const handleApprove = async () => {
   if (!accomplishmentDeadline.value) {
     Swal.fire({ icon: 'warning', title: 'Missing Info', text: 'Please set a deadline for the accomplishment report.', confirmButtonColor: '#b979cc' });
     return;
+  }
+  
+  const assess = new Date(assessmentDate.value);
+  const deadline = new Date(accomplishmentDeadline.value);
+  const diffTime = deadline - assess;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays !== 14) {
+    const isMore = diffDays > 14;
+    const confirmDeadline = await Swal.fire({
+      title: 'Deadline Validation',
+      text: `The selected accomplishment deadline is ${isMore ? 'more' : 'less'} than 2 weeks from the assessment date. Do you want to proceed?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#22c55e',
+      cancelButtonColor: '#ef4444',
+      confirmButtonText: 'Yes, proceed'
+    });
+    if (!confirmDeadline.isConfirmed) return;
   }
 
   const result = await Swal.fire({
@@ -534,6 +584,7 @@ const handleRevertDecision = async () => {
 };
 
 const handleTrash = async () => {
+  if (design.value.status === 'Pending') return;
   const result = await Swal.fire({
     title: 'Move to Trash?',
     text: 'This activity design will be moved to the trash bin.',

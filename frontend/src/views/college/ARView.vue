@@ -308,6 +308,9 @@
               </div>
 
               <div class="action-buttons">
+                <button @click="handleTrash" class="btn-trash">
+                  <span class="material-symbols-outlined">delete</span> MOVE TO TRASH
+                </button>
                 <button @click="router.back()" class="btn-back">
                   ← Back
                 </button>
@@ -327,6 +330,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../../api';
+import Swal from 'sweetalert2';
 import PdfPreviewModal from '../../components/PdfPreviewModal.vue';
 
 
@@ -336,6 +340,51 @@ const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
 const report = ref({});
 const loading = ref(true);
 const error = ref(null);
+
+const handleTrash = async () => {
+  if (report.value.status !== 'Pending' || report.value.is_viewed_by_admin == 1) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Action Denied',
+      text: 'You cannot move this document to trash because it is already being processed or has been viewed by an admin.',
+      confirmButtonColor: '#3085d6'
+    });
+    return;
+  }
+  const result = await Swal.fire({
+    title: 'Move to Trash?',
+    text: 'This document will be moved to the trash bin.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#334155',
+    confirmButtonText: 'Yes, move it'
+  });
+
+  if (result.isConfirmed) {
+    try {
+      const response = await api.delete(`accomplishment-reports/trash/${route.params.id}`);
+      if (response.data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Moved to Trash',
+          text: 'Document has been moved to trash.',
+          timer: 1500,
+          showConfirmButton: false
+        });
+        router.push('/college/mandates');
+      } else {
+        throw new Error(response.data.message || 'Failed to move to trash');
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: err.message || 'An error occurred while moving to trash'
+      });
+    }
+  }
+};
 
 const fetchReportDetails = async () => {
   loading.value = true;
@@ -566,6 +615,26 @@ onMounted(() => {
 .action-buttons { margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(185, 121, 204, 0.15); }
 .btn-back { width: 100%; padding: 12px; font-size: 11px; font-weight: 800; text-transform: uppercase; color: #cbd5e1; border-radius: 12px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(185, 121, 204, 0.15); cursor: pointer; transition: all 0.2s; }
 .btn-back:hover { color: white; border-color: #b979cc; background: rgba(185, 121, 204, 0.05); }
+
+.btn-trash {
+  width: 100%;
+  padding: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  border-radius: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 0.75rem;
+}
+.btn-trash:hover { background: rgba(239, 68, 68, 0.2); border-color: #ef4444; color: #fca5a5; }
 
 @media (max-width: 1024px) {
   .layout-grid { flex-direction: column; padding: 1rem; }

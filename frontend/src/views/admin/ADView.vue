@@ -320,20 +320,70 @@ const closePdfModal = () => {
 import Swal from 'sweetalert2';
 
 const editDeadline = async () => {
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
+  // Get first day of current month
+  const minCurrentMonth = new Date(currentYear, currentMonth, 1).toISOString().split('T')[0];
+  const maxYear = new Date(currentYear, 11, 31).toISOString().split('T')[0];
+  
+  const endD = design.value.end_date ? design.value.end_date.split(' ')[0] : minCurrentMonth;
+  // Use the later date between end_date and first day of current month as min
+  const finalMin = endD > minCurrentMonth ? endD : minCurrentMonth;
+
   const { value: formValues } = await Swal.fire({
     title: 'Edit Accomplishment Deadline',
-    html: `<input type="date" id="swal-input-deadline" class="swal2-input" value="${design.value.accomplishment_deadline || ''}" min="${design.value.end_date ? design.value.end_date.split(' ')[0] : ''}">`,
+    html: `<input type="date" id="swal-input-deadline" class="swal2-input" value="${design.value.accomplishment_deadline || ''}" min="${finalMin}" max="${maxYear}">`,
     focusConfirm: false,
     showCancelButton: true,
     confirmButtonColor: '#9333ea',
-    background: '#16213e',
-    color: '#ffffff',
     preConfirm: () => {
-      return document.getElementById('swal-input-deadline').value;
+      const val = document.getElementById('swal-input-deadline').value;
+      if (!val) {
+        Swal.showValidationMessage('Please select a date');
+        return false;
+      }
+      const selected = new Date(val);
+      const current = new Date();
+      if (selected.getFullYear() !== current.getFullYear()) {
+        Swal.showValidationMessage('Deadline must be within the current year');
+        return false;
+      }
+      if (selected.getMonth() < current.getMonth() && selected.getFullYear() === current.getFullYear()) {
+        Swal.showValidationMessage('Deadline cannot be in a previous month');
+        return false;
+      }
+      
+      const minDate = design.value.end_date ? new Date(design.value.end_date.split(' ')[0]) : null;
+      if (minDate && selected < minDate) {
+        Swal.showValidationMessage('Deadline cannot be before the activity end date');
+        return false;
+      }
+
+      return val;
     }
   });
 
   if (formValues) {
+    const endD = design.value.end_date ? new Date(design.value.end_date.split(' ')[0]) : null;
+    if (endD) {
+      const selectedD = new Date(formValues);
+      const diffTime = selectedD - endD;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays !== 14) {
+        const isMore = diffDays > 14;
+        const confirmExtra = await Swal.fire({
+          title: 'Deadline Validation',
+          text: `The selected accomplishment deadline is ${isMore ? 'more' : 'less'} than 2 weeks from the assessment date. Do you want to proceed?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#9333ea',
+          confirmButtonText: 'Yes, proceed'
+        });
+        if (!confirmExtra.isConfirmed) return;
+      }
+    }
+
     try {
       const response = await api.post(`update-deadline/${design.value.act_design_id || route.params.id}`, {
         deadline: formValues,
@@ -345,18 +395,16 @@ const editDeadline = async () => {
           title: 'Success!',
           text: 'Accomplishment deadline updated.',
           confirmButtonColor: '#9333ea',
-          background: '#16213e',
-          color: '#ffffff',
           timer: 1500,
           showConfirmButton: false
         });
         design.value.accomplishment_deadline = formValues;
       } else {
-        Swal.fire({ icon: 'error', title: 'Error', text: response.data.message || 'Update failed', background: '#16213e', color: '#ffffff' });
+        Swal.fire({ icon: 'error', title: 'Error', text: response.data.message || 'Update failed' });
       }
     } catch (err) {
       console.error(err);
-      Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to update deadline.', background: '#16213e', color: '#ffffff' });
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to update deadline.' });
     }
   }
 };

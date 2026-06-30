@@ -68,7 +68,7 @@ const adminMenu = ref([
   { label: 'Activity Design List', icon: 'description', href: '/admin/ad-list' },
   { label: 'Accomplishment Report List', icon: 'description', href: '/admin/ar-list' },
   { label: 'Archives', icon: 'archive', href: '/admin/archive' },
-  { label: 'Trash Bin', icon: 'delete', href: '/admin/trash-bin' },
+  { label: 'Document Trash Bin', icon: 'delete', href: '/admin/trash-bin' },
   { label: 'Mandates Management', icon: 'account_balance', href: '/admin/mandates' },
   { label: 'Report Monitoring', icon: 'bar_chart', href: '/admin/reports' },
   { label: 'Budget Monitoring', icon: 'account_balance_wallet', href: '/admin/budget' },

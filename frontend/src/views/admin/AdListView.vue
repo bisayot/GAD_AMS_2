@@ -88,7 +88,6 @@
               <table class="data-table">
                 <thead>
                   <tr class="table-header-row">
-                    <th class="table-header-cell">Control No.</th>
                     <th class="table-header-cell">Activity Title</th>
                     <th class="table-header-cell">Office / Unit</th>
                     <th class="table-header-cell">Form Type</th>
@@ -98,7 +97,7 @@
                 </thead>
                 <tbody class="table-body">
                   <tr v-if="filteredDesigns.length === 0">
-                    <td colspan="6" class="empty-state">
+                    <td colspan="5" class="empty-state">
                       No matching activity design submissions found in the repository index.
                     </td>
                   </tr>
@@ -110,9 +109,6 @@
                     @click="viewDetails(item.act_design_id, item.status)"
                     class="table-row"
                   >
-                    <td class="table-cell control-cell">
-                      {{ item.control }}
-                    </td>
                     <td class="table-cell title-cell">
                       {{ item.title }}
                     </td>

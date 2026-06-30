@@ -308,6 +308,9 @@
               </div>
 
               <div class="action-buttons">
+                <button @click="handleTrash" class="btn-trash">
+                  <span class="material-symbols-outlined">delete</span> MOVE TO TRASH
+                </button>
                 <button @click="router.back()" class="btn-back">
                   ← Back
                 </button>
@@ -327,6 +330,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../../api';
+import Swal from 'sweetalert2';
 import PdfPreviewModal from '../../components/PdfPreviewModal.vue';
 
 
@@ -336,6 +340,51 @@ const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
 const report = ref({});
 const loading = ref(true);
 const error = ref(null);
+
+const handleTrash = async () => {
+  if (report.value.status !== 'Pending' || report.value.is_viewed_by_admin == 1) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Action Denied',
+      text: 'You cannot move this document to trash because it is already being processed or has been viewed by an admin.',
+      confirmButtonColor: '#3085d6'
+    });
+    return;
+  }
+  const result = await Swal.fire({
+    title: 'Move to Trash?',
+    text: 'This document will be moved to the trash bin.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#334155',
+    confirmButtonText: 'Yes, move it'
+  });
+
+  if (result.isConfirmed) {
+    try {
+      const response = await api.delete(`accomplishment-reports/trash/${route.params.id}`);
+      if (response.data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Moved to Trash',
+          text: 'Document has been moved to trash.',
+          timer: 1500,
+          showConfirmButton: false
+        });
+        router.push('/staff/mandates');
+      } else {
+        throw new Error(response.data.message || 'Failed to move to trash');
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: err.message || 'An error occurred while moving to trash'
+      });
+    }
+  }
+};
 
 const fetchReportDetails = async () => {
   loading.value = true;

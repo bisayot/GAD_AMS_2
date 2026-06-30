@@ -69,6 +69,7 @@ const staffMenu = ref([
   { label: 'Activity Design List', icon: 'list', href: '/staff/ad-list' },
   { label: 'Accomplishment Report List', icon: 'list', href: '/staff/ar-list' },
   { label: 'Archives', icon: 'archive', href: '/staff/archive' },
+  { label: 'Document Trash Bin', icon: 'delete', href: '/staff/trashbin' },
   { label: 'Mandates', icon: 'gavel', href: '/staff/mandates' },
   { label: 'Report Monitoring', icon: 'description', href: '/staff/reports' },
   { label: 'Budget Monitoring', icon: 'payments', href: '/staff/budget' },
