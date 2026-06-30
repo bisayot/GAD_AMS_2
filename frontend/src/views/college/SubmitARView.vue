@@ -38,35 +38,73 @@
                   </div>
 
                   <div class="input-group-ar">
+                    <label class="form-label-ar">Form Type *</label>
+                    <input
+                      type="text"
+                      v-model="form.form_type"
+                      class="custom-input-field"
+                      placeholder="Form Type"
+                    >
+                  </div>
+
+                  <div class="input-group-ar">
                     <label class="form-label-ar">Activity Classification *</label>
                     <input
                       type="text"
                       v-model="form.activity_classification"
-                      class="custom-input-field input-disabled-ar"
+                      class="custom-input-field"
                       placeholder="Activity Classification"
-                      readonly
                     >
                   </div>
 
                   <div class="input-group-ar">
                     <label class="form-label-ar">GAD Mandate *</label>
-                    <input
-                      type="text"
-                      v-model="form.gad_mandate"
-                      class="custom-input-field input-disabled-ar"
-                      placeholder="GAD Mandate"
-                      readonly
-                    >
+                    <div class="checkbox-group-container custom-input-field" style="min-height: 120px; max-height: 250px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
+                      <label v-for="mandate in GADMandates" :key="mandate.id" class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
+                        <input type="checkbox" v-model="form.gad_mandate_id" :value="mandate.id.toString()" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
+                        <span style="font-size: 14px; line-height: 1.4;">{{ mandate.code }} - {{ mandate.title }}</span>
+                      </label>
+                      <label class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
+                        <input type="checkbox" v-model="form.gad_mandate_id" value="Other" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
+                        <span style="font-size: 14px; line-height: 1.4; font-style: italic;">+ New Mandate</span>
+                      </label>
+                    </div>
+                    <input v-if="form.gad_mandate_id && form.gad_mandate_id.includes('Other')" 
+                          v-model="customMandate" 
+                          type="text" 
+                          placeholder="Enter new mandate name..." 
+                          class="custom-input-field" 
+                          style="margin-top: 10px;" />
                   </div>
 
                   <div class="input-group-ar">
                     <label class="form-label-ar">Gender Issue *</label>
+                    <div class="checkbox-group-container custom-input-field" style="min-height: 120px; max-height: 250px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
+                      <label v-for="issue in genderIssues" :key="issue.id" class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
+                        <input type="checkbox" v-model="form.gender_issue_id" :value="issue.id.toString()" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
+                        <span style="font-size: 14px; line-height: 1.4;">{{ issue.title }}</span>
+                      </label>
+                      <label class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
+                        <input type="checkbox" v-model="form.gender_issue_id" value="Other" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
+                        <span style="font-size: 14px; line-height: 1.4; font-style: italic;">+ New Gender Issue</span>
+                      </label>
+                      <p v-if="!form.gad_mandate_id || form.gad_mandate_id.length === 0" style="color: #94a3b8; font-size: 13px; font-style: italic; margin: 0;">Select a mandate first to see gender issues.</p>
+                    </div>
+                    <input v-if="form.gender_issue_id && form.gender_issue_id.includes('Other')" 
+                          v-model="customGenderIssue" 
+                          type="text" 
+                          placeholder="Enter new gender issue..." 
+                          class="custom-input-field" 
+                          style="margin-top: 10px;" />
+                  </div>
+
+                  <div class="input-group-ar">
+                    <label class="form-label-ar">Target Participants *</label>
                     <input
-                      type="text"
-                      v-model="form.gender_issue"
-                      class="custom-input-field input-disabled-ar"
-                      placeholder="Gender Issue"
-                      readonly
+                      type="number"
+                      v-model="form.target_participants"
+                      class="custom-input-field"
+                      placeholder="0"
                     >
                   </div>
 
@@ -504,7 +542,7 @@
               </div>
 
               <div class="attachment-section-container-ar">
-                <label class="form-label-ar">Upload Documents (PDF/ZIP - Multiple files allowed) *</label>
+                <label class="form-label-ar">Upload Documents (PDF - Multiple files allowed) *</label>
                 <div class="attachment-display-grid-ar">
                   <div class="attachment-upload-column-ar">
                     <div class="upload-dropzone-box" @click="$refs.fileInput.click()">
@@ -518,7 +556,7 @@
                       />
                       <span class="upload-icon-ar">📤</span>
                       <p class="upload-text-ar">Upload Accomplishment Report & Attachments</p>
-                      <p class="upload-hint-ar">Multiple files allowed (PDF, ZIP)</p>
+                      <p class="upload-hint-ar">Multiple files allowed (PDF)</p>
                     </div>
                   </div>
                   <div class="attachment-preview-column-ar">
@@ -537,7 +575,6 @@
                         </div>
                       </div>
                     </div>
-                    <p v-else class="no-file-uploaded-text">No files uploaded yet.</p>
                   </div>
                 </div>
               </div>
@@ -645,9 +682,11 @@ const isHoliday = (dateString) => {
 const form = ref({
   activity_title: '',
   control_number: '',
+  form_type: '',
   activity_classification: '',
-  gad_mandate: '',
-  gender_issue: '',
+  gad_mandate_id: [],
+  gender_issue_id: [],
+  target_participants: '',
   act_design_id: null,
   start_date: '',
   end_date: '',
@@ -680,6 +719,48 @@ const form = ref({
   ],
   rating: 0
 });
+
+const GADMandates = ref([]);
+const genderIssues = ref([]);
+const customMandate = ref('');
+const customGenderIssue = ref('');
+
+const fetchMandates = async () => {
+  try {
+    const res = await api.get('get-gad-mandates');
+    GADMandates.value = res.data;
+  } catch (error) {
+    console.error('Error fetching GAD mandates:', error);
+  }
+};
+
+const fetchGenderIssues = async (mandateIds) => {
+  const ids = mandateIds || form.value?.gad_mandate_id;
+  if (!ids || !Array.isArray(ids) || ids.length === 0 || ids.includes('Other')) {
+    genderIssues.value = [];
+    return;
+  }
+  try {
+    const allIssues = [];
+    for (const mandateId of ids) {
+       if (mandateId !== 'Other') {
+           const res = await api.get(`get-gender-issues/${mandateId}`);
+           allIssues.push(...res.data);
+       }
+    }
+    const uniqueIssues = [];
+    const map = new Map();
+    for (const item of allIssues) {
+        if(!map.has(item.id)){
+            map.set(item.id, true);
+            uniqueIssues.push(item);
+        }
+    }
+    genderIssues.value = uniqueIssues;
+  } catch (error) {
+    console.error('Error fetching gender issues:', error);
+  }
+};
 
 const approvedControls = ref([]);
 const loadingControls = ref(false);
@@ -726,7 +807,8 @@ const isExceedingLimit = computed(() => {
   return selectedProposedBudget.value > 0 && form.value.proposed_budget > selectedProposedBudget.value;
 });
 
-watch(() => form.value.control_number, (newVal) => {
+watch(() => form.value.control_number, async (newVal) => {
+  if (!newVal) return;
   const selected = approvedControls.value.find(c => c.control_number === newVal);
   if (selected) {
     form.value.act_design_id = selected.act_design_id;
@@ -735,10 +817,16 @@ watch(() => form.value.control_number, (newVal) => {
     form.value.end_date = selected.end_date;
     form.value.start_time = selected.start_time;
     form.value.end_time = selected.end_time;
-    form.value.venue = selected.venue_name || selected.venue; // Fallback to venue if venue_name is not available
+    form.value.venue = selected.venue_name || selected.venue; 
     form.value.activity_classification = selected.activity_classification || 'N/A';
-    form.value.gad_mandate = selected.gad_mandate || 'N/A';
-    form.value.gender_issue = selected.gender_issue || 'N/A';
+    form.value.form_type = selected.form_type_name || selected.form_type || 'N/A';
+    form.value.target_participants = selected.target_participants || '0';
+    form.value.gad_mandate_id = selected.gad_mandate_ids ? selected.gad_mandate_ids.split(',').map(s=>s.trim()) : [];
+    
+    // Fetch gender issues before setting them to ensure options exist in UI
+    await fetchGenderIssues(form.value.gad_mandate_id);
+    
+    form.value.gender_issue_id = selected.gender_issue_ids ? selected.gender_issue_ids.split(',').map(s=>s.trim()) : [];
     selectedProposedBudget.value = Number(selected.proposed_budget) || 0;
 
     if (selected.budget_items && selected.budget_items.length > 0) {
@@ -759,9 +847,11 @@ watch(() => form.value.control_number, (newVal) => {
     }
   } else {
     selectedProposedBudget.value = 0;
+    form.value.form_type = '';
+    form.value.target_participants = '';
     form.value.activity_classification = '';
-    form.value.gad_mandate = '';
-    form.value.gender_issue = '';
+    form.value.gad_mandate_id = [];
+    form.value.gender_issue_id = [];
   }
 });
 
@@ -770,12 +860,15 @@ const formatBudgetName = (name) => {
   return name.replace(/(\(.*\))/g, '<span class="budget-item-subtext">$1</span>');
 };
 
+watch(() => form.value.gad_mandate_id, (newVal) => {
+  form.value.gender_issue_id = [];
+  fetchGenderIssues(newVal);
+}, { deep: true });
+
 watch(() => form.value.budget_items, (newItems) => {
   const total = newItems.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
   form.value.proposed_budget = total;
 }, { deep: true });
-
-// Removed strict start_date and end_date watchers in AR
 
 watch([() => form.value.male, () => form.value.female], ([newMale, newFemale]) => {
   const m = parseInt(newMale) || 0;
@@ -823,12 +916,30 @@ const fileInput = ref(null);
 const handleFileUpload = (event) => {
   if (event.target.files.length > 0) {
     const newFiles = Array.from(event.target.files);
+    const validFiles = [];
     newFiles.forEach(file => {
-      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-        file.previewUrl = URL.createObjectURL(file);
+      if (file.size > 10 * 1024 * 1024) {
+        Swal.fire({
+          icon: 'error',
+          title: 'File Too Large',
+          text: `File "${file.name}" exceeds the 10MB limit.`,
+          confirmButtonColor: '#b979cc'
+        });
+        return;
       }
+      if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Invalid File Type',
+          text: `File "${file.name}" is not a PDF. Only PDF files are allowed.`,
+          confirmButtonColor: '#b979cc'
+        });
+        return;
+      }
+      file.previewUrl = URL.createObjectURL(file);
+      validFiles.push(file);
     });
-    uploadedFiles.value = [...uploadedFiles.value, ...newFiles];
+    uploadedFiles.value = [...uploadedFiles.value, ...validFiles];
   }
 };
 
@@ -883,7 +994,7 @@ const submitReport = async () => {
       function_room_venue: Number(form.value.budget_items.find(i => i.name === 'Function Room/Venue')?.total || 0),
       accommodation: Number(form.value.budget_items.find(i => i.name === 'Accommodation')?.total || 0),
       equipment_rental: Number(form.value.budget_items.find(i => i.name === 'Equipment Rental')?.total || 0),
-      professional_fee_honoria: Number(form.value.budget_items.find(i => i.name === 'Professional Fee/Honoria')?.total || 0),
+      professional_fee_honoria: Number(form.value.budget_items.find(i => i.name === 'Professional Fee/Honoraria')?.total || 0),
       tokens: Number(form.value.budget_items.find(i => i.name === 'Token/s')?.total || 0),
       materials_and_supplies: Number(form.value.budget_items.find(i => i.name === 'Materials and Supplies')?.total || 0) + Number(form.value.budget_items.find(i => i.name === 'Others')?.total || 0),
       transportation: Number(form.value.budget_items.find(i => i.name === 'Transportation')?.total || 0)
@@ -910,15 +1021,26 @@ const submitReport = async () => {
       }
     });
 
-    if (form.value.venue) {
-      formData.append('venue', form.value.venue);
+    formData.append('venue', form.value.venue);
+    formData.append('attendees', form.value.attendees);
+    formData.append('male', form.value.male);
+    formData.append('female', form.value.female);
+    formData.append('rating', form.value.rating);
+    formData.append('user_id', user.value.id);
+
+    if (form.value.gad_mandate_id) {
+      formData.append('gad_mandate_id', Array.isArray(form.value.gad_mandate_id) ? form.value.gad_mandate_id.join(',') : form.value.gad_mandate_id);
+    }
+    if (Array.isArray(form.value.gad_mandate_id) && form.value.gad_mandate_id.includes('Other')) {
+      formData.append('custom_gad_mandate', customMandate.value);
     }
     
-    uploadedFiles.value.forEach(file => {
-      formData.append('attachment[]', file);
-    });
-    
-    formData.append('user_id', user.value.id);
+    if (form.value.gender_issue_id) {
+      formData.append('gender_issue_id', Array.isArray(form.value.gender_issue_id) ? form.value.gender_issue_id.join(',') : form.value.gender_issue_id);
+    }
+    if (Array.isArray(form.value.gender_issue_id) && form.value.gender_issue_id.includes('Other')) {
+      formData.append('custom_gender_issue', customGenderIssue.value);
+    }
     
     const response = await api.post('submit-activity-report', formData, {
       headers: {
@@ -996,6 +1118,7 @@ onMounted(() => {
   } else {
     fetchApprovedControls();
     fetchHolidays();
+    fetchMandates();
   }
   document.addEventListener('click', closeAllHelp);
 });

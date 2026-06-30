@@ -94,6 +94,52 @@ class AccomplishmentReportController extends BaseController
                     }
                 }
 
+                // Update archived_activity_designs if fields are provided
+                $adUpdateData = [];
+                if ($this->request->getPost('activity_classification_id')) {
+                    $adUpdateData['classification_id'] = $this->request->getPost('activity_classification_id');
+                }
+                if ($this->request->getPost('gad_mandate_id')) {
+                    $adUpdateData['gad_mandate_id'] = $this->request->getPost('gad_mandate_id');
+                }
+                if ($this->request->getPost('gender_issue_id')) {
+                    $adUpdateData['gender_issue_id'] = $this->request->getPost('gender_issue_id');
+                }
+
+                if (!empty($adUpdateData) && !empty($actDesignId)) {
+                    $db->table('archived_activity_designs')
+                       ->where('original_act_design_id', $actDesignId)
+                       ->update($adUpdateData);
+                       
+                    // Also update junction tables if we are saving multiple mandates/issues
+                    if (isset($adUpdateData['gad_mandate_id'])) {
+                        $mandatesArr = explode(',', $adUpdateData['gad_mandate_id']);
+                        $archiveRecord = $db->table('archived_activity_designs')->where('original_act_design_id', $actDesignId)->get()->getRowArray();
+                        if ($archiveRecord) {
+                            $db->table('archived_activity_design_mandates')->where('archive_id', $archiveRecord['archive_id'])->delete();
+                            $insertMandates = array_map(function($mId) use ($archiveRecord) {
+                                return ['archive_id' => $archiveRecord['archive_id'], 'mandate_id' => trim($mId)];
+                            }, array_filter($mandatesArr));
+                            if (!empty($insertMandates)) {
+                                $db->table('archived_activity_design_mandates')->insertBatch($insertMandates);
+                            }
+                        }
+                    }
+                    if (isset($adUpdateData['gender_issue_id'])) {
+                        $issuesArr = explode(',', $adUpdateData['gender_issue_id']);
+                        $archiveRecord = $db->table('archived_activity_designs')->where('original_act_design_id', $actDesignId)->get()->getRowArray();
+                        if ($archiveRecord) {
+                            $db->table('archived_activity_design_issues')->where('archive_id', $archiveRecord['archive_id'])->delete();
+                            $insertIssues = array_map(function($iId) use ($archiveRecord) {
+                                return ['archive_id' => $archiveRecord['archive_id'], 'issue_id' => trim($iId)];
+                            }, array_filter($issuesArr));
+                            if (!empty($insertIssues)) {
+                                $db->table('archived_activity_design_issues')->insertBatch($insertIssues);
+                            }
+                        }
+                    }
+                }
+
                 \App\Models\ActivityLogModel::log($data['user_id'], 'Submit Document', 'submitted Accomplishment Report: ' . $data['activity_title']);
 
                 return $this->response->setJSON([
@@ -382,6 +428,34 @@ class AccomplishmentReportController extends BaseController
                         $db->table('archived_activity_designs')
                            ->where('original_act_design_id', $controlRecord['act_design_id'])
                            ->update($adUpdateData);
+                           
+                        // Also update junction tables if we are saving multiple mandates/issues
+                        if (isset($adUpdateData['gad_mandate_id'])) {
+                            $mandatesArr = explode(',', $adUpdateData['gad_mandate_id']);
+                            $archiveRecord = $db->table('archived_activity_designs')->where('original_act_design_id', $controlRecord['act_design_id'])->get()->getRowArray();
+                            if ($archiveRecord) {
+                                $db->table('archived_activity_design_mandates')->where('archive_id', $archiveRecord['archive_id'])->delete();
+                                $insertMandates = array_map(function($mId) use ($archiveRecord) {
+                                    return ['archive_id' => $archiveRecord['archive_id'], 'mandate_id' => trim($mId)];
+                                }, array_filter($mandatesArr));
+                                if (!empty($insertMandates)) {
+                                    $db->table('archived_activity_design_mandates')->insertBatch($insertMandates);
+                                }
+                            }
+                        }
+                        if (isset($adUpdateData['gender_issue_id'])) {
+                            $issuesArr = explode(',', $adUpdateData['gender_issue_id']);
+                            $archiveRecord = $db->table('archived_activity_designs')->where('original_act_design_id', $controlRecord['act_design_id'])->get()->getRowArray();
+                            if ($archiveRecord) {
+                                $db->table('archived_activity_design_issues')->where('archive_id', $archiveRecord['archive_id'])->delete();
+                                $insertIssues = array_map(function($iId) use ($archiveRecord) {
+                                    return ['archive_id' => $archiveRecord['archive_id'], 'issue_id' => trim($iId)];
+                                }, array_filter($issuesArr));
+                                if (!empty($insertIssues)) {
+                                    $db->table('archived_activity_design_issues')->insertBatch($insertIssues);
+                                }
+                            }
+                        }
                     }
                 }
 

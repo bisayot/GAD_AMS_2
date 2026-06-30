@@ -268,8 +268,8 @@ class ActivityDesignController extends BaseController
             $db = \Config\Database::connect();
             $design = $db->table('archived_activity_designs as aad')
                 ->select('aad.*, aad.original_act_design_id as act_design_id, aad.activity_title as title, form_types.name as formLabel, office_units.office_name as office, users.full_name as submitter_name, aad.start_date as date, venues.venue_name as venue, activity_classifications.classification_name as activity_classification, form_types.name as form_type_name')
-                ->select('(SELECT GROUP_CONCAT(gm.title SEPARATOR ", ") FROM archived_activity_design_mandates adm JOIN gad_mandates gm ON gm.id = adm.mandate_id WHERE adm.archive_id = aad.archive_id) as gad_mandate')
-                ->select('(SELECT GROUP_CONCAT(gi.title SEPARATOR ", ") FROM archived_activity_design_issues adi JOIN gender_issues gi ON gi.id = adi.issue_id WHERE adi.archive_id = aad.archive_id) as gender_issue')
+                ->select('COALESCE((SELECT GROUP_CONCAT(gm.title SEPARATOR ", ") FROM archived_activity_design_mandates adm JOIN gad_mandates gm ON gm.id = adm.mandate_id WHERE adm.archive_id = aad.archive_id), (SELECT title FROM gad_mandates WHERE id = aad.gad_mandate_id)) as gad_mandate')
+                ->select('COALESCE((SELECT GROUP_CONCAT(gi.title SEPARATOR ", ") FROM archived_activity_design_issues adi JOIN gender_issues gi ON gi.id = adi.issue_id WHERE adi.archive_id = aad.archive_id), (SELECT title FROM gender_issues WHERE id = aad.gender_issue_id)) as gender_issue')
                 ->select('(SELECT GROUP_CONCAT(adm.mandate_id SEPARATOR ",") FROM archived_activity_design_mandates adm WHERE adm.archive_id = aad.archive_id) as gad_mandate_ids')
                 ->select('(SELECT GROUP_CONCAT(adi.issue_id SEPARATOR ",") FROM archived_activity_design_issues adi WHERE adi.archive_id = aad.archive_id) as gender_issue_ids')
                 ->join('users', 'users.id = aad.user_id', 'left')
@@ -649,8 +649,35 @@ class ActivityDesignController extends BaseController
             'gender_issue_id'          => $item['gender_issue_id'] ?? null,
         ];
         $db->table('archived_activity_designs')->insert($archiveData);
+        $archiveId = $db->insertID();
+
+        // Copy mandates
+        $mandates = $db->table('activity_design_mandates')->where('act_design_id', $id)->get()->getResultArray();
+        if (!empty($mandates)) {
+            $archivedMandates = array_map(function($m) use ($archiveId) {
+                return [
+                    'archive_id' => $archiveId,
+                    'mandate_id' => $m['mandate_id']
+                ];
+            }, $mandates);
+            $db->table('archived_activity_design_mandates')->insertBatch($archivedMandates);
+        }
+
+        // Copy issues
+        $issues = $db->table('activity_design_issues')->where('act_design_id', $id)->get()->getResultArray();
+        if (!empty($issues)) {
+            $archivedIssues = array_map(function($i) use ($archiveId) {
+                return [
+                    'archive_id' => $archiveId,
+                    'issue_id' => $i['issue_id']
+                ];
+            }, $issues);
+            $db->table('archived_activity_design_issues')->insertBatch($archivedIssues);
+        }
 
         // 3. Delete from active table
+        $db->table('activity_design_mandates')->where('act_design_id', $id)->delete();
+        $db->table('activity_design_issues')->where('act_design_id', $id)->delete();
         $db->table('activity_design')->where('act_design_id', $id)->delete();
 
         $db->transComplete();
@@ -791,6 +818,33 @@ class ActivityDesignController extends BaseController
             $restoreData['remarks'] = null;
             
             $db->table('activity_design')->insert($restoreData);
+            
+            // Revert mandates
+            $archivedMandates = $db->table('archived_activity_design_mandates')->where('archive_id', $archivedItem['archive_id'])->get()->getResultArray();
+            if (!empty($archivedMandates)) {
+                $mandates = array_map(function($m) use ($id) {
+                    return [
+                        'act_design_id' => $id,
+                        'mandate_id' => $m['mandate_id']
+                    ];
+                }, $archivedMandates);
+                $db->table('activity_design_mandates')->insertBatch($mandates);
+            }
+
+            // Revert issues
+            $archivedIssues = $db->table('archived_activity_design_issues')->where('archive_id', $archivedItem['archive_id'])->get()->getResultArray();
+            if (!empty($archivedIssues)) {
+                $issues = array_map(function($i) use ($id) {
+                    return [
+                        'act_design_id' => $id,
+                        'issue_id' => $i['issue_id']
+                    ];
+                }, $archivedIssues);
+                $db->table('activity_design_issues')->insertBatch($issues);
+            }
+
+            $db->table('archived_activity_design_mandates')->where('archive_id', $archivedItem['archive_id'])->delete();
+            $db->table('archived_activity_design_issues')->where('archive_id', $archivedItem['archive_id'])->delete();
             $db->table('archived_activity_designs')->where('original_act_design_id', $id)->delete();
             
             $db->transComplete();
