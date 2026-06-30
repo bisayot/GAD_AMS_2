@@ -542,10 +542,15 @@
               </div>
 
               <div class="attachment-section-container-ar">
-                <label class="form-label-ar">Upload Documents (PDF - Multiple files allowed) *</label>
+                <label class="form-label-ar">Attachments (PDF) *</label>
                 <div class="attachment-display-grid-ar">
                   <div class="attachment-upload-column-ar">
-                    <div class="upload-dropzone-box" @click="$refs.fileInput.click()">
+                    <div class="upload-zone-ar" 
+                         @click="$refs.fileInput.click()"
+                         @dragover.prevent
+                         @dragenter.prevent
+                         @drop.prevent="handleDrop"
+                         style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; border: 2px dashed #b979cc; border-radius: 12px; background: rgba(30, 41, 59, 0.4); cursor: pointer; transition: all 0.3s ease; text-align: center;">
                       <input 
                         ref="fileInput" 
                         type="file" 
@@ -554,24 +559,25 @@
                         class="file-input-hidden" 
                         multiple 
                       />
-                      <span class="upload-icon-ar">📤</span>
-                      <p class="upload-text-ar">Upload Accomplishment Report & Attachments</p>
-                      <p class="upload-hint-ar">Multiple files allowed (PDF)</p>
+                      <span class="upload-icon-ar" style="font-size: 48px; margin-bottom: 16px; display: block;">📤</span>
+                      <h4 style="color: #ffffff; font-size: 16px; margin: 0 0 8px 0; font-weight: 600;">Drag & drop your files here</h4>
+                      <p style="color: #94a3b8; font-size: 14px; margin: 0 0 12px 0;">or click to browse from your computer</p>
+                      <span style="background: rgba(185, 121, 204, 0.2); color: #e9d5ff; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;">Max 10MB per file</span>
                     </div>
                   </div>
                   <div class="attachment-preview-column-ar">
-                    <div v-if="uploadedFiles.length > 0" class="uploaded-files-container-ar">
-                      <div v-for="(file, index) in uploadedFiles" :key="index" style="display: flex; flex-direction: column; gap: 10px;">
-                        <div class="uploaded-file-tag" style="width: 100%;">
-                          <span class="uploaded-file-name">📄 {{ file.name }}</span>
-                          <div class="uploaded-file-actions-ar">
+                    <div v-if="uploadedFiles.length > 0" class="uploaded-files-container-ar" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+                      <div v-for="(file, index) in uploadedFiles" :key="index" style="display: flex; flex-direction: column; gap: 10px; background: rgba(30, 41, 59, 0.4); padding: 15px; border-radius: 10px; border: 1px solid rgba(185, 121, 204, 0.2);">
+                        <div class="uploaded-file-tag" style="width: 100%; background: transparent; padding: 0; border: none; flex-direction: column; align-items: flex-start; gap: 8px;">
+                          <span class="uploaded-file-name" style="word-break: break-all;">📄 {{ file.name }}</span>
+                          <div class="uploaded-file-actions-ar" style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
                             <span class="uploaded-file-size-ar">({{ (file.size / 1024).toFixed(2) }} KB)</span>
-                            <button type="button" @click="removeFile(index)" class="remove-file-btn">Remove</button>
+                            <button type="button" @click.stop="removeFile(index)" class="remove-file-btn">Remove</button>
                           </div>
                         </div>
-                        <div v-if="file.previewUrl" class="document-previews" style="margin-top: 10px; margin-bottom: 20px; width: 100%;">
-                           <p style="color: #b979cc; font-size: 13px; font-weight: bold; margin-bottom: 8px;">Document Preview:</p>
-                           <iframe :src="file.previewUrl" width="100%" height="400px" style="border: 1px solid #b979cc; border-radius: 8px;"></iframe>
+                        
+                        <div v-if="file.previewUrl" class="document-previews" style="width: 100%;">
+                           <iframe :src="file.previewUrl" width="100%" height="300px" style="border: 1px solid #b979cc; border-radius: 8px; background: white;"></iframe>
                         </div>
                       </div>
                     </div>
@@ -912,12 +918,24 @@ watch(() => form.value.evaluation_items, (items) => {
 
 const uploadedFiles = ref([]);
 const fileInput = ref(null);
+const activePreviewIndex = ref(0);
+
+const handleDrop = (event) => {
+  if (event.dataTransfer.files.length > 0) {
+    processFiles(event.dataTransfer.files);
+  }
+};
 
 const handleFileUpload = (event) => {
   if (event.target.files.length > 0) {
-    const newFiles = Array.from(event.target.files);
-    const validFiles = [];
-    newFiles.forEach(file => {
+    processFiles(event.target.files);
+  }
+};
+
+const processFiles = (fileList) => {
+  const newFiles = Array.from(fileList);
+  const validFiles = [];
+  newFiles.forEach(file => {
       if (file.size > 10 * 1024 * 1024) {
         Swal.fire({
           icon: 'error',
@@ -936,10 +954,12 @@ const handleFileUpload = (event) => {
         });
         return;
       }
-      file.previewUrl = URL.createObjectURL(file);
-      validFiles.push(file);
-    });
-    uploadedFiles.value = [...uploadedFiles.value, ...validFiles];
+    file.previewUrl = URL.createObjectURL(file);
+    validFiles.push(file);
+  });
+  uploadedFiles.value = [...uploadedFiles.value, ...validFiles];
+  if (uploadedFiles.value.length > 0 && activePreviewIndex.value >= uploadedFiles.value.length) {
+    activePreviewIndex.value = 0;
   }
 };
 
@@ -947,6 +967,9 @@ const removeFile = (index) => {
   uploadedFiles.value.splice(index, 1);
   if (uploadedFiles.value.length === 0 && fileInput.value) {
     fileInput.value.value = '';
+    activePreviewIndex.value = 0;
+  } else if (activePreviewIndex.value >= index && activePreviewIndex.value > 0) {
+    activePreviewIndex.value--;
   }
 };
 
