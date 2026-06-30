@@ -63,14 +63,17 @@
 
                   <div class="input-group">
                     <label class="form-label">GAD Mandate *</label>
-                    <select v-model="form.gad_mandate_id" required class="custom-input-field select-arrow-fix">
-                      <option value="" disabled class="dark-option">Select Mandate</option>
-                      <option v-for="mandate in GADMandates" :key="mandate.id" :value="mandate.id" class="dark-option">
-                        {{ mandate.code }} - {{ mandate.title }}
-                      </option>
-                      <option value="Other" class="dark-option">+ New Mandate</option>
-                    </select>
-                    <input v-if="form.gad_mandate_id === 'Other'" 
+                    <div class="checkbox-group-container custom-input-field" style="min-height: 120px; max-height: 250px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
+                      <label v-for="mandate in GADMandates" :key="mandate.id" class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
+                        <input type="checkbox" v-model="form.gad_mandate_id" :value="mandate.id" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
+                        <span style="font-size: 14px; line-height: 1.4;">{{ mandate.code }} - {{ mandate.title }}</span>
+                      </label>
+                      <label class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
+                        <input type="checkbox" v-model="form.gad_mandate_id" value="Other" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
+                        <span style="font-size: 14px; line-height: 1.4; font-style: italic;">+ New Mandate</span>
+                      </label>
+                    </div>
+                    <input v-if="form.gad_mandate_id && form.gad_mandate_id.includes('Other')" 
                           v-model="customMandate" 
                           type="text" 
                           placeholder="Enter new mandate name..." 
@@ -80,16 +83,18 @@
 
                   <div class="input-group">
                     <label class="form-label">Gender Issues *</label>
-                    <select v-model="form.gender_issue_id" required class="custom-input-field select-arrow-fix">
-                      <option value="" disabled class="dark-option">
-                        {{ form.gad_mandate_id ? 'Select Gender Issue' : 'Select Mandate first' }}
-                      </option>
-                      <option v-for="issue in genderIssues" :key="issue.id" :value="issue.id" class="dark-option">
-                        {{ issue.title }}
-                      </option>
-                      <option value="Other" class="dark-option">+ New Gender Issue</option>
-                    </select>
-                    <input v-if="form.gender_issue_id === 'Other'" 
+                    <div class="checkbox-group-container custom-input-field" style="min-height: 120px; max-height: 250px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
+                      <label v-for="issue in genderIssues" :key="issue.id" class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
+                        <input type="checkbox" v-model="form.gender_issue_id" :value="issue.id" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
+                        <span style="font-size: 14px; line-height: 1.4;">{{ issue.title }}</span>
+                      </label>
+                      <label class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
+                        <input type="checkbox" v-model="form.gender_issue_id" value="Other" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
+                        <span style="font-size: 14px; line-height: 1.4; font-style: italic;">+ New Gender Issue</span>
+                      </label>
+                      <p v-if="!form.gad_mandate_id || form.gad_mandate_id.length === 0" style="color: #94a3b8; font-size: 13px; font-style: italic; margin: 0;">Select a mandate first to see gender issues.</p>
+                    </div>
+                    <input v-if="form.gender_issue_id && form.gender_issue_id.includes('Other')" 
                           v-model="customGenderIssue" 
                           type="text" 
                           placeholder="Enter new gender issue..." 
@@ -717,8 +722,8 @@ const form = ref({
   form_type: '',
   nature: '',
   activity_classification_id: '',
-  gad_mandate_id: '',
-  gender_issue_id: '',
+  gad_mandate_id: [],
+  gender_issue_id: [],
   activity_title: '',
   start_date: '',
   end_date: '',
@@ -823,21 +828,28 @@ const fetchGADMandates = async () => {
   }
 };
 
-const fetchGenderIssues = async (mandateId) => {
-  if (!mandateId || mandateId === 'Other') {
+const fetchGenderIssues = async (mandateIds) => {
+  const ids = mandateIds || form.value?.gad_mandate_id || gad_mandate_id?.value;
+  if (!ids || !Array.isArray(ids) || ids.length === 0 || ids.includes('Other')) {
     genderIssues.value = [];
     return;
   }
   try {
-    const res = await api.get(`get-gender-issues/${mandateId}`);
-    genderIssues.value = res.data;
+    const allIssues = [];
+    for (const mandateId of ids) {
+       if (mandateId !== 'Other') {
+           const res = await api.get(`get-gender-issues/${mandateId}`);
+           allIssues.push(...res.data);
+       }
+    }
+    genderIssues.value = allIssues;
   } catch (error) {
     console.error('Error fetching gender issues:', error);
   }
 };
 
 watch(() => form.value.gad_mandate_id, (newVal) => {
-  form.value.gender_issue_id = '';
+  form.value.gender_issue_id = [];
   fetchGenderIssues(newVal);
 });
 
@@ -958,6 +970,21 @@ watch(() => form.value.end_time, (newTime) => {
       confirmButtonColor: '#b979cc'
     });
     form.value.end_time = '';
+  }
+});
+
+watch([() => form.value.start_time, () => form.value.end_time], ([newStart, newEnd]) => {
+  if (newStart && newEnd) {
+    if (newStart >= newEnd) {
+      document.activeElement?.blur();
+      Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Time Range',
+        text: 'End time must be after start time.',
+        confirmButtonColor: '#b979cc'
+      });
+      form.value.end_time = '';
+    }
   }
 });
 
@@ -1128,6 +1155,18 @@ const submitActivityDesign = async () => {
     });
     return;
   }
+  if (form.value.start_time && form.value.end_time && (!form.value.start_date || !form.value.end_date || form.value.start_date === form.value.end_date)) {
+    if (form.value.start_time >= form.value.end_time) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Time Range',
+        text: 'End time must be after start time on the same day.',
+        confirmButtonColor: '#b979cc'
+      });
+      return;
+    }
+  }
+
 
   if (!designFile.value) {
     Swal.fire({
@@ -1160,10 +1199,10 @@ const submitActivityDesign = async () => {
     formData.append('gad_mandate_id', form.value.gad_mandate_id);
     formData.append('gender_issue_id', form.value.gender_issue_id);
     
-    if (form.value.gad_mandate_id === 'Other') {
+    if (form.value.gad_mandate_id && form.value.gad_mandate_id.includes('Other')) {
       formData.append('custom_gad_mandate', customMandate.value);
     }
-    if (form.value.gender_issue_id === 'Other') {
+    if (form.value.gender_issue_id && form.value.gender_issue_id.includes('Other')) {
       formData.append('custom_gender_issue', customGenderIssue.value);
     }
 

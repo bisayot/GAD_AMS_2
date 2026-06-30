@@ -69,11 +69,21 @@
               </div>
               <div class="info-item" style="grid-column: span 2;">
                 <span class="info-label">GAD Mandate</span>
-                <span class="info-value-white">{{ design.gad_mandate || '---' }}</span>
+                <div v-if="design.gad_mandate" class="mandate-boxes">
+                  <span v-for="(mandate, index) in design.gad_mandate.split(',')" :key="'m'+index" class="mandate-box">
+                    {{ mandate.trim() }}
+                  </span>
+                </div>
+                <span v-else class="info-value-white">---</span>
               </div>
               <div class="info-item" style="grid-column: span 2;">
                 <span class="info-label">Gender Issues</span>
-                <span class="info-value-white">{{ design.gender_issue || '---' }}</span>
+                <div v-if="design.gender_issue" class="mandate-boxes">
+                  <span v-for="(issue, index) in design.gender_issue.split(',')" :key="'i'+index" class="mandate-box">
+                    {{ issue.trim() }}
+                  </span>
+                </div>
+                <span v-else class="info-value-white">---</span>
               </div>
             </div>
           </div>
@@ -616,6 +626,23 @@ onMounted(() => {
   color: #fff;
   text-align: right;
   text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+
+.mandate-boxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 5px;
+}
+.mandate-box {
+  background: rgba(185, 121, 204, 0.15);
+  border: 1px solid rgba(185, 121, 204, 0.3);
+  color: #f1f5f9;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 </style>

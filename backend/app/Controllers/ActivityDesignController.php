@@ -76,27 +76,39 @@ class ActivityDesignController extends BaseController
                 $venueId = $venueModel->getInsertID();
             }
 
-            $gadMandateId = $this->request->getPost('gad_mandate_id');
-            if ($gadMandateId === 'Other' || $gadMandateId === 'new') {
-                $customMandate = $this->request->getPost('custom_gad_mandate');
-                $db = \Config\Database::connect();
-                $db->table('gad_mandates')->insert([
-                    'code' => 'CUSTOM',
-                    'title' => $customMandate
-                ]);
-                $gadMandateId = $db->insertID();
+            $gadMandateStr = $this->request->getPost('gad_mandate_id');
+            $gadMandates = $gadMandateStr ? explode(',', $gadMandateStr) : [];
+            $finalMandates = [];
+            foreach ($gadMandates as $mandate) {
+                if ($mandate === 'Other' || $mandate === 'new') {
+                    $customMandate = $this->request->getPost('custom_gad_mandate');
+                    $db = \Config\Database::connect();
+                    $db->table('gad_mandates')->insert([
+                        'code' => 'CUSTOM',
+                        'title' => $customMandate
+                    ]);
+                    $finalMandates[] = $db->insertID();
+                } else {
+                    $finalMandates[] = $mandate;
+                }
             }
 
-            $genderIssueId = $this->request->getPost('gender_issue_id');
-            if ($genderIssueId === 'Other' || $genderIssueId === 'new') {
-                $customIssue = $this->request->getPost('custom_gender_issue');
-                $db = \Config\Database::connect();
-                $db->table('gender_issues')->insert([
-                    'mandate_id' => $gadMandateId,
-                    'title' => $customIssue,
-                    'gad_objective' => null
-                ]);
-                $genderIssueId = $db->insertID();
+            $genderIssueStr = $this->request->getPost('gender_issue_id');
+            $genderIssues = $genderIssueStr ? explode(',', $genderIssueStr) : [];
+            $finalIssues = [];
+            foreach ($genderIssues as $issue) {
+                if ($issue === 'Other' || $issue === 'new') {
+                    $customIssue = $this->request->getPost('custom_gender_issue');
+                    $db = \Config\Database::connect();
+                    $db->table('gender_issues')->insert([
+                        'mandate_id' => !empty($finalMandates) ? $finalMandates[0] : null,
+                        'title' => $customIssue,
+                        'gad_objective' => null
+                    ]);
+                    $finalIssues[] = $db->insertID();
+                } else {
+                    $finalIssues[] = $issue;
+                }
             }
 
             // Save uploaded PDF to writable/uploads/drafts/
@@ -107,8 +119,8 @@ class ActivityDesignController extends BaseController
                 "form_type"                  => $this->request->getPost("form_type"),
                 "activity_classification_id" => $this->request->getPost("activity_classification_id"),
                 "classification_id"          => $this->request->getPost("activity_classification_id"), // mapping to db column
-                "gad_mandate_id"             => $gadMandateId,
-                "gender_issue_id"            => $genderIssueId,
+                "gad_mandate_id"             => !empty($finalMandates) ? $finalMandates[0] : null,
+                "gender_issue_id"            => !empty($finalIssues) ? $finalIssues[0] : null,
                 "activity_title"             => $this->request->getPost("activity_title"),
                 "start_date"                 => $this->request->getPost("start_date"),
                 "end_date"                   => $this->request->getPost("end_date"),
@@ -129,6 +141,20 @@ class ActivityDesignController extends BaseController
 
             if ($activityDesignModel->insert($data)) {
                 $actDesignId = $activityDesignModel->getInsertID();
+
+                $db = \Config\Database::connect();
+                foreach ($finalMandates as $mandateId) {
+                    $db->table('activity_design_mandates')->insert([
+                        'act_design_id' => $actDesignId,
+                        'mandate_id' => $mandateId
+                    ]);
+                }
+                foreach ($finalIssues as $issueId) {
+                    $db->table('activity_design_issues')->insert([
+                        'act_design_id' => $actDesignId,
+                        'issue_id' => $issueId
+                    ]);
+                }
 
                 // Save budget items
                 $budgetItemsStr = $this->request->getPost("budget_items");
@@ -223,14 +249,14 @@ class ActivityDesignController extends BaseController
 
         $activityDesignModel = new ActivityDesignModel();
         $design = $activityDesignModel
-            ->select('activity_design.*, control_number.control_number as control, office_units.office_name as office, users.full_name as submitter_name, activity_design.start_date as date, venues.venue_name as venue, activity_classifications.classification_name as activity_classification, gad_mandates.title as gad_mandate, gender_issues.title as gender_issue, form_types.name as form_type_name')
+            ->select('activity_design.*, control_number.control_number as control, office_units.office_name as office, users.full_name as submitter_name, activity_design.start_date as date, venues.venue_name as venue, activity_classifications.classification_name as activity_classification, form_types.name as form_type_name')
+            ->select('(SELECT GROUP_CONCAT(gm.title SEPARATOR ", ") FROM activity_design_mandates adm JOIN gad_mandates gm ON gm.id = adm.mandate_id WHERE adm.act_design_id = activity_design.act_design_id) as gad_mandate')
+            ->select('(SELECT GROUP_CONCAT(gi.title SEPARATOR ", ") FROM activity_design_issues adi JOIN gender_issues gi ON gi.id = adi.issue_id WHERE adi.act_design_id = activity_design.act_design_id) as gender_issue')
             ->join('users', 'users.id = activity_design.user_id', 'left')
             ->join('office_units', 'office_units.office_id = users.office_id', 'left')
             ->join('control_number', 'control_number.act_design_id = activity_design.act_design_id', 'left')
             ->join('venues', 'venues.venue_id = activity_design.venue_id', 'left')
             ->join('activity_classifications', 'activity_classifications.id = activity_design.classification_id', 'left')
-            ->join('gad_mandates', 'gad_mandates.id = activity_design.gad_mandate_id', 'left')
-            ->join('gender_issues', 'gender_issues.id = activity_design.gender_issue_id', 'left')
             ->join('form_types', 'form_types.id = activity_design.form_type', 'left')
             ->where('activity_design.act_design_id', $id)
             ->first();
@@ -239,25 +265,31 @@ class ActivityDesignController extends BaseController
             // Try searching in archive fallback
             $db = \Config\Database::connect();
             $design = $db->table('archived_activity_designs as aad')
-                ->select('aad.*, aad.original_act_design_id as act_design_id, aad.activity_title as title, form_types.name as formLabel, office_units.office_name as office, users.full_name as submitter_name, aad.start_date as date, venues.venue_name as venue, activity_classifications.classification_name as activity_classification, gad_mandates.title as gad_mandate, gender_issues.title as gender_issue, form_types.name as form_type_name')
+                ->select('aad.*, aad.original_act_design_id as act_design_id, aad.activity_title as title, form_types.name as formLabel, office_units.office_name as office, users.full_name as submitter_name, aad.start_date as date, venues.venue_name as venue, activity_classifications.classification_name as activity_classification, form_types.name as form_type_name')
+                ->select('(SELECT GROUP_CONCAT(gm.title SEPARATOR ", ") FROM archived_activity_design_mandates adm JOIN gad_mandates gm ON gm.id = adm.mandate_id WHERE adm.archive_id = aad.archive_id) as gad_mandate')
+                ->select('(SELECT GROUP_CONCAT(gi.title SEPARATOR ", ") FROM archived_activity_design_issues adi JOIN gender_issues gi ON gi.id = adi.issue_id WHERE adi.archive_id = aad.archive_id) as gender_issue')
                 ->join('users', 'users.id = aad.user_id', 'left')
                 ->join('office_units', 'office_units.office_id = users.office_id', 'left')
                 ->join('control_number as cn', 'cn.act_design_id = aad.original_act_design_id', 'left')
                 ->join('venues', 'venues.venue_id = aad.venue_id', 'left')
                 ->join('form_types', 'form_types.id = aad.form_type', 'left')
                 ->join('activity_classifications', 'activity_classifications.id = aad.classification_id', 'left')
-                ->join('gad_mandates', 'gad_mandates.id = aad.gad_mandate_id', 'left')
-                ->join('gender_issues', 'gender_issues.id = aad.gender_issue_id', 'left')
                 ->select('COALESCE(cn.control_number, "N/A") as control')
                 ->where('aad.original_act_design_id', $id)
                 ->get()->getRowArray();
 
-            if (!$design) {
+        if (!$design) {
                 return $this->response->setJSON(['success' => false, 'message' => 'Activity design not found'])->setStatusCode(404);
             }
             $design['is_archived'] = true;
+            $db = \Config\Database::connect();
+            $design['gad_mandate_id'] = array_column($db->table('archived_activity_design_mandates')->where('archive_id', $design['archive_id'])->select('mandate_id')->get()->getResultArray(), 'mandate_id');
+            $design['gender_issue_id'] = array_column($db->table('archived_activity_design_issues')->where('archive_id', $design['archive_id'])->select('issue_id')->get()->getResultArray(), 'issue_id');
         } else {
             $design['is_archived'] = false;
+            $db = \Config\Database::connect();
+            $design['gad_mandate_id'] = array_column($db->table('activity_design_mandates')->where('act_design_id', $design['act_design_id'])->select('mandate_id')->get()->getResultArray(), 'mandate_id');
+            $design['gender_issue_id'] = array_column($db->table('activity_design_issues')->where('act_design_id', $design['act_design_id'])->select('issue_id')->get()->getResultArray(), 'issue_id');
         }
 
         // Fetch budget items
@@ -415,12 +447,47 @@ class ActivityDesignController extends BaseController
 
         // 2. Collect only the fields that were sent in the request
         // Using array_filter ensures we don't overwrite existing data with nulls
+        $gadMandateStr = $this->request->getPost('gad_mandate_id');
+        $gadMandates = $gadMandateStr ? explode(',', $gadMandateStr) : [];
+        $finalMandates = [];
+        foreach ($gadMandates as $mandate) {
+            if ($mandate === 'Other' || $mandate === 'new') {
+                $customMandate = $this->request->getPost('custom_gad_mandate');
+                $db = \Config\Database::connect();
+                $db->table('gad_mandates')->insert([
+                    'code' => 'CUSTOM',
+                    'title' => $customMandate
+                ]);
+                $finalMandates[] = $db->insertID();
+            } else {
+                $finalMandates[] = $mandate;
+            }
+        }
+
+        $genderIssueStr = $this->request->getPost('gender_issue_id');
+        $genderIssues = $genderIssueStr ? explode(',', $genderIssueStr) : [];
+        $finalIssues = [];
+        foreach ($genderIssues as $issue) {
+            if ($issue === 'Other' || $issue === 'new') {
+                $customIssue = $this->request->getPost('custom_gender_issue');
+                $db = \Config\Database::connect();
+                $db->table('gender_issues')->insert([
+                    'mandate_id' => !empty($finalMandates) ? $finalMandates[0] : null,
+                    'title' => $customIssue,
+                    'gad_objective' => null
+                ]);
+                $finalIssues[] = $db->insertID();
+            } else {
+                $finalIssues[] = $issue;
+            }
+        }
+
         $data = [
             'activity_title'      => $this->request->getPost('activity_title'),
             'form_type'           => $this->request->getPost('form_type'),
             'classification_id'   => $this->request->getPost('activity_classification_id'),
-            'gad_mandate_id'      => $this->request->getPost('gad_mandate_id'),
-            'gender_issue_id'     => $this->request->getPost('gender_issue_id'),
+            'gad_mandate_id'      => !empty($finalMandates) ? $finalMandates[0] : null,
+            'gender_issue_id'     => !empty($finalIssues) ? $finalIssues[0] : null,
             'start_date'          => $this->request->getPost('start_date'),
             'end_date'            => $this->request->getPost('end_date'),
             'start_time'          => $this->request->getPost('start_time'),
@@ -451,6 +518,27 @@ class ActivityDesignController extends BaseController
         // 4. Execute Update
         try {
             if ($model->update($id, $updateData)) {
+                $db = \Config\Database::connect();
+                
+                if (!empty($finalMandates)) {
+                    $db->table('activity_design_mandates')->where('act_design_id', $id)->delete();
+                    foreach ($finalMandates as $mandateId) {
+                        $db->table('activity_design_mandates')->insert([
+                            'act_design_id' => $id,
+                            'mandate_id' => $mandateId
+                        ]);
+                    }
+                }
+
+                if (!empty($finalIssues)) {
+                    $db->table('activity_design_issues')->where('act_design_id', $id)->delete();
+                    foreach ($finalIssues as $issueId) {
+                        $db->table('activity_design_issues')->insert([
+                            'act_design_id' => $id,
+                            'issue_id' => $issueId
+                        ]);
+                    }
+                }
 
                 // Update or Insert budget items
                 $budgetItemsStr = $this->request->getPost("budget_items");

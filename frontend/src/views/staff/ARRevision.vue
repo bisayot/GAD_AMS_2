@@ -179,7 +179,6 @@
                   <div class="full-width-info input-group-ar">
                     <label class="form-label-ar">GAD Mandate</label>
                     <select v-model="form.gad_mandate_id" @change="onMandateChange" class="custom-input-field select-arrow-fix">
-                      <option value="" disabled class="dark-option">Select Mandate</option>
                       <option v-for="mandate in GADMandates" :key="mandate.id" :value="mandate.id" class="dark-option">
                         {{ mandate.code }} - {{ mandate.title }}
                       </option>
@@ -438,8 +437,8 @@ const customVenue = ref('');
 const loading = ref(true);
 const form = ref({
   activity_classification_id: '',
-  gad_mandate_id: '',
-  gender_issue_id: '',
+  gad_mandate_id: [],
+  gender_issue_id: [],
   activity_title: '',
   control_number: '',
   act_design_id: null,
@@ -493,14 +492,21 @@ const fetchData = async () => {
   }
 };
 
-const fetchGenderIssues = async (mandateId) => {
-  if (!mandateId) {
+const fetchGenderIssues = async (mandateIds) => {
+  const ids = mandateIds || form.value?.gad_mandate_id || gad_mandate_id?.value;
+  if (!ids || !Array.isArray(ids) || ids.length === 0 || ids.includes('Other')) {
     genderIssues.value = [];
     return;
   }
   try {
-    const res = await api.get(`get-gender-issues/${mandateId}`);
-    genderIssues.value = res.data;
+    const allIssues = [];
+    for (const mandateId of ids) {
+       if (mandateId !== 'Other') {
+           const res = await api.get(`get-gender-issues/${mandateId}`);
+           allIssues.push(...res.data);
+       }
+    }
+    genderIssues.value = allIssues;
   } catch (error) {
     console.error('Error fetching gender issues:', error);
   }
