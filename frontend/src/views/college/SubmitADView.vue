@@ -262,10 +262,15 @@
                         </div>
                       </div>
                       <div class="attachment-preview-column">
-                        <div v-if="designFile" class="uploaded-file-display">
-                          <div class="uploaded-file-tag">
+                        <div v-if="designFile" class="uploaded-file-display" style="flex-direction: column; align-items: flex-start;">
+                          <div class="uploaded-file-tag" style="width: 100%;">
                             <span class="uploaded-file-name">📄 {{ designFile.name }}</span>
                             <button type="button" @click="removeFile" class="remove-file-btn">Remove</button>
+                          </div>
+                          <!-- Document Previews -->
+                          <div class="document-previews" style="margin-top: 15px; width: 100%;" v-if="designFile.previewUrl">
+                            <p style="color: #b979cc; font-size: 13px; font-weight: bold; margin-bottom: 8px;">Document Preview:</p>
+                            <iframe :src="designFile.previewUrl" width="100%" height="400px" style="border: 1px solid #b979cc; border-radius: 8px;"></iframe>
                           </div>
                         </div>
                         <p v-else class="no-file-uploaded-text">No file uploaded yet.</p>
@@ -764,6 +769,7 @@ const handleFileUpload = (event) => {
     }
 
     designFile.value = file;
+    file.previewUrl = URL.createObjectURL(file);
   }
 };
 

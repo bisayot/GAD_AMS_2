@@ -523,11 +523,17 @@
                   </div>
                   <div class="attachment-preview-column-ar">
                     <div v-if="uploadedFiles.length > 0" class="uploaded-files-container-ar">
-                      <div v-for="(file, index) in uploadedFiles" :key="index" class="uploaded-file-tag">
-                        <span class="uploaded-file-name">📄 {{ file.name }}</span>
-                        <div class="uploaded-file-actions-ar">
-                          <span class="uploaded-file-size-ar">({{ (file.size / 1024).toFixed(2) }} KB)</span>
-                          <button type="button" @click="removeFile(index)" class="remove-file-btn">Remove</button>
+                      <div v-for="(file, index) in uploadedFiles" :key="index" style="display: flex; flex-direction: column; gap: 10px;">
+                        <div class="uploaded-file-tag" style="width: 100%;">
+                          <span class="uploaded-file-name">📄 {{ file.name }}</span>
+                          <div class="uploaded-file-actions-ar">
+                            <span class="uploaded-file-size-ar">({{ (file.size / 1024).toFixed(2) }} KB)</span>
+                            <button type="button" @click="removeFile(index)" class="remove-file-btn">Remove</button>
+                          </div>
+                        </div>
+                        <div v-if="file.previewUrl" class="document-previews" style="margin-top: 10px; margin-bottom: 20px; width: 100%;">
+                           <p style="color: #b979cc; font-size: 13px; font-weight: bold; margin-bottom: 8px;">Document Preview:</p>
+                           <iframe :src="file.previewUrl" width="100%" height="400px" style="border: 1px solid #b979cc; border-radius: 8px;"></iframe>
                         </div>
                       </div>
                     </div>
@@ -816,7 +822,13 @@ const fileInput = ref(null);
 
 const handleFileUpload = (event) => {
   if (event.target.files.length > 0) {
-    uploadedFiles.value = [...uploadedFiles.value, ...Array.from(event.target.files)];
+    const newFiles = Array.from(event.target.files);
+    newFiles.forEach(file => {
+      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+        file.previewUrl = URL.createObjectURL(file);
+      }
+    });
+    uploadedFiles.value = [...uploadedFiles.value, ...newFiles];
   }
 };
 
