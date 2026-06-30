@@ -67,18 +67,43 @@
                 </select>
               </div>
               <div class="info-item" style="grid-column: span 2;">
-                <span class="info-label">GAD Mandate</span>
-                <select v-model="formData.gad_mandate" class="modal-input select-input">
-                  <option value="" disabled>Select mandate...</option>
-                  <option v-for="m in gadMandates" :key="m.id" :value="m.id" class="dark-option">{{ m.title }}</option>
-                </select>
+                <span class="info-label">GAD Mandate *</span>
+                <div class="checkbox-group-container modal-input" style="min-height: 120px; max-height: 250px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
+                  <label v-for="mandate in gadMandates" :key="mandate.id" class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
+                    <input type="checkbox" v-model="formData.gad_mandate" :value="mandate.id.toString()" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
+                    <span style="font-size: 14px; line-height: 1.4;">{{ mandate.code }} - {{ mandate.title }}</span>
+                  </label>
+                  <label class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
+                    <input type="checkbox" v-model="formData.gad_mandate" value="Other" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
+                    <span style="font-size: 14px; line-height: 1.4; font-style: italic;">+ New Mandate</span>
+                  </label>
+                </div>
+                <input v-if="formData.gad_mandate && formData.gad_mandate.includes('Other')" 
+                      v-model="customMandate" 
+                      type="text" 
+                      placeholder="Enter new mandate name..." 
+                      class="modal-input" 
+                      style="margin-top: 10px;" />
               </div>
               <div class="info-item" style="grid-column: span 2;">
-                <span class="info-label">Gender Issues</span>
-                <select v-model="formData.gender_issue" class="modal-input select-input">
-                  <option value="" disabled>Select gender issue...</option>
-                  <option v-for="gi in genderIssues" :key="gi.id" :value="gi.id" class="dark-option">{{ gi.title }}</option>
-                </select>
+                <span class="info-label">Gender Issues *</span>
+                <div class="checkbox-group-container modal-input" style="min-height: 120px; max-height: 250px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
+                  <label v-for="issue in genderIssues" :key="issue.id" class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
+                    <input type="checkbox" v-model="formData.gender_issue" :value="issue.id.toString()" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
+                    <span style="font-size: 14px; line-height: 1.4;">{{ issue.title }}</span>
+                  </label>
+                  <label class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
+                    <input type="checkbox" v-model="formData.gender_issue" value="Other" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
+                    <span style="font-size: 14px; line-height: 1.4; font-style: italic;">+ New Gender Issue</span>
+                  </label>
+                  <p v-if="!formData.gad_mandate || formData.gad_mandate.length === 0" style="color: #94a3b8; font-size: 13px; font-style: italic; margin: 0;">Select a mandate first to see gender issues.</p>
+                </div>
+                <input v-if="formData.gender_issue && formData.gender_issue.includes('Other')" 
+                      v-model="customGenderIssue" 
+                      type="text" 
+                      placeholder="Enter new gender issue..." 
+                      class="modal-input" 
+                      style="margin-top: 10px;" />
               </div>
             </div>
           </div>
@@ -577,6 +602,8 @@ const snacksSelected = ref({ am: false, pm: false });
 const pfPax = ref('');
 const tokensPax = ref('');
 const othersList = ref([]);
+const customMandate = ref('');
+const customGenderIssue = ref('');
 
 const addOtherItem = () => {
   othersList.value.push({ name: '', amount: '' });
@@ -688,27 +715,33 @@ const fetchGADMandates = async () => {
   }
 };
 
-const fetchGenderIssues = async (mandateId) => {
+const fetchGenderIssues = async (mandateIds) => {
+  if (!mandateIds || !Array.isArray(mandateIds) || mandateIds.length === 0) {
+    genderIssues.value = [];
+    return;
+  }
   try {
-    if (!mandateId) {
-      genderIssues.value = [];
-      return;
+    const allIssues = [];
+    for (const mandateId of mandateIds) {
+       if (mandateId !== 'Other') {
+           const res = await api.get(`get-gender-issues/${mandateId}`);
+           if (res.data) allIssues.push(...res.data);
+       }
     }
-    const response = await api.get(`get-gender-issues/${mandateId}`);
-    if (response.data) genderIssues.value = response.data;
+    genderIssues.value = allIssues;
   } catch (error) {
     console.error('Error fetching gender issues:', error);
   }
 };
 
 watch(() => formData.value.gad_mandate, (newVal) => {
-  if (newVal) {
+  if (newVal && newVal.length > 0) {
     fetchGenderIssues(newVal);
   } else {
     genderIssues.value = [];
-    formData.value.gender_issue = '';
+    formData.value.gender_issue = [];
   }
-});
+}, { deep: true });
 
 const fetchDesignDetails = async () => {
   loading.value = true;
@@ -792,8 +825,8 @@ const fetchDesignDetails = async () => {
         office: design.value.office,
         form_type: design.value.form_type,
         activity_classification: design.value.classification_id,
-        gad_mandate: design.value.gad_mandate_id,
-        gender_issue: design.value.gender_issue_id,
+        gad_mandate: design.value.gad_mandate_ids ? design.value.gad_mandate_ids.split(',').map(s=>s.trim()) : [],
+        gender_issue: design.value.gender_issue_ids ? design.value.gender_issue_ids.split(',').map(s=>s.trim()) : [],
         start_date: design.value.start_date,
         end_date: design.value.end_date,
         start_time: design.value.start_time,
@@ -858,8 +891,14 @@ const handleUpdate = async () => {
     submitData.append('activity_title', formData.value.activity_title);
     submitData.append('form_type', formData.value.form_type);
     submitData.append('activity_classification_id', formData.value.activity_classification);
-    submitData.append('gad_mandate_id', formData.value.gad_mandate);
-    submitData.append('gender_issue_id', formData.value.gender_issue);
+    submitData.append('gad_mandate_id', Array.isArray(formData.value.gad_mandate) ? formData.value.gad_mandate.join(',') : formData.value.gad_mandate);
+    if (Array.isArray(formData.value.gad_mandate) && formData.value.gad_mandate.includes('Other')) {
+      submitData.append('custom_gad_mandate', customMandate.value);
+    }
+    submitData.append('gender_issue_id', Array.isArray(formData.value.gender_issue) ? formData.value.gender_issue.join(',') : formData.value.gender_issue);
+    if (Array.isArray(formData.value.gender_issue) && formData.value.gender_issue.includes('Other')) {
+      submitData.append('custom_gender_issue', customGenderIssue.value);
+    }
     submitData.append('start_date', formData.value.start_date);
     submitData.append('end_date', formData.value.end_date);
     submitData.append('start_time', formData.value.start_time);
