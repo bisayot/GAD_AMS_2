@@ -70,29 +70,43 @@
                   <label class="info-label">Form Type</label>
                   <p class="text-sm-light mt-1 uppercase">{{ report.activity_design.form_type_name || report.activity_design.form_type || '---' }}</p>
                 </div>
-                <div class="full-width-info">
+                                <div class="full-width-info" v-if="report.activity_design">
                   <label class="info-label">GAD Mandate</label>
-                  <p class="text-sm-light mt-1">{{ report.activity_design.gad_mandate || '---' }}</p>
+                  <div v-if="report.activity_design.gad_mandate" class="mandate-boxes">
+                    <span v-for="(mandate, index) in report.activity_design.gad_mandate.split(',')" :key="'m'+index" class="mandate-box">
+                      {{ mandate.trim() }}
+                    </span>
+                  </div>
+                  <p v-else class="text-sm-light mt-1">---</p>
                 </div>
-                <div class="full-width-info">
+                <div class="full-width-info" v-if="report.activity_design">
                   <label class="info-label">Gender Issues</label>
-                  <p class="text-sm-light mt-1">{{ report.activity_design.gender_issue || '---' }}</p>
+                  <div v-if="report.activity_design.gender_issue" class="mandate-boxes">
+                    <span v-for="(issue, index) in report.activity_design.gender_issue.split(',')" :key="'gi'+index" class="mandate-box">
+                      {{ issue.trim() }}
+                    </span>
+                  </div>
+                  <p v-else class="text-sm-light mt-1">---</p>
                 </div>
                 <div>
                   <label class="info-label">Venue</label>
                   <p class="text-sm-light mt-1">{{ report.activity_design.venue_name || report.activity_design.venue }}</p>
                 </div>
                 <div>
-                  <label class="info-label">Target Participants</label>
-                  <p class="text-sm-light mt-1">{{ report.activity_design.target_participants }}</p>
+                  <label class="info-label">Start Date</label>
+                  <p class="text-sm-light mt-1">{{ formatDate(report.activity_design.start_date) }}</p>
                 </div>
                 <div>
-                  <label class="info-label">Date</label>
-                  <p class="text-sm-light mt-1">{{ formatDate(report.activity_design.start_date) }} to {{ formatDate(report.activity_design.end_date) }}</p>
+                  <label class="info-label">End Date</label>
+                  <p class="text-sm-light mt-1">{{ formatDate(report.activity_design.end_date) }}</p>
                 </div>
                 <div>
-                  <label class="info-label">Time</label>
-                  <p class="text-sm-light mt-1">{{ formatTime(report.activity_design.start_time) }} to {{ formatTime(report.activity_design.end_time) }}</p>
+                  <label class="info-label">Start Time</label>
+                  <p class="text-sm-light mt-1">{{ formatTime(report.activity_design.start_time) }}</p>
+                </div>
+                <div>
+                  <label class="info-label">End Time</label>
+                  <p class="text-sm-light mt-1">{{ formatTime(report.activity_design.end_time) }}</p>
                 </div>
                 <div>
                   <label class="info-label">Proposed Budget</label>
@@ -105,23 +119,6 @@
                 <div class="full-width-info" v-if="report.activity_design.remarks">
                   <label class="info-label">Reviewer Remarks</label>
                   <div class="read-only-remarks mt-1">{{ report.activity_design.remarks }}</div>
-                </div>
-              </div>
-
-              <!-- AD Attachment -->
-              <div v-if="report.activity_design.attachment" class="doc-item mt-4">
-                <div class="doc-info">
-                  <span class="material-symbols-outlined doc-pdf-icon">picture_as_pdf</span>
-                  <div>
-                    <p class="doc-title">Approved_Design.pdf</p>
-                    <p class="doc-meta">Reference: {{ report.activity_design.attachment }}</p>
-                  </div>
-                </div>
-                <div class="doc-actions">
-                  <button @click="previewFile(report.activity_design.attachment, 'archived')" class="preview-btn">Preview</button>
-                  <button @click="downloadFile(report.activity_design.attachment, 'archived', 'Activity_Design')" class="download-btn-icon">
-                    <span class="material-symbols-outlined">download</span>
-                  </button>
                 </div>
               </div>
 
@@ -151,6 +148,26 @@
                   </table>
                 </div>
               </div>
+
+              <!-- AD Attachment -->
+              <div v-if="report.activity_design && report.activity_design.attachment && parseAttachments(report.activity_design.attachment).length > 0" class="attachments-list mt-4" style="width:100%;">
+                <label class="info-label mb-2">Approved Design Attachments</label>
+                <div v-for="(file, index) in parseAttachments(report.activity_design.attachment)" :key="'ad-'+index" class="doc-item mb-2">
+                  <div class="doc-info">
+                    <span class="material-symbols-outlined doc-pdf-icon">picture_as_pdf</span>
+                    <div>
+                      <p class="doc-title">{{ file.split('_').slice(1).join('_') || file }}</p>
+                      <p class="doc-meta">Reference: {{ file }}</p>
+                    </div>
+                  </div>
+                  <div class="doc-actions">
+                    <button @click="previewFile(file, 'archived')" class="preview-btn">Preview</button>
+                    <button @click="downloadFile(file, 'archived', 'Activity_Design')" class="download-btn-icon">
+                      <span class="material-symbols-outlined">download</span>
+                    </button>
+                  </div>
+                </div>
+                </div>
             </div>
 
             <!-- Actual Accomplishment Details -->
@@ -169,12 +186,30 @@
                   <p class="text-sm-light mt-1">{{ report.activity_design.activity_classification || '---' }}</p>
                 </div>
                 <div class="full-width-info" v-if="report.activity_design">
+                  <label class="info-label">Form Type</label>
+                  <p class="text-sm-light mt-1 uppercase">{{ report.activity_design.form_type_name || report.activity_design.form_type || '---' }}</p>
+                </div>
+                                <div class="full-width-info" v-if="report.activity_design">
                   <label class="info-label">GAD Mandate</label>
-                  <p class="text-sm-light mt-1">{{ report.activity_design.gad_mandate || '---' }}</p>
+                  <div v-if="report.activity_design.gad_mandate" class="mandate-boxes">
+                    <span v-for="(mandate, index) in report.activity_design.gad_mandate.split(',')" :key="'m'+index" class="mandate-box">
+                      {{ mandate.trim() }}
+                    </span>
+                  </div>
+                  <p v-else class="text-sm-light mt-1">---</p>
                 </div>
                 <div class="full-width-info" v-if="report.activity_design">
                   <label class="info-label">Gender Issues</label>
-                  <p class="text-sm-light mt-1">{{ report.activity_design.gender_issue || '---' }}</p>
+                  <div v-if="report.activity_design.gender_issue" class="mandate-boxes">
+                    <span v-for="(issue, index) in report.activity_design.gender_issue.split(',')" :key="'gi'+index" class="mandate-box">
+                      {{ issue.trim() }}
+                    </span>
+                  </div>
+                  <p v-else class="text-sm-light mt-1">---</p>
+                </div>
+                <div class="full-width-info" v-if="report.activity_design">
+                  <label class="info-label">Target Participants</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.target_participants }}</p>
                 </div>
                 <div>
                   <label class="info-label">Start Date of Implementation</label>
@@ -272,26 +307,29 @@
               </div>
 
               <!-- AR Attachment -->
-              <div v-if="report.attachment" class="doc-item mt-4">
-                <div class="doc-info">
-                  <span class="material-symbols-outlined doc-pdf-icon">picture_as_pdf</span>
-                  <div>
-                    <p class="doc-title">Accomplishment_Report.pdf</p>
-                    <p class="doc-meta">Reference: {{ report.attachment }}</p>
+              <div v-if="report.attachment && parseAttachments(report.attachment).length > 0" class="attachments-list mt-4" style="width:100%;">
+                <label class="info-label mb-2">Accomplishment Report Attachments</label>
+                <div v-for="(file, index) in parseAttachments(report.attachment)" :key="'ar-'+index" class="doc-item mb-2">
+                  <div class="doc-info">
+                    <span class="material-symbols-outlined doc-pdf-icon">picture_as_pdf</span>
+                    <div>
+                      <p class="doc-title">{{ file.split('_').slice(1).join('_') || file }}</p>
+                      <p class="doc-meta">Reference: {{ file }}</p>
+                    </div>
+                  </div>
+                  <div class="doc-actions">
+                    <button @click="previewFile(file, report.is_archived ? 'archived' : 'drafts')" class="preview-btn">Preview</button>
+                    <button @click="downloadFile(file, report.is_archived ? 'archived' : 'drafts', 'Accomplishment_Report')" class="download-btn-icon">
+                      <span class="material-symbols-outlined">download</span>
+                    </button>
                   </div>
                 </div>
-                <div class="doc-actions">
-                  <button @click="previewFile(report.attachment, report.is_archived ? 'archived' : 'drafts')" class="preview-btn">Preview</button>
-                  <button @click="downloadFile(report.attachment, report.is_archived ? 'archived' : 'drafts', 'Accomplishment_Report')" class="download-btn-icon">
-                    <span class="material-symbols-outlined">download</span>
-                  </button>
-                </div>
-</div>
               </div>
             </div>
           </div>
 
-        </section>
+                    </div>
+  </section>
 
         <section class="flex-full">
           <div class="assessment-card-custom">
@@ -381,6 +419,25 @@ import Swal from 'sweetalert2';
 import api from '../../api';
 import PdfPreviewModal from '../../components/PdfPreviewModal.vue';
 
+const parseAttachments = (attachmentString) => {
+  if (!attachmentString) return [];
+  if (Array.isArray(attachmentString)) return attachmentString;
+  try {
+    let parsed = attachmentString;
+    if (typeof parsed === 'string') {
+      try { parsed = JSON.parse(parsed); } catch(e) {}
+    }
+    if (typeof parsed === 'string') {
+      try { parsed = JSON.parse(parsed); } catch(e) {}
+    }
+    if (Array.isArray(parsed)) {
+      return parsed;
+    }
+    return [attachmentString];
+  } catch (e) {
+    return [attachmentString];
+  }
+};
 
 const route = useRoute();
 const router = useRouter();
@@ -1049,6 +1106,22 @@ button { transition: all 0.2s ease-in-out; cursor: pointer; }
 .flex-full {
   flex: 1;
   width: 100%;
+}
+
+
+.mandate-boxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 5px;
+}
+.mandate-box {
+  background: rgba(185, 121, 204, 0.15);
+  border: 1px solid rgba(185, 121, 204, 0.3);
+  color: #f1f5f9;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
 }
 
 </style>

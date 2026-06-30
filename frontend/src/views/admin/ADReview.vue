@@ -330,6 +330,27 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import api from '../../api';
+
+const parseAttachments = (attachmentString) => {
+  if (!attachmentString) return [];
+  if (Array.isArray(attachmentString)) return attachmentString;
+  try {
+    let parsed = attachmentString;
+    if (typeof parsed === 'string') {
+      try { parsed = JSON.parse(parsed); } catch(e) {}
+    }
+    if (typeof parsed === 'string') {
+      try { parsed = JSON.parse(parsed); } catch(e) {}
+    }
+    if (Array.isArray(parsed)) {
+      return parsed;
+    }
+    return [attachmentString];
+  } catch (e) {
+    return [attachmentString];
+  }
+};
+
 import PdfPreviewModal from '../../components/PdfPreviewModal.vue';
 
 const route = useRoute();

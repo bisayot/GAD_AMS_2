@@ -25,7 +25,7 @@ class AccomplishmentReportController extends BaseController
             "female"         => "required|integer",
             "rating"         => "required|numeric",
             "user_id"        => "required",
-            "attachment"     => "uploaded[attachment]|max_size[attachment,10240]|ext_in[attachment,pdf,doc,docx]",
+            // "attachments" will be validated manually below to handle multiple files
         ];
 
         if (!$this->validate($rules)) {
@@ -36,9 +36,16 @@ class AccomplishmentReportController extends BaseController
         }
 
         try {
-            // Save uploaded PDF to writable/uploads/drafts/
-            $file = $this->request->getFile('attachment');
-            $fileName = FileStorage::saveToDrafts($file);
+            // Save uploaded PDFs to writable/uploads/drafts/
+            $files = $this->request->getFileMultiple('attachments');
+            $fileNames = [];
+            if ($files) {
+                foreach ($files as $file) {
+                    if ($file->isValid() && !$file->hasMoved()) {
+                        $fileNames[] = FileStorage::saveToDrafts($file);
+                    }
+                }
+            }
 
             $db = \Config\Database::connect();
             $controlRecord = $db->table('control_number')
@@ -60,7 +67,7 @@ class AccomplishmentReportController extends BaseController
                 "female"         => $this->request->getPost("female"),
                 "rating"         => $this->request->getPost("rating"),
                 "user_id"        => $this->request->getPost("user_id"),
-                "attachment"     => $fileName,
+                "attachment"     => json_encode($fileNames),
                 "status"         => "Pending",
             ];
 
@@ -364,14 +371,26 @@ class AccomplishmentReportController extends BaseController
             return $value !== null && $value !== '';
         });
 
-        // Handle new file upload (if any) — saves to drafts, removes old draft
-        $file = $this->request->getFile('attachment');
-        if ($file && $file->isValid() && !$file->hasMoved()) {
-            if (!empty($report['attachment'])) {
+        // Handle new file uploads (if any)
+        $files = $this->request->getFileMultiple('attachments');
+        if ($files && count($files) > 0 && $files[0]->isValid()) {
+            // Clean up old files
+            $oldAttachments = json_decode($report['attachment'], true);
+            if (is_array($oldAttachments)) {
+                foreach ($oldAttachments as $oldAtt) {
+                    FileStorage::deleteFromDrafts($oldAtt);
+                }
+            } elseif (!empty($report['attachment'])) {
                 FileStorage::deleteFromDrafts($report['attachment']);
             }
-            $newName = FileStorage::saveToDrafts($file);
-            $updateData['attachment'] = $newName;
+            
+            $newNames = [];
+            foreach ($files as $file) {
+                if ($file->isValid() && !$file->hasMoved()) {
+                    $newNames[] = FileStorage::saveToDrafts($file);
+                }
+            }
+            $updateData['attachment'] = json_encode($newNames);
         }
 
         try {
@@ -533,8 +552,15 @@ class AccomplishmentReportController extends BaseController
             return $this->response->setJSON(['success' => false, 'message' => 'Failed to verify and archive report'])->setStatusCode(500);
         }
 
-        // Move PDF from drafts → archived (outside transaction)
-        FileStorage::moveToArchived($item['attachment']);
+        // Move PDF from drafts -> archived (outside transaction)
+        $attachments = json_decode($item['attachment'], true);
+        if (is_array($attachments)) {
+            foreach ($attachments as $att) {
+                FileStorage::moveToArchived($att);
+            }
+        } elseif (!empty($item['attachment'])) {
+            FileStorage::moveToArchived($item['attachment']);
+        }
 
         $actionUserId = $this->request->getHeaderLine('X-User-Id') ?: $item['user_id'];
         \App\Models\ActivityLogModel::log($actionUserId, 'Approve Document', 'verified Accomplishment Report: ' . $item['activity_title']);

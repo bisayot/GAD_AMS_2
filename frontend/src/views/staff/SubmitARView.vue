@@ -1009,6 +1009,10 @@ const submitReport = async () => {
   try {
     const formData = new FormData();
     
+    uploadedFiles.value.forEach(file => {
+      formData.append('attachments[]', file);
+    });
+    
     const budgetObj = {
       meals_and_snacks: (Number(form.value.budget_items.find(i => i.name === 'Meals')?.total || 0) + Number(form.value.budget_items.find(i => i.name === 'Snacks')?.total || 0)),
       function_room_venue: Number(form.value.budget_items.find(i => i.name === 'Function Room/Venue')?.total || 0),
