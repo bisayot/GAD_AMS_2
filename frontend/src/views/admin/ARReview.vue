@@ -660,15 +660,16 @@ const closePdfModal = () => {
 const parsedADBudget = computed(() => {
   if (!report.value.activity_design || !report.value.activity_design.budget_items || report.value.activity_design.budget_items.length === 0) return [];
   const b = report.value.activity_design.budget_items[0];
+  const catering = Number(b.meals_and_snacks || 0) + Number(b.accommodation || 0);
+  const venue = Number(b.function_room_venue || 0) + Number(b.equipment_rental || 0) + Number(b.transportation || 0);
+  const program = Number(b.professional_fee_honoria || 0) + Number(b.tokens || 0);
+  const materials = Number(b.materials_and_supplies || 0);
+
   const items = [
-    { name: 'Meals and Snacks (AM/PM)', total: b.meals_and_snacks },
-    { name: 'Function Room/Venue', total: b.function_room_venue },
-    { name: 'Accommodation', total: b.accommodation },
-    { name: 'Equipment Rental', total: b.equipment_rental },
-    { name: 'Professional Fee/Honoraria', total: b.professional_fee_honoria },
-    { name: 'Tokens', total: b.tokens },
-    { name: 'Materials and Supplies', total: b.materials_and_supplies },
-    { name: 'Transportation', total: b.transportation }
+    { name: 'Catering & Hospitality', total: catering },
+    { name: 'Venue & Logistics', total: venue },
+    { name: 'Program & Speakers', total: program },
+    { name: 'Materials & Miscellaneous', total: materials }
   ];
   return items.filter(i => parseFloat(i.total) > 0);
 });
@@ -676,15 +677,16 @@ const parsedADBudget = computed(() => {
 const parsedARBudget = computed(() => {
   if (!report.value.budget_items || report.value.budget_items.length === 0) return [];
   const b = report.value.budget_items[0];
+  const catering = Number(b.meals_and_snacks || 0) + Number(b.accommodation || 0);
+  const venue = Number(b.function_room_venue || 0) + Number(b.equipment_rental || 0) + Number(b.transportation || 0);
+  const program = Number(b.professional_fee_honoria || 0) + Number(b.tokens || 0);
+  const materials = Number(b.materials_and_supplies || 0);
+
   const items = [
-    { name: 'Meals and Snacks (AM/PM)', total: b.meals_and_snacks },
-    { name: 'Function Room/Venue', total: b.function_room_venue },
-    { name: 'Accommodation', total: b.accommodation },
-    { name: 'Equipment Rental', total: b.equipment_rental },
-    { name: 'Professional Fee/Honoraria', total: b.professional_fee_honoria },
-    { name: 'Tokens', total: b.tokens },
-    { name: 'Materials and Supplies', total: b.materials_and_supplies },
-    { name: 'Transportation', total: b.transportation }
+    { name: 'Catering & Hospitality', total: catering },
+    { name: 'Venue & Logistics', total: venue },
+    { name: 'Program & Speakers', total: program },
+    { name: 'Materials & Miscellaneous', total: materials }
   ];
   return items.filter(i => parseFloat(i.total) > 0);
 });

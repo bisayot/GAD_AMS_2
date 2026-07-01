@@ -552,8 +552,8 @@ onMounted(() => {
 .error-title { color: #ef4444; font-weight: 700; }
 .error-message { color: #cbd5e1; font-size: 1.1rem; }
 .error-back-btn { margin-top: 1rem; font-size: 1.1rem; font-weight: 700; color: #ef4444; background: transparent; border: none; cursor: pointer; }
-.page-container { min-height: 100vh;  }
-.glass-card { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); backdrop-filter: blur(24px); border-radius: 1.5rem; border: 1px solid rgba(185, 121, 204, 0.2); }
+.page-container { min-height: 100vh; color: #cbd5e1; }
+.glass-card { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); backdrop-filter: blur(24px); border-radius: 1.5rem; border: 1px solid rgba(185, 121, 204, 0.2); color: #cbd5e1; }
 
 .layout-grid { display: flex; gap: 32px; padding: 2.5rem; max-width: 80rem; margin: 0 auto; }
 .flex-055 { flex: 0.55; display: flex; flex-direction: column; overflow: hidden; }
