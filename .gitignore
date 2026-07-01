@@ -19,9 +19,9 @@ logs/
 Thumbs.db
 
 # Writable directories (CodeIgniter)
-backend/writable/
+backend/writable/*
 !backend/writable/.htaccess
-!backend/writable/index.html
+!backend/writable/.gitkeep
 
 # Production builds
 frontend/dist/
