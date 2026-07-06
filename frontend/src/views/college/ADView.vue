@@ -137,7 +137,7 @@
                     <div v-for="(child, cIdx) in group.children" :key="cIdx" class="budget-row-item" :class="{'has-sub-options': child.subOptions}">
                       <div class="budget-row-header">
                         <div class="budget-item-info">
-                          <div class="budget-item-title">{{ child.name }}</div>
+                          <div class="budget-item-title" v-html="formatBudgetName(child.name)"></div>
                         </div>
                         <div class="budget-item-value">
                           <span class="budget-currency-symbol">₱</span>
@@ -149,6 +149,12 @@
                           <input type="checkbox" :checked="opt.checked" disabled class="budget-checkbox-disabled" />
                           <span class="budget-checkbox-label-text">{{ opt.label }}</span>
                         </label>
+                      </div>
+                      <div v-if="child.othersBreakdown && child.othersBreakdown.length" class="budget-others-breakdown-container mt-2">
+                        <div v-for="(o, oIdx) in child.othersBreakdown" :key="oIdx" class="budget-others-breakdown-row" style="display: flex; justify-content: space-between; padding: 4px 12px; background: rgba(0,0,0,0.1); border-radius: 4px; margin-bottom: 4px; font-size: 13px;">
+                          <span style="color: #cbd5e1;">{{ o.name || 'Unnamed Item' }}</span>
+                          <span style="color: #f1f5f9; font-weight: 500;">₱{{ formatCurrency(o.amount) }}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -312,8 +318,8 @@ const parsedBudget = computed(() => {
       icon: '🎤',
       total: Number(d.professional_fee_honoria || 0) + Number(d.tokens || 0),
       children: [
-        { name: 'Professional Fee/Honoraria', value: Number(d.professional_fee_honoria || 0) },
-        { name: 'Token/s', value: Number(d.tokens || 0) }
+        { name: `Professional Fee/Honoraria ${Number(d.professional_fee_honoria || 0) > 0 ? `(Number of Speakers: ${Math.floor(Number(d.professional_fee_honoria || 0) / 2258.25)})` : ''}`, value: Number(d.professional_fee_honoria || 0) },
+        { name: `Token/s ${Number(d.tokens || 0) > 0 ? `(Number of Recipients: ${Math.floor(Number(d.tokens || 0) / 1000)})` : ''}`, value: Number(d.tokens || 0) }
       ]
     },
     {
@@ -322,7 +328,13 @@ const parsedBudget = computed(() => {
       total: matVal + othersVal,
       children: [
         { name: 'Materials and Supplies', value: matVal },
-        { name: 'Others', value: othersVal }
+        { name: 'Others', value: othersVal, othersBreakdown: (function(){
+          let ob = [];
+          if (d.materials_others_breakdown) {
+            try { ob = JSON.parse(d.materials_others_breakdown); } catch(e){}
+          }
+          return ob;
+        })() }
       ]
     }
   ];

@@ -26,6 +26,7 @@ class ActivityBudgetItemsModel extends Model
         'lunch_selected',
         'dinner_selected',
         'am_snack_selected',
-        'pm_snack_selected'
+        'pm_snack_selected',
+        'materials_others_breakdown'
     ];
 }

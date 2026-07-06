@@ -110,7 +110,7 @@
                 </div>
                 <div>
                   <label class="info-label">Proposed Budget</label>
-                  <p class="text-sm-light mt-1">PHP {{ Number(report.activity_design.proposed_budget || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</p>
+                  <p class="text-sm-light mt-1">PHP {{ Number(report.activity_design?.proposed_budget || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</p>
                 </div>
                 <div>
                   <label class="info-label">Assessment Date</label>
@@ -138,11 +138,22 @@
                         <td v-html="formatBudgetName(item.name)"></td>
                         <td class="text-right">{{ Number(item.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</td>
                       </tr>
+                      <tr v-if="item.othersBreakdown && item.othersBreakdown.length">
+                        <td colspan="2" style="padding: 0; border: none;">
+                          <div style="padding: 8px 12px; background: rgba(0,0,0,0.15); margin: 4px 12px; border-radius: 6px;">
+                            <div style="font-size: 11px; text-transform: uppercase; color: #b979cc; margin-bottom: 4px; font-weight: bold;">Others Breakdown</div>
+                            <div v-for="(o, oIdx) in item.othersBreakdown" :key="oIdx" style="display: flex; justify-content: space-between; font-size: 12px; padding: 2px 0;">
+                              <span style="color: #cbd5e1;">{{ o.name || 'Unnamed Item' }}</span>
+                              <span style="color: #f1f5f9;">₱{{ Number(o.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
                     </tbody>
                     <tfoot>
                       <tr>
                         <td class="font-bold text-white">Grand Total (PHP)</td>
-                        <td class="font-bold text-white text-right">{{ Number(report.activity_design.proposed_budget || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</td>
+                        <td class="font-bold text-white text-right">{{ Number(report.activity_design?.proposed_budget || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</td>
                       </tr>
                     </tfoot>
                   </table>
@@ -170,6 +181,29 @@
                 </div>
             </div>
 
+            
+            <!-- Budget Exceeded Banner -->
+            <div v-if="arBudgetTotal > Number(report.activity_design?.proposed_budget || 0)" class="budget-exceeded-banner mt-4 mb-4" style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 16px; border-radius: 8px;">
+              <h4 style="color: #ef4444; margin: 0 0 8px 0; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined" style="font-size: 18px;">warning</span>
+                Budget Limit Exceeded
+              </h4>
+              <p style="margin: 0; color: #cbd5e1; font-size: 13px;">
+                The actual spending grand total (<strong>₱{{ Number(arBudgetTotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</strong>) exceeds the originally approved proposed budget (<strong>₱{{ Number(report.activity_design?.proposed_budget || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</strong>).
+              </p>
+            </div>
+            
+            <!-- Budget Underutilized Banner -->
+            <div v-else-if="report.activity_design && arBudgetTotal < Number(report.activity_design?.proposed_budget || 0)" class="budget-underutilized-banner mt-4 mb-4" style="background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; padding: 16px; border-radius: 8px;">
+              <h4 style="color: #3b82f6; margin: 0 0 8px 0; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined" style="font-size: 18px;">savings</span>
+                Budget Underutilized
+              </h4>
+              <p style="margin: 0; color: #cbd5e1; font-size: 13px;">
+                The actual spending grand total (<strong>₱{{ Number(arBudgetTotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</strong>) is lower than the originally approved proposed budget (<strong>₱{{ Number(report.activity_design?.proposed_budget || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</strong>).
+              </p>
+            </div>
+            
             <!-- Actual Accomplishment Details -->
             <div class="section-card">
               <div class="section-header-row">
@@ -256,6 +290,17 @@
                       <tr v-for="(item, index) in parsedARBudget" :key="index">
                         <td v-html="formatBudgetName(item.name)"></td>
                         <td class="text-right">{{ Number(item.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</td>
+                      </tr>
+                      <tr v-if="item.othersBreakdown && item.othersBreakdown.length">
+                        <td colspan="2" style="padding: 0; border: none;">
+                          <div style="padding: 8px 12px; background: rgba(0,0,0,0.15); margin: 4px 12px; border-radius: 6px;">
+                            <div style="font-size: 11px; text-transform: uppercase; color: #b979cc; margin-bottom: 4px; font-weight: bold;">Others Breakdown</div>
+                            <div v-for="(o, oIdx) in item.othersBreakdown" :key="oIdx" style="display: flex; justify-content: space-between; font-size: 12px; padding: 2px 0;">
+                              <span style="color: #cbd5e1;">{{ o.name || 'Unnamed Item' }}</span>
+                              <span style="color: #f1f5f9;">₱{{ Number(o.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+                            </div>
+                          </div>
+                        </td>
                       </tr>
                     </tbody>
                     <tfoot>
@@ -664,12 +709,16 @@ const parsedADBudget = computed(() => {
   const venue = Number(b.function_room_venue || 0) + Number(b.equipment_rental || 0) + Number(b.transportation || 0);
   const program = Number(b.professional_fee_honoria || 0) + Number(b.tokens || 0);
   const materials = Number(b.materials_and_supplies || 0);
+  let ob = [];
+  if (b.materials_others_breakdown) {
+    try { ob = JSON.parse(b.materials_others_breakdown); } catch(e){}
+  }
 
   const items = [
     { name: 'Catering & Hospitality', total: catering },
     { name: 'Venue & Logistics', total: venue },
     { name: 'Program & Speakers', total: program },
-    { name: 'Materials & Miscellaneous', total: materials }
+    { name: 'Materials & Miscellaneous', total: materials, othersBreakdown: ob }
   ];
   return items.filter(i => parseFloat(i.total) > 0);
 });
@@ -681,12 +730,16 @@ const parsedARBudget = computed(() => {
   const venue = Number(b.function_room_venue || 0) + Number(b.equipment_rental || 0) + Number(b.transportation || 0);
   const program = Number(b.professional_fee_honoria || 0) + Number(b.tokens || 0);
   const materials = Number(b.materials_and_supplies || 0);
+  let ob = [];
+  if (b.materials_others_breakdown) {
+    try { ob = JSON.parse(b.materials_others_breakdown); } catch(e){}
+  }
 
   const items = [
     { name: 'Catering & Hospitality', total: catering },
     { name: 'Venue & Logistics', total: venue },
     { name: 'Program & Speakers', total: program },
-    { name: 'Materials & Miscellaneous', total: materials }
+    { name: 'Materials & Miscellaneous', total: materials, othersBreakdown: ob }
   ];
   return items.filter(i => parseFloat(i.total) > 0);
 });

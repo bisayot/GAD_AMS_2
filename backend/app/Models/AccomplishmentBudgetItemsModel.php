@@ -17,6 +17,7 @@ class AccomplishmentBudgetItemsModel extends Model
         'professional_fee_honoria',
         'tokens',
         'materials_and_supplies',
-        'transportation'
+        'transportation',
+        'materials_others_breakdown'
     ];
 }

@@ -780,9 +780,17 @@ const fetchDesignDetails = async () => {
         am: !!Number(design.value.am_snack_selected), 
         pm: !!Number(design.value.pm_snack_selected) 
       };
-      pfPax.value = '';
-      tokensPax.value = '';
-      othersList.value = [];
+      pfPax.value = Number(design.value.professional_fee_honoria) > 0 ? Math.floor(Number(design.value.professional_fee_honoria) / 2258.25) : '';
+      tokensPax.value = Number(design.value.tokens) > 0 ? Math.floor(Number(design.value.tokens) / 1000) : '';
+      if (design.value.materials_others_breakdown) {
+        try {
+          othersList.value = JSON.parse(design.value.materials_others_breakdown);
+        } catch(e) {
+          othersList.value = [];
+        }
+      } else {
+        othersList.value = [];
+      }
 
       const dbMeals = Number(design.value.meals_total || 0);
       const dbSnacks = Number(design.value.snacks_total || 0);
@@ -916,6 +924,7 @@ const handleUpdate = async () => {
       snacks_total: Number(formData.value.budget_items.find(i => i.name === 'Snacks')?.total || 0),
       materials_total: Number(formData.value.budget_items.find(i => i.name === 'Materials and Supplies')?.total || 0),
       others_total: Number(formData.value.budget_items.find(i => i.name === 'Others')?.total || 0),
+      materials_others_breakdown: JSON.stringify(othersList.value),
       breakfast_selected: mealsSelected.value.breakfast ? 1 : 0,
       lunch_selected: mealsSelected.value.lunch ? 1 : 0,
       dinner_selected: mealsSelected.value.dinner ? 1 : 0,
