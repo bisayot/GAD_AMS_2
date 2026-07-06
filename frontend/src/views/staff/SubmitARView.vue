@@ -39,22 +39,40 @@
 
                   <div class="input-group-ar">
                     <label class="form-label-ar">Form Type *</label>
-                    <input
-                      type="text"
-                      v-model="form.form_type"
-                      class="custom-input-field"
-                      placeholder="Form Type"
+                    <select 
+                      v-model="form.form_type" 
+                      required 
+                      class="custom-input-field select-arrow-fix"
                     >
+                      <option value="" disabled class="dark-option">Select form type...</option>
+                      <option 
+                        v-for="ft in formTypes" 
+                        :key="ft.id" 
+                        :value="ft.name" 
+                        class="dark-option"
+                      >
+                        {{ ft.name }}
+                      </option>
+                    </select>
                   </div>
 
                   <div class="input-group-ar">
                     <label class="form-label-ar">Activity Classification *</label>
-                    <input
-                      type="text"
+                    <select
                       v-model="form.activity_classification"
-                      class="custom-input-field"
-                      placeholder="Activity Classification"
+                      required
+                      class="custom-input-field select-arrow-fix"
                     >
+                      <option value="" disabled class="dark-option">Select Classification...</option>
+                      <option
+                        v-for="classification in ActClassification"
+                        :key="classification.id"
+                        :value="classification.classification_name"
+                        class="dark-option"
+                      >
+                        {{ classification.classification_name }}
+                      </option>
+                    </select>
                   </div>
 
                   <div class="input-group-ar">
@@ -204,12 +222,32 @@
 
                   <div class="input-group-ar">
                     <label class="form-label-ar">Venue *</label>
-                    <input 
-                      type="text" 
+                    <select 
                       v-model="form.venue" 
                       required 
+                      class="custom-input-field select-arrow-fix"
+                    >
+                      <option value="" disabled class="dark-option">Select venue...</option>
+                      <option 
+                        v-for="v in venues" 
+                        :key="v.venue_id" 
+                        :value="v.venue_name" 
+                        class="dark-option"
+                      >
+                        {{ v.venue_name }}
+                      </option>
+                      <option value="Other" class="dark-option">Other</option>
+                    </select>
+                  </div>
+
+                  <div v-if="form.venue === 'Other'" class="input-group-ar">
+                    <label class="form-label-ar">Specify Other Venue *</label>
+                    <input 
+                      type="text" 
+                      v-model="customVenue" 
+                      required 
                       class="custom-input-field"
-                      placeholder="e.g., Convention Center, Main Hall"
+                      placeholder="Enter the complete venue name"
                     >
                   </div>
 
@@ -731,6 +769,40 @@ const genderIssues = ref([]);
 const customMandate = ref('');
 const customGenderIssue = ref('');
 
+const venues = ref([]);
+const customVenue = ref('');
+const formTypes = ref([]);
+const ActClassification = ref([]);
+
+const fetchVenues = async () => {
+  try {
+    const response = await api.get('venues');
+    if (response.data && response.data.success) {
+      venues.value = response.data.data || [];
+    }
+  } catch (error) {
+    console.error('Error fetching venues:', error);
+  }
+};
+
+const fetchFormTypes = async () => {
+  try {
+    const res = await api.get('get-form-types');
+    formTypes.value = res.data;
+  } catch (error) {
+    console.error('Error fetching form types:', error);
+  }
+};
+
+const fetchActivityClassifications = async () => {
+  try {
+    const res = await api.get('get-activity-classifications');
+    ActClassification.value = res.data;
+  } catch (error) {
+    console.error('Error fetching activity classifications:', error);
+  }
+};
+
 const fetchMandates = async () => {
   try {
     const res = await api.get('get-gad-mandates');
@@ -1040,12 +1112,21 @@ const submitReport = async () => {
     formData.append('evaluation_results', JSON.stringify(evalObj));
 
     Object.keys(form.value).forEach(key => {
-      if (key !== 'budget_items' && key !== 'evaluation_items' && key !== 'gad_mandate_id' && key !== 'gender_issue_id') {
+      if (key !== 'budget_items' && key !== 'evaluation_items' && key !== 'venue') {
         formData.append(key, form.value[key]);
       }
     });
 
-    formData.append('venue', form.value.venue);
+    if (form.value.venue === 'Other') {
+      formData.append('venue', customVenue.value);
+    } else {
+      formData.append('venue', form.value.venue);
+    }
+
+    const selectedClassification = ActClassification.value.find(c => c.classification_name === form.value.activity_classification);
+    if (selectedClassification) {
+        formData.append('activity_classification_id', selectedClassification.id);
+    }
     formData.append('attendees', form.value.attendees);
     formData.append('male', form.value.male);
     formData.append('female', form.value.female);
@@ -1147,6 +1228,9 @@ onMounted(() => {
     fetchApprovedControls();
     fetchHolidays();
     fetchMandates();
+    fetchFormTypes();
+    fetchActivityClassifications();
+    fetchVenues();
   }
   document.addEventListener('click', closeAllHelp);
 });
@@ -1991,5 +2075,14 @@ onUnmounted(() => {
 .fade-pop-leave-from {
   opacity: 1;
   transform: translate(-50%, 0) scale(1);
+}
+
+.select-arrow-fix {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23cbd5e1' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 18px center;
+  padding-right: 40px;
 }
 </style>
