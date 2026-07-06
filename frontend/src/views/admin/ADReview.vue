@@ -213,7 +213,7 @@
               </div>
 
               <div>
-                <label class="form-label">End Date of Assessment</label>
+                <label class="form-label">Assessment Date</label>
                 <input 
                   v-model="assessmentDate"
                   type="date" 
@@ -228,7 +228,7 @@
                   v-model="accomplishmentDeadline"
                   type="date" 
                   class="modal-input"
-                  :min="assessmentDate"
+                  :min="design.end_date"
                 >
               </div>
 
@@ -395,8 +395,8 @@ const getTodayDate = () => {
 const todayDate = ref(getTodayDate());
 
 const maxAccomplishmentDeadline = computed(() => {
-  if (!assessmentDate.value) return todayDate.value;
-  const targetDate = new Date(assessmentDate.value);
+  if (!design.value.end_date) return todayDate.value;
+  const targetDate = new Date(design.value.end_date);
   targetDate.setDate(targetDate.getDate() + 14); // Exactly 14 days (2 weeks)
   return targetDate.toISOString().split('T')[0];
 });
@@ -444,11 +444,7 @@ const fetchDesignDetails = async () => {
         }
       }
       
-      if (design.value.end_date) {
-        assessmentDate.value = design.value.end_date.split(' ')[0];
-      } else {
-        assessmentDate.value = todayDate.value;
-      }
+      assessmentDate.value = todayDate.value;
       
       // Auto-set accomplishment deadline to 2 weeks after
       if (!accomplishmentDeadline.value) {
@@ -484,16 +480,34 @@ const handleApprove = async () => {
     return;
   }
   
-  const assess = new Date(assessmentDate.value);
+  const activityEnd = new Date(design.value.end_date);
   const deadline = new Date(accomplishmentDeadline.value);
-  const diffTime = deadline - assess;
+  const diffTime = deadline - activityEnd;
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Invalid Deadline',
+      text: 'The Accomplishment Deadline cannot be the exact same date as the Activity End Date.',
+      confirmButtonColor: '#ef4444'
+    });
+    return;
+  } else if (diffDays < 0) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Invalid Deadline',
+      text: 'The Accomplishment Deadline cannot be before the Activity End Date.',
+      confirmButtonColor: '#ef4444'
+    });
+    return;
+  }
 
   if (diffDays !== 14) {
     const isMore = diffDays > 14;
     const confirmDeadline = await Swal.fire({
       title: 'Deadline Validation',
-      text: `The selected accomplishment deadline is ${isMore ? 'more' : 'less'} than 2 weeks from the assessment date. Do you want to proceed?`,
+      text: `The selected accomplishment deadline is ${isMore ? 'more' : 'less'} than 2 weeks from the activity end date. Do you want to proceed?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#22c55e',

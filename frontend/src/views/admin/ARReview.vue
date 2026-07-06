@@ -58,6 +58,18 @@
                 <h3 class="section-title">Approved Activity Design Details</h3>
               </div>
               <div class="grid-2">
+                <div class="full-width-info" v-if="report.activity_design.office">
+                  <label class="info-label">Office / Unit</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.office }}</p>
+                </div>
+                <div>
+                  <label class="info-label">Date Submitted</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.date ? formatDate(report.activity_design.date) : '---' }}</p>
+                </div>
+                <div>
+                  <label class="info-label">Category</label>
+                  <p class="text-sm-light mt-1">Activity Design</p>
+                </div>
                 <div class="full-width-info">
                   <label class="info-label">Title</label>
                   <p class="text-sm-light mt-1">{{ report.activity_design.activity_title }}</p>
@@ -88,9 +100,13 @@
                   </div>
                   <p v-else class="text-sm-light mt-1">---</p>
                 </div>
-                <div>
+                <div class="full-width-info">
                   <label class="info-label">Venue</label>
                   <p class="text-sm-light mt-1">{{ report.activity_design.venue_name || report.activity_design.venue }}</p>
+                </div>
+                <div class="full-width-info" v-if="report.activity_design">
+                  <label class="info-label">Target Participants</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.target_participants }}</p>
                 </div>
                 <div>
                   <label class="info-label">Start Date</label>
@@ -116,6 +132,10 @@
                   <label class="info-label">Assessment Date</label>
                   <p class="text-sm-light mt-1">{{ report.activity_design.assessment_date ? formatDate(report.activity_design.assessment_date) : 'N/A' }}</p>
                 </div>
+                <div>
+                  <label class="info-label">Accomplishment Deadline</label>
+                  <p class="text-sm-light mt-1">{{ report.activity_design.accomplishment_deadline ? formatDate(report.activity_design.accomplishment_deadline) : '---' }}</p>
+                </div>
                 <div class="full-width-info" v-if="report.activity_design.remarks">
                   <label class="info-label">Reviewer Remarks</label>
                   <div class="read-only-remarks mt-1">{{ report.activity_design.remarks }}</div>
@@ -134,11 +154,33 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="(item, index) in parsedADBudget" :key="index">
+                      <template v-for="(item, index) in parsedADBudget" :key="index">
+                        <tr>
                         <td v-html="formatBudgetName(item.name)"></td>
                         <td class="text-right">{{ Number(item.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</td>
                       </tr>
-                      <tr v-if="item.othersBreakdown && item.othersBreakdown.length">
+                        <tr v-if="item.mealsSelected">
+                          <td colspan="2" style="padding: 0; border: none;">
+                            <div style="padding: 8px 12px; background: rgba(0,0,0,0.15); margin: 0 12px 4px 12px; border-radius: 6px; display: flex; flex-wrap: wrap; gap: 12px;">
+                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
+                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.breakfast) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> Breakfast
+                               </label>
+                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
+                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.am_snack) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> AM Snack
+                               </label>
+                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
+                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.lunch) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> Lunch
+                               </label>
+                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
+                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.pm_snack) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> PM Snack
+                               </label>
+                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
+                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.dinner) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> Dinner
+                               </label>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr v-if="item.othersBreakdown && item.othersBreakdown.length">
                         <td colspan="2" style="padding: 0; border: none;">
                           <div style="padding: 8px 12px; background: rgba(0,0,0,0.15); margin: 4px 12px; border-radius: 6px;">
                             <div style="font-size: 11px; text-transform: uppercase; color: #b979cc; margin-bottom: 4px; font-weight: bold;">Others Breakdown</div>
@@ -149,6 +191,7 @@
                           </div>
                         </td>
                       </tr>
+                      </template>
                     </tbody>
                     <tfoot>
                       <tr>
@@ -192,9 +235,7 @@
                 The actual spending grand total (<strong>₱{{ Number(arBudgetTotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</strong>) exceeds the originally approved proposed budget (<strong>₱{{ Number(report.activity_design?.proposed_budget || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</strong>).
               </p>
             </div>
-            
-            <!-- Budget Underutilized Banner -->
-            <div v-else-if="report.activity_design && arBudgetTotal < Number(report.activity_design?.proposed_budget || 0)" class="budget-underutilized-banner mt-4 mb-4" style="background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; padding: 16px; border-radius: 8px;">
+              <div v-else-if="report.activity_design && arBudgetTotal < Number(report.activity_design?.proposed_budget || 0)" class="budget-underutilized-banner mt-4 mb-4" style="background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; padding: 16px; border-radius: 8px;">
               <h4 style="color: #3b82f6; margin: 0 0 8px 0; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 6px;">
                 <span class="material-symbols-outlined" style="font-size: 18px;">savings</span>
                 Budget Underutilized
@@ -287,11 +328,33 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="(item, index) in parsedARBudget" :key="index">
+                      <template v-for="(item, index) in parsedARBudget" :key="index">
+                        <tr>
                         <td v-html="formatBudgetName(item.name)"></td>
                         <td class="text-right">{{ Number(item.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</td>
                       </tr>
-                      <tr v-if="item.othersBreakdown && item.othersBreakdown.length">
+                        <tr v-if="item.mealsSelected">
+                          <td colspan="2" style="padding: 0; border: none;">
+                            <div style="padding: 8px 12px; background: rgba(0,0,0,0.15); margin: 0 12px 4px 12px; border-radius: 6px; display: flex; flex-wrap: wrap; gap: 12px;">
+                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
+                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.breakfast) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> Breakfast
+                               </label>
+                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
+                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.am_snack) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> AM Snack
+                               </label>
+                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
+                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.lunch) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> Lunch
+                               </label>
+                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
+                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.pm_snack) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> PM Snack
+                               </label>
+                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
+                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.dinner) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> Dinner
+                               </label>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr v-if="item.othersBreakdown && item.othersBreakdown.length">
                         <td colspan="2" style="padding: 0; border: none;">
                           <div style="padding: 8px 12px; background: rgba(0,0,0,0.15); margin: 4px 12px; border-radius: 6px;">
                             <div style="font-size: 11px; text-transform: uppercase; color: #b979cc; margin-bottom: 4px; font-weight: bold;">Others Breakdown</div>
@@ -302,6 +365,7 @@
                           </div>
                         </td>
                       </tr>
+                      </template>
                     </tbody>
                     <tfoot>
                       <tr>
@@ -705,43 +769,45 @@ const closePdfModal = () => {
 const parsedADBudget = computed(() => {
   if (!report.value.activity_design || !report.value.activity_design.budget_items || report.value.activity_design.budget_items.length === 0) return [];
   const b = report.value.activity_design.budget_items[0];
-  const catering = Number(b.meals_and_snacks || 0) + Number(b.accommodation || 0);
-  const venue = Number(b.function_room_venue || 0) + Number(b.equipment_rental || 0) + Number(b.transportation || 0);
-  const program = Number(b.professional_fee_honoria || 0) + Number(b.tokens || 0);
-  const materials = Number(b.materials_and_supplies || 0);
   let ob = [];
   if (b.materials_others_breakdown) {
     try { ob = JSON.parse(b.materials_others_breakdown); } catch(e){}
   }
 
   const items = [
-    { name: 'Catering & Hospitality', total: catering },
-    { name: 'Venue & Logistics', total: venue },
-    { name: 'Program & Speakers', total: program },
-    { name: 'Materials & Miscellaneous', total: materials, othersBreakdown: ob }
+    { name: 'Catering & Hospitality (Meals and Snacks)', total: b.meals_and_snacks, mealsSelected: { breakfast: b.breakfast_selected, am_snack: b.am_snack_selected, lunch: b.lunch_selected, pm_snack: b.pm_snack_selected, dinner: b.dinner_selected } },
+    { name: 'Catering & Hospitality (Accommodation)', total: b.accommodation },
+    { name: 'Venue & Logistics (Function Room/Venue)', total: b.function_room_venue },
+    { name: 'Venue & Logistics (Equipment Rental)', total: b.equipment_rental },
+    { name: 'Venue & Logistics (Transportation)', total: b.transportation },
+    { name: 'Program & Speakers (Professional Fee/Honoraria)', total: b.professional_fee_honoria },
+    { name: 'Program & Speakers (Token/s)', total: b.tokens },
+    { name: 'Materials & Miscellaneous (Materials and Supplies)', total: b.materials_and_supplies },
+    { name: 'Materials & Miscellaneous (Others)', total: ob.reduce((sum, o) => sum + Number(o.amount || 0), 0), othersBreakdown: ob }
   ];
-  return items.filter(i => parseFloat(i.total) > 0);
+  return items.filter(i => parseFloat(i.total) > 0 || (i.othersBreakdown && i.othersBreakdown.length > 0) || (i.mealsSelected && (Number(i.mealsSelected.breakfast)===1 || Number(i.mealsSelected.am_snack)===1 || Number(i.mealsSelected.lunch)===1 || Number(i.mealsSelected.pm_snack)===1 || Number(i.mealsSelected.dinner)===1)));
 });
 
 const parsedARBudget = computed(() => {
   if (!report.value.budget_items || report.value.budget_items.length === 0) return [];
   const b = report.value.budget_items[0];
-  const catering = Number(b.meals_and_snacks || 0) + Number(b.accommodation || 0);
-  const venue = Number(b.function_room_venue || 0) + Number(b.equipment_rental || 0) + Number(b.transportation || 0);
-  const program = Number(b.professional_fee_honoria || 0) + Number(b.tokens || 0);
-  const materials = Number(b.materials_and_supplies || 0);
   let ob = [];
   if (b.materials_others_breakdown) {
     try { ob = JSON.parse(b.materials_others_breakdown); } catch(e){}
   }
 
   const items = [
-    { name: 'Catering & Hospitality', total: catering },
-    { name: 'Venue & Logistics', total: venue },
-    { name: 'Program & Speakers', total: program },
-    { name: 'Materials & Miscellaneous', total: materials, othersBreakdown: ob }
+    { name: 'Catering & Hospitality (Meals and Snacks)', total: b.meals_and_snacks, mealsSelected: { breakfast: b.breakfast_selected, am_snack: b.am_snack_selected, lunch: b.lunch_selected, pm_snack: b.pm_snack_selected, dinner: b.dinner_selected } },
+    { name: 'Catering & Hospitality (Accommodation)', total: b.accommodation },
+    { name: 'Venue & Logistics (Function Room/Venue)', total: b.function_room_venue },
+    { name: 'Venue & Logistics (Equipment Rental)', total: b.equipment_rental },
+    { name: 'Venue & Logistics (Transportation)', total: b.transportation },
+    { name: 'Program & Speakers (Professional Fee/Honoraria)', total: b.professional_fee_honoria },
+    { name: 'Program & Speakers (Token/s)', total: b.tokens },
+    { name: 'Materials & Miscellaneous (Materials and Supplies)', total: b.materials_and_supplies },
+    { name: 'Materials & Miscellaneous (Others)', total: ob.reduce((sum, o) => sum + Number(o.amount || 0), 0), othersBreakdown: ob }
   ];
-  return items.filter(i => parseFloat(i.total) > 0);
+  return items.filter(i => parseFloat(i.total) > 0 || (i.othersBreakdown && i.othersBreakdown.length > 0) || (i.mealsSelected && (Number(i.mealsSelected.breakfast)===1 || Number(i.mealsSelected.am_snack)===1 || Number(i.mealsSelected.lunch)===1 || Number(i.mealsSelected.pm_snack)===1 || Number(i.mealsSelected.dinner)===1)));
 });
 
 const arBudgetTotal = computed(() => {

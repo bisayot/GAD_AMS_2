@@ -16,7 +16,7 @@
 
             <div class="assessment-form">
               <div class="info-item">
-                <span class="info-label">Assessor Remarks</span>
+                <span class="info-label">Revision Remarks / Comments</span>
                 <div class="read-only-remarks">
                   {{ existingReport?.remarks || 'No remarks recorded for this accomplishment report.' }}
                 </div>
@@ -207,14 +207,19 @@
                   </div>
                   <div>
                     <label class="info-label">Form Type</label>
-                    <input type="text" v-model="form.form_type" class="custom-input-field mt-1" readonly>
+                    <select v-model="form.form_type" class="custom-input-field select-arrow-fix mt-1" disabled style="opacity: 0.8; cursor: not-allowed;">
+                      <option value="" disabled class="dark-option">Select Form Type</option>
+                      <option v-for="ft in formTypes" :key="ft.id" :value="ft.id.toString()" class="dark-option">
+                        {{ ft.name }}
+                      </option>
+                    </select>
                   </div>
                   <div class="full-width-info">
                     <label class="info-label">GAD Mandate</label>
                     <div class="mandate-boxes mt-1">
                       <label v-for="mandate in GADMandates" :key="mandate.id" class="mandate-checkbox-label">
                         <input type="checkbox" :value="mandate.id.toString()" v-model="form.gad_mandate_id" class="mandate-checkbox" />
-                        <span>{{ mandate.code }}</span>
+                        <span>{{ mandate.title }}</span>
                       </label>
                     </div>
                   </div>
@@ -266,10 +271,10 @@
                   </div>
                 </div>
 
-                <!-- Actual Budgetary Requirements (editable) -->
+                                <!-- Actual Budgetary Requirements (editable) -->
                 <div class="budget-section mt-4">
                   <label class="form-label-ar">Actual Budgetary Requirements *</label>
-                  <!-- Grouped Budget Divisions -->
+                  
                   <div class="budget-groups-container">
                     
                     <!-- Group 1: Catering & Hospitality -->
@@ -283,17 +288,23 @@
                         <div class="budget-row-item">
                           <div class="budget-item-info">
                             <div class="budget-item-title">Meals</div>
+                            <div class="budget-sub-controls">
+                               <label class="budget-number-input-label">
+                                 Number of Pax:
+                                 <input type="number" v-model.number="mealsPax" min="0" class="budget-sub-number-input" placeholder="0" />
+                               </label>
+                               <div class="meals-checkboxes">
+                                 <label><input type="checkbox" v-model="mealsSelected.breakfast" /> Breakfast</label>
+                                 <label><input type="checkbox" v-model="mealsSelected.amSnack" /> AM Snack</label>
+                                 <label><input type="checkbox" v-model="mealsSelected.lunch" /> Lunch</label>
+                                 <label><input type="checkbox" v-model="mealsSelected.pmSnack" /> PM Snack</label>
+                                 <label><input type="checkbox" v-model="mealsSelected.dinner" /> Dinner</label>
+                               </div>
+                            </div>
                           </div>
                           <div class="budget-item-value">
                             <span class="budget-currency-symbol">₱</span>
-                            <input 
-                              type="number" 
-                              v-model="form.budget_items[0].total" 
-                              class="budget-card-input"
-                              placeholder="0.00"
-                              min="0"
-                              step="0.01"
-                            />
+                            <input type="number" v-model="form.budget_items[0].total" class="budget-card-input" placeholder="0.00" min="0" step="0.01" />
                           </div>
                         </div>
 
@@ -301,17 +312,16 @@
                         <div class="budget-row-item">
                           <div class="budget-item-info">
                             <div class="budget-item-title">Snacks</div>
+                            <div class="budget-sub-controls">
+                               <label class="budget-number-input-label">
+                                 Number of Pax:
+                                 <input type="number" v-model.number="snacksPax" min="0" class="budget-sub-number-input" placeholder="0" />
+                               </label>
+                            </div>
                           </div>
                           <div class="budget-item-value">
                             <span class="budget-currency-symbol">₱</span>
-                            <input 
-                              type="number" 
-                              v-model="form.budget_items[1].total" 
-                              class="budget-card-input"
-                              placeholder="0.00"
-                              min="0"
-                              step="0.01"
-                            />
+                            <input type="number" v-model="form.budget_items[1].total" class="budget-card-input" placeholder="0.00" min="0" step="0.01" />
                           </div>
                         </div>
                       </div>
@@ -331,14 +341,7 @@
                           </div>
                           <div class="budget-item-value">
                             <span class="budget-currency-symbol">₱</span>
-                            <input 
-                              type="number" 
-                              v-model="form.budget_items[2].total" 
-                              class="budget-card-input"
-                              placeholder="0.00"
-                              min="0"
-                              step="0.01"
-                            />
+                            <input type="number" v-model="form.budget_items[2].total" class="budget-card-input" placeholder="0.00" min="0" step="0.01" />
                           </div>
                         </div>
 
@@ -349,14 +352,7 @@
                           </div>
                           <div class="budget-item-value">
                             <span class="budget-currency-symbol">₱</span>
-                            <input 
-                              type="number" 
-                              v-model="form.budget_items[3].total" 
-                              class="budget-card-input"
-                              placeholder="0.00"
-                              min="0"
-                              step="0.01"
-                            />
+                            <input type="number" v-model="form.budget_items[3].total" class="budget-card-input" placeholder="0.00" min="0" step="0.01" />
                           </div>
                         </div>
 
@@ -367,14 +363,7 @@
                           </div>
                           <div class="budget-item-value">
                             <span class="budget-currency-symbol">₱</span>
-                            <input 
-                              type="number" 
-                              v-model="form.budget_items[4].total" 
-                              class="budget-card-input"
-                              placeholder="0.00"
-                              min="0"
-                              step="0.01"
-                            />
+                            <input type="number" v-model="form.budget_items[4].total" class="budget-card-input" placeholder="0.00" min="0" step="0.01" />
                           </div>
                         </div>
 
@@ -385,14 +374,7 @@
                           </div>
                           <div class="budget-item-value">
                             <span class="budget-currency-symbol">₱</span>
-                            <input 
-                              type="number" 
-                              v-model="form.budget_items[8].total" 
-                              class="budget-card-input"
-                              placeholder="0.00"
-                              min="0"
-                              step="0.01"
-                            />
+                            <input type="number" v-model="form.budget_items[8].total" class="budget-card-input" placeholder="0.00" min="0" step="0.01" />
                           </div>
                         </div>
                       </div>
@@ -409,17 +391,16 @@
                         <div class="budget-row-item">
                           <div class="budget-item-info">
                             <div class="budget-item-title">Professional Fee/Honoraria</div>
+                            <div class="budget-sub-controls">
+                              <label class="budget-number-input-label">
+                                Number of Speakers:
+                                <input type="number" v-model.number="pfPax" min="0" class="budget-sub-number-input" placeholder="0" />
+                              </label>
+                            </div>
                           </div>
                           <div class="budget-item-value">
                             <span class="budget-currency-symbol">₱</span>
-                            <input 
-                              type="number" 
-                              v-model="form.budget_items[5].total" 
-                              class="budget-card-input"
-                              placeholder="0.00"
-                              min="0"
-                              step="0.01"
-                            />
+                            <input type="number" v-model="form.budget_items[5].total" class="budget-card-input" placeholder="0.00" min="0" step="0.01" />
                           </div>
                         </div>
 
@@ -427,17 +408,16 @@
                         <div class="budget-row-item">
                           <div class="budget-item-info">
                             <div class="budget-item-title">Token/s</div>
+                            <div class="budget-sub-controls">
+                              <label class="budget-number-input-label">
+                                Number of Recipients:
+                                <input type="number" v-model.number="tokensPax" min="0" class="budget-sub-number-input" placeholder="0" />
+                              </label>
+                            </div>
                           </div>
                           <div class="budget-item-value">
                             <span class="budget-currency-symbol">₱</span>
-                            <input 
-                              type="number" 
-                              v-model="form.budget_items[6].total" 
-                              class="budget-card-input"
-                              placeholder="0.00"
-                              min="0"
-                              step="0.01"
-                            />
+                            <input type="number" v-model="form.budget_items[6].total" class="budget-card-input" placeholder="0.00" min="0" step="0.01" />
                           </div>
                         </div>
                       </div>
@@ -457,14 +437,7 @@
                           </div>
                           <div class="budget-item-value">
                             <span class="budget-currency-symbol">₱</span>
-                            <input 
-                              type="number" 
-                              v-model="form.budget_items[7].total" 
-                              class="budget-card-input"
-                              placeholder="0.00"
-                              min="0"
-                              step="0.01"
-                            />
+                            <input type="number" v-model="form.budget_items[7].total" class="budget-card-input" placeholder="0.00" min="0" step="0.01" />
                           </div>
                         </div>
 
@@ -491,7 +464,6 @@
                         </div>
                       </div>
                     </div>
-
                   </div>
 
                   <!-- Grand Total Banner Card -->
@@ -568,8 +540,8 @@
                   <div class="doc-upload-area" @dragover.prevent @drop.prevent="handleFileDrop" @click="triggerFileInput">
                     <span class="material-symbols-outlined upload-icon">cloud_upload</span>
                     <p class="upload-text">Click or drag to upload new files</p>
-                    <p class="upload-hint">PDF, images accepted (Max: 5MB per file)</p>
-                    <input type="file" ref="fileInput" multiple @change="handleFileUpload" style="display:none" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                    <p class="upload-hint">PDF files only (Max: 10MB per file)</p>
+                    <input type="file" ref="fileInput" multiple @change="handleFileUpload" style="display:none" accept=".pdf">
                   </div>
                   <div v-if="uploadedFiles.length > 0" class="mt-4">
                     <p class="info-label mb-2">New Files to Upload:</p>
@@ -639,6 +611,15 @@ const venues = ref([]);
 const customVenue = ref('');
 
 const loading = ref(true);
+const mealsSelected = ref({ breakfast: false, amSnack: false, lunch: false, pmSnack: false, dinner: false });
+const mealsPax = ref(0);
+const snacksPax = ref(0);
+const pfPax = ref(0);
+const tokensPax = ref(0);
+const othersList = ref([]);
+const addOtherItem = () => { othersList.value.push({ name: '', amount: 0 }); };
+const removeOtherItem = (index) => { othersList.value.splice(index, 1); };
+
 const form = ref({
   activity_classification_id: '',
     form_type: '',
@@ -679,14 +660,7 @@ const form = ref({
   rating: 0
 });
 
-// Reactive Others State
-const othersList = ref([]);
-const addOtherItem = () => {
-  othersList.value.push({ name: '', amount: '' });
-};
-const removeOtherItem = (index) => {
-  othersList.value.splice(index, 1);
-};
+
 
 watch(
   othersList,
@@ -704,6 +678,7 @@ const approvedControls = ref([]);
 const loadingControls = ref(false);
 
 const ActClassification = ref([]);
+const formTypes = ref([]);
 const GADMandates = ref([]);
 const genderIssues = ref([]);
 

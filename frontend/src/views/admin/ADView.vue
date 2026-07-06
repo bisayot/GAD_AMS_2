@@ -459,9 +459,18 @@ const editDeadline = async () => {
       }
       
       const minDate = design.value.end_date ? new Date(design.value.end_date.split(' ')[0]) : null;
-      if (minDate && selected < minDate) {
-        Swal.showValidationMessage('Deadline cannot be before the activity end date');
-        return false;
+      if (minDate) {
+        // Zero out times just to be strictly comparing dates
+        selected.setHours(0,0,0,0);
+        minDate.setHours(0,0,0,0);
+        
+        if (selected.getTime() === minDate.getTime()) {
+          Swal.showValidationMessage('Deadline cannot be the exact same date as the activity end date');
+          return false;
+        } else if (selected.getTime() < minDate.getTime()) {
+          Swal.showValidationMessage('Deadline cannot be before the activity end date');
+          return false;
+        }
       }
 
       return val;
@@ -479,7 +488,7 @@ const editDeadline = async () => {
         const isMore = diffDays > 14;
         const confirmExtra = await Swal.fire({
           title: 'Deadline Validation',
-          text: `The selected accomplishment deadline is ${isMore ? 'more' : 'less'} than 2 weeks from the assessment date. Do you want to proceed?`,
+          text: `The selected accomplishment deadline is ${isMore ? 'more' : 'less'} than 2 weeks from the activity end date. Do you want to proceed?`,
           icon: 'warning',
           showCancelButton: true,
           confirmButtonColor: '#9333ea',

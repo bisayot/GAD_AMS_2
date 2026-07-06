@@ -255,12 +255,15 @@ class AccomplishmentReportController extends BaseController
                 $db = \Config\Database::connect();
                 $ad = $db->table('archived_activity_designs as aad')
                     ->select('aad.*, venues.venue_name, activity_classifications.classification_name as activity_classification, form_types.name as form_type_name')
+                    ->select('DATE(aad.archived_at) as date, office_units.office_name as office')
                     ->select('(SELECT GROUP_CONCAT(gm.title SEPARATOR ", ") FROM archived_activity_design_mandates adm JOIN gad_mandates gm ON gm.id = adm.mandate_id WHERE adm.archive_id = aad.archive_id) as gad_mandate')
                     ->select('(SELECT GROUP_CONCAT(gi.title SEPARATOR ", ") FROM archived_activity_design_issues adi JOIN gender_issues gi ON gi.id = adi.issue_id WHERE adi.archive_id = aad.archive_id) as gender_issue')
                     ->join('control_number as cn', 'cn.act_design_id = aad.original_act_design_id', 'left')
                     ->join('venues', 'venues.venue_id = aad.venue_id', 'left')
                     ->join('activity_classifications', 'activity_classifications.id = aad.classification_id', 'left')
                     ->join('form_types', 'form_types.id = aad.form_type', 'left')
+                    ->join('users', 'users.id = aad.user_id', 'left')
+                    ->join('office_units', 'office_units.office_id = users.office_id', 'left')
                     ->where('cn.control_number', $controlNumber)
                     ->get()->getRowArray();
                 
