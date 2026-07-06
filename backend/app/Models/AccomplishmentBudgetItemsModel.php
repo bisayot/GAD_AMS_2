@@ -18,6 +18,22 @@ class AccomplishmentBudgetItemsModel extends Model
         'tokens',
         'materials_and_supplies',
         'transportation',
+        'meals_total',
+        'snacks_total',
+        'breakfast_selected',
+        'lunch_selected',
+        'dinner_selected',
+        'am_snack_selected',
+        'pm_snack_selected',
+        'others_total',
+        'meals_total',
+        'snacks_total',
+        'breakfast_selected',
+        'lunch_selected',
+        'dinner_selected',
+        'am_snack_selected',
+        'pm_snack_selected',
+        'others_total',
         'materials_others_breakdown'
     ];
 }

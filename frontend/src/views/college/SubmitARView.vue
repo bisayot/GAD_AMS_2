@@ -294,7 +294,7 @@
 
                 <div class="form-column-right-ar">
                   <div class="budget-section">
-                    <label class="form-label-ar">Actual Budgetary Requirements *</label>
+                    <label class="form-label-ar">Actual Budgetary Expenditure *</label>
                     <!-- Grouped Budget Divisions -->
                     <div class="budget-groups-container">
                       
@@ -953,10 +953,25 @@ watch(() => form.value.control_number, async (newVal) => {
       let snacksTotal = dbSnacks || '';
       
       const dbMat = Number(dbBudget.materials_total || 0);
-      const dbOthers = Number(dbBudget.others_total || 0);
+      let ob = [];
+      if (dbBudget.materials_others_breakdown) {
+        try { ob = JSON.parse(dbBudget.materials_others_breakdown); } catch(e){}
+      }
+      const dbOthers = Number(dbBudget.others_total) || ob.reduce((s, o) => s + Number(o.amount || 0), 0);
       const legacyMatOthers = Number(dbBudget.materials_and_supplies || 0);
       let materialsSupplies = (dbMat === 0 && dbOthers === 0 && legacyMatOthers > 0) ? legacyMatOthers : dbMat;
       let othersTotal = dbOthers || '';
+
+      if (dbBudget.materials_others_breakdown) {
+        try {
+          const parsedOthers = JSON.parse(dbBudget.materials_others_breakdown);
+          othersList.value = Array.isArray(parsedOthers) ? parsedOthers : [];
+        } catch (e) {
+          othersList.value = [];
+        }
+      } else {
+        othersList.value = [];
+      }
 
       mealsSelected.value = {
         breakfast: !!Number(dbBudget.breakfast_selected),
@@ -992,6 +1007,7 @@ snacksSelected.value = {
     form.value.activity_classification = '';
     form.value.gad_mandate_id = [];
     form.value.gender_issue_id = [];
+    othersList.value = [];
   }
 });
 

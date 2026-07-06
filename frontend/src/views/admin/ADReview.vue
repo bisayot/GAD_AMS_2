@@ -72,7 +72,7 @@
               <div class="info-item" style="grid-column: span 2;">
                 <span class="info-label">GAD Mandate</span>
                 <div v-if="design.gad_mandate" class="mandate-boxes">
-                  <span v-for="(mandate, index) in design.gad_mandate.split(',')" :key="'m'+index" class="mandate-box">
+                  <span v-for="(mandate, index) in design.gad_mandate.split(';;;')" :key="'m'+index" class="mandate-box">
                     {{ mandate.trim() }}
                   </span>
                 </div>
@@ -81,7 +81,7 @@
               <div class="info-item" style="grid-column: span 2;">
                 <span class="info-label">Gender Issues</span>
                 <div v-if="design.gender_issue" class="mandate-boxes">
-                  <span v-for="(issue, index) in design.gender_issue.split(',')" :key="'i'+index" class="mandate-box">
+                  <span v-for="(issue, index) in design.gender_issue.split(';;;')" :key="'i'+index" class="mandate-box">
                     {{ issue.trim() }}
                   </span>
                 </div>
@@ -165,7 +165,7 @@
                 <div class="grand-total-banner-card mt-4">
                   <div class="grand-total-label-banner">Grand Total (PHP)</div>
                   <div class="grand-total-value-banner">
-                    ₱{{ formatCurrency(design.proposed_budget) }}
+                    ₱{{ formatCurrency(grandTotal) }}
                   </div>
                 </div>
               </div>
@@ -344,6 +344,10 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import api from '../../api';
+
+const grandTotal = computed(() => {
+  return parsedBudget.value.reduce((sum, cat) => sum + (Number(cat.total) || 0), 0);
+});
 
 const parseAttachments = (attachmentString) => {
   if (!attachmentString) return [];
@@ -737,7 +741,11 @@ const parsedBudget = computed(() => {
   }
 
   const dbMat = Number(d.materials_total || 0);
-  const dbOthers = Number(d.others_total || 0);
+  let ob = [];
+  if (d.materials_others_breakdown) {
+    try { ob = JSON.parse(d.materials_others_breakdown); } catch(e){}
+  }
+  const dbOthers = Number(d.others_total) || ob.reduce((s, o) => s + Number(o.amount || 0), 0);
   const legacyMatOthers = Number(d.materials_and_supplies || 0);
 
   let matVal = 0;
@@ -802,13 +810,7 @@ const parsedBudget = computed(() => {
       total: matVal + othersVal,
       children: [
         { name: 'Materials and Supplies', value: matVal },
-        { name: 'Others', value: othersVal, othersBreakdown: (function(){
-          let ob = [];
-          if (d.materials_others_breakdown) {
-            try { ob = JSON.parse(d.materials_others_breakdown); } catch(e){}
-          }
-          return ob;
-        })() }
+        { name: 'Others', value: othersVal, othersBreakdown: ob }
       ]
     }
   ];

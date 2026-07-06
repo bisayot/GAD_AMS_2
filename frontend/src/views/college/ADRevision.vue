@@ -799,7 +799,11 @@ const fetchDesignDetails = async () => {
       let snacksTotal = dbSnacks || '';
 
       const dbMat = Number(design.value.materials_total || 0);
-      const dbOthers = Number(design.value.others_total || 0);
+      let ob = [];
+      if (design.value.materials_others_breakdown) {
+        try { ob = JSON.parse(design.value.materials_others_breakdown); } catch(e){}
+      }
+      const dbOthers = Number(design.value.others_total) || ob.reduce((s, o) => s + Number(o.amount || 0), 0);
       const legacyMatOthers = Number(design.value.materials_and_supplies || 0);
       let materialsSupplies = (dbMat === 0 && dbOthers === 0 && legacyMatOthers > 0) ? legacyMatOthers : dbMat;
       let othersTotal = dbOthers || '';

@@ -88,7 +88,7 @@
                   <div class="full-width-info">
                     <label class="info-label">GAD Mandate</label>
                     <div v-if="existingReport.activity_design.gad_mandate" class="mandate-boxes">
-                      <span v-for="(mandate, index) in existingReport.activity_design.gad_mandate.split(',')" :key="'m'+index" class="mandate-box">
+                      <span v-for="(mandate, index) in existingReport.activity_design.gad_mandate.split(';;;')" :key="'m'+index" class="mandate-box">
                         {{ mandate.trim() }}
                       </span>
                     </div>
@@ -97,7 +97,7 @@
                   <div class="full-width-info">
                     <label class="info-label">Gender Issues</label>
                     <div v-if="existingReport.activity_design.gender_issue" class="mandate-boxes">
-                      <span v-for="(issue, index) in existingReport.activity_design.gender_issue.split(',')" :key="'gi'+index" class="mandate-box">
+                      <span v-for="(issue, index) in existingReport.activity_design.gender_issue.split(';;;')" :key="'gi'+index" class="mandate-box">
                         {{ issue.trim() }}
                       </span>
                     </div>
@@ -125,7 +125,7 @@
                   </div>
                   <div>
                     <label class="info-label">Proposed Budget</label>
-                    <p class="text-sm-light mt-1">PHP {{ Number(existingReport.activity_design.proposed_budget || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</p>
+                    <p class="text-sm-light mt-1">PHP {{ Number(aDBudget?.grand_total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</p>
                   </div>
                   <div>
                     <label class="info-label">Assessment Date</label>
@@ -157,7 +157,7 @@
                       <tfoot>
                         <tr>
                           <td class="font-bold text-white">Grand Total (PHP)</td>
-                          <td class="font-bold text-white text-right">{{ Number(existingReport.activity_design.proposed_budget || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</td>
+                          <td class="font-bold text-white text-right">{{ Number(aDBudget?.grand_total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</td>
                         </tr>
                       </tfoot>
                     </table>
@@ -207,31 +207,51 @@
                   </div>
                   <div>
                     <label class="info-label">Form Type</label>
-                    <select v-model="form.form_type" class="custom-input-field select-arrow-fix mt-1" disabled style="opacity: 0.8; cursor: not-allowed;">
+                    <select v-model="form.form_type" class="custom-input-field select-arrow-fix mt-1">
                       <option value="" disabled class="dark-option">Select Form Type</option>
-                      <option v-for="ft in formTypes" :key="ft.id" :value="ft.id.toString()" class="dark-option">
+                      <option v-for="ft in formTypes" :key="ft.id" :value="ft.id" class="dark-option">
                         {{ ft.name }}
                       </option>
                     </select>
                   </div>
                   <div class="full-width-info">
                     <label class="info-label">GAD Mandate</label>
-                    <div class="mandate-boxes mt-1">
-                      <label v-for="mandate in GADMandates" :key="mandate.id" class="mandate-checkbox-label">
-                        <input type="checkbox" :value="mandate.id.toString()" v-model="form.gad_mandate_id" class="mandate-checkbox" />
-                        <span>{{ mandate.title }}</span>
+                    <div class="checkbox-group-container custom-input-field mt-1" style="max-height: 200px; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 8px;">
+                      <label v-for="mandate in GADMandates" :key="mandate.id" class="mandate-checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
+                        <input type="checkbox" v-model="form.gad_mandate_id" :value="mandate.id.toString()" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
+                        <span style="font-size: 13px; color: #fff; line-height: 1.4;">{{ mandate.code }} - {{ mandate.title }}</span>
+                      </label>
+                      <label class="mandate-checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
+                        <input type="checkbox" v-model="form.gad_mandate_id" value="Other" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
+                        <span style="font-size: 13px; color: #fff; line-height: 1.4; font-style: italic;">+ New Mandate</span>
                       </label>
                     </div>
+                    <input v-if="form.gad_mandate_id && form.gad_mandate_id.includes('Other')" 
+                          v-model="customMandate" 
+                          type="text" 
+                          placeholder="Enter new mandate name..." 
+                          class="custom-input-field" 
+                          style="margin-top: 10px;" />
                   </div>
                   <div class="full-width-info">
                     <label class="info-label">Gender Issues</label>
-                    <div class="mandate-boxes mt-1">
-                      <label v-for="issue in genderIssues" :key="issue.id" class="mandate-checkbox-label">
-                        <input type="checkbox" :value="issue.id.toString()" v-model="form.gender_issue_id" class="mandate-checkbox" />
-                        <span>{{ issue.title }}</span>
+                    <div class="checkbox-group-container custom-input-field mt-1" style="max-height: 200px; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 8px;">
+                      <label v-for="issue in genderIssues" :key="issue.id" class="mandate-checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
+                        <input type="checkbox" v-model="form.gender_issue_id" :value="issue.id.toString()" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
+                        <span style="font-size: 13px; color: #fff; line-height: 1.4;">{{ issue.title }}</span>
                       </label>
-                      <p v-if="!form.gad_mandate_id || form.gad_mandate_id.length === 0" class="text-sm-light mt-1">Select a mandate first.</p>
+                      <label class="mandate-checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
+                        <input type="checkbox" v-model="form.gender_issue_id" value="Other" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
+                        <span style="font-size: 13px; color: #fff; line-height: 1.4; font-style: italic;">+ New Gender Issue</span>
+                      </label>
+                      <p v-if="!form.gad_mandate_id || form.gad_mandate_id.length === 0" style="color: #94a3b8; font-size: 13px; font-style: italic; margin: 0;">Select a mandate first to see gender issues.</p>
                     </div>
+                    <input v-if="form.gender_issue_id && form.gender_issue_id.includes('Other')" 
+                          v-model="customGenderIssue" 
+                          type="text" 
+                          placeholder="Enter new gender issue..." 
+                          class="custom-input-field" 
+                          style="margin-top: 10px;" />
                   </div>
                   <div>
                     <label class="info-label">Target Participants</label>
@@ -271,9 +291,9 @@
                   </div>
                 </div>
 
-                                <!-- Actual Budgetary Requirements (editable) -->
+                                                <!-- Actual Budgetary Expenditure (editable) -->
                 <div class="budget-section mt-4">
-                  <label class="form-label-ar">Actual Budgetary Requirements *</label>
+                  <label class="form-label-ar">Actual Budgetary Expenditure *</label>
                   
                   <div class="budget-groups-container">
                     
@@ -289,22 +309,27 @@
                           <div class="budget-item-info">
                             <div class="budget-item-title">Meals</div>
                             <div class="budget-sub-controls">
-                               <label class="budget-number-input-label">
-                                 Number of Pax:
-                                 <input type="number" v-model.number="mealsPax" min="0" class="budget-sub-number-input" placeholder="0" />
-                               </label>
-                               <div class="meals-checkboxes">
-                                 <label><input type="checkbox" v-model="mealsSelected.breakfast" /> Breakfast</label>
-                                 <label><input type="checkbox" v-model="mealsSelected.amSnack" /> AM Snack</label>
-                                 <label><input type="checkbox" v-model="mealsSelected.lunch" /> Lunch</label>
-                                 <label><input type="checkbox" v-model="mealsSelected.pmSnack" /> PM Snack</label>
-                                 <label><input type="checkbox" v-model="mealsSelected.dinner" /> Dinner</label>
-                               </div>
+                              <label class="budget-checkbox-label">
+                                <input type="checkbox" v-model="mealsSelected.breakfast" class="budget-checkbox" /> Breakfast
+                              </label>
+                              <label class="budget-checkbox-label">
+                                <input type="checkbox" v-model="mealsSelected.lunch" class="budget-checkbox" /> Lunch
+                              </label>
+                              <label class="budget-checkbox-label">
+                                <input type="checkbox" v-model="mealsSelected.dinner" class="budget-checkbox" /> Dinner
+                              </label>
                             </div>
                           </div>
                           <div class="budget-item-value">
                             <span class="budget-currency-symbol">₱</span>
-                            <input type="number" v-model="form.budget_items[0].total" class="budget-card-input" placeholder="0.00" min="0" step="0.01" />
+                            <input 
+                              type="number" 
+                              v-model="form.budget_items[0].total" 
+                              class="budget-card-input"
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                            />
                           </div>
                         </div>
 
@@ -313,15 +338,24 @@
                           <div class="budget-item-info">
                             <div class="budget-item-title">Snacks</div>
                             <div class="budget-sub-controls">
-                               <label class="budget-number-input-label">
-                                 Number of Pax:
-                                 <input type="number" v-model.number="snacksPax" min="0" class="budget-sub-number-input" placeholder="0" />
-                               </label>
+                              <label class="budget-checkbox-label">
+                                <input type="checkbox" v-model="snacksSelected.am" class="budget-checkbox" /> AM Snack
+                              </label>
+                              <label class="budget-checkbox-label">
+                                <input type="checkbox" v-model="snacksSelected.pm" class="budget-checkbox" /> PM Snack
+                              </label>
                             </div>
                           </div>
                           <div class="budget-item-value">
                             <span class="budget-currency-symbol">₱</span>
-                            <input type="number" v-model="form.budget_items[1].total" class="budget-card-input" placeholder="0.00" min="0" step="0.01" />
+                            <input 
+                              type="number" 
+                              v-model="form.budget_items[1].total" 
+                              class="budget-card-input"
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                            />
                           </div>
                         </div>
                       </div>
@@ -341,7 +375,14 @@
                           </div>
                           <div class="budget-item-value">
                             <span class="budget-currency-symbol">₱</span>
-                            <input type="number" v-model="form.budget_items[2].total" class="budget-card-input" placeholder="0.00" min="0" step="0.01" />
+                            <input 
+                              type="number" 
+                              v-model="form.budget_items[2].total" 
+                              class="budget-card-input"
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                            />
                           </div>
                         </div>
 
@@ -352,7 +393,14 @@
                           </div>
                           <div class="budget-item-value">
                             <span class="budget-currency-symbol">₱</span>
-                            <input type="number" v-model="form.budget_items[3].total" class="budget-card-input" placeholder="0.00" min="0" step="0.01" />
+                            <input 
+                              type="number" 
+                              v-model="form.budget_items[3].total" 
+                              class="budget-card-input"
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                            />
                           </div>
                         </div>
 
@@ -363,7 +411,14 @@
                           </div>
                           <div class="budget-item-value">
                             <span class="budget-currency-symbol">₱</span>
-                            <input type="number" v-model="form.budget_items[4].total" class="budget-card-input" placeholder="0.00" min="0" step="0.01" />
+                            <input 
+                              type="number" 
+                              v-model="form.budget_items[4].total" 
+                              class="budget-card-input"
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                            />
                           </div>
                         </div>
 
@@ -374,7 +429,14 @@
                           </div>
                           <div class="budget-item-value">
                             <span class="budget-currency-symbol">₱</span>
-                            <input type="number" v-model="form.budget_items[8].total" class="budget-card-input" placeholder="0.00" min="0" step="0.01" />
+                            <input 
+                              type="number" 
+                              v-model="form.budget_items[5].total" 
+                              class="budget-card-input"
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                            />
                           </div>
                         </div>
                       </div>
@@ -400,7 +462,14 @@
                           </div>
                           <div class="budget-item-value">
                             <span class="budget-currency-symbol">₱</span>
-                            <input type="number" v-model="form.budget_items[5].total" class="budget-card-input" placeholder="0.00" min="0" step="0.01" />
+                            <input 
+                              type="number" 
+                              v-model="form.budget_items[6].total" 
+                              class="budget-card-input"
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                            />
                           </div>
                         </div>
 
@@ -417,7 +486,14 @@
                           </div>
                           <div class="budget-item-value">
                             <span class="budget-currency-symbol">₱</span>
-                            <input type="number" v-model="form.budget_items[6].total" class="budget-card-input" placeholder="0.00" min="0" step="0.01" />
+                            <input 
+                              type="number" 
+                              v-model="form.budget_items[7].total" 
+                              class="budget-card-input"
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                            />
                           </div>
                         </div>
                       </div>
@@ -437,7 +513,14 @@
                           </div>
                           <div class="budget-item-value">
                             <span class="budget-currency-symbol">₱</span>
-                            <input type="number" v-model="form.budget_items[7].total" class="budget-card-input" placeholder="0.00" min="0" step="0.01" />
+                            <input 
+                              type="number" 
+                              v-model="form.budget_items[8].total" 
+                              class="budget-card-input"
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                            />
                           </div>
                         </div>
 
@@ -451,6 +534,7 @@
                               <span class="others-total-badge">₱{{ Number(form.budget_items[9].total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
                             </div>
                           </div>
+                          
                           <div class="others-breakdown-container">
                             <div v-for="(o, oIdx) in othersList" :key="oIdx" class="others-breakdown-row">
                               <input type="text" v-model="o.name" placeholder="Item name" class="others-input-name" />
@@ -611,6 +695,7 @@ const venues = ref([]);
 const customVenue = ref('');
 
 const loading = ref(true);
+const snacksSelected = ref({ am: false, pm: false });
 const mealsSelected = ref({ breakfast: false, amSnack: false, lunch: false, pmSnack: false, dinner: false });
 const mealsPax = ref(0);
 const snacksPax = ref(0);
@@ -620,6 +705,8 @@ const othersList = ref([]);
 const addOtherItem = () => { othersList.value.push({ name: '', amount: 0 }); };
 const removeOtherItem = (index) => { othersList.value.splice(index, 1); };
 
+const customMandate = ref('');
+const customGenderIssue = ref('');
 const form = ref({
   activity_classification_id: '',
     form_type: '',
@@ -684,12 +771,14 @@ const genderIssues = ref([]);
 
 const fetchData = async () => {
   try {
-    const [actRes, gadRes] = await Promise.all([
+    const [actRes, gadRes, formRes] = await Promise.all([
       api.get('get-activity-classifications'),
-      api.get('get-gad-mandates')
+      api.get('get-gad-mandates'),
+      api.get('get-form-types')
     ]);
     ActClassification.value = actRes.data;
     GADMandates.value = gadRes.data;
+    formTypes.value = formRes.data;
   isSubmitting.value = false;
     } catch (error) {
       isSubmitting.value = false;
@@ -767,6 +856,16 @@ watch(() => form.value.budget_items, (newItems) => {
   form.value.proposed_budget = total;
 }, { deep: true });
 
+watch(pfPax, (newPax) => {
+  const item = form.value.budget_items.find(i => i.name === 'Professional Fee/Honoraria' || i.name === 'Professional Fee/Honoria');
+  if (item) item.total = (Number(newPax) * 2258.25) || '';
+});
+
+watch(tokensPax, (newPax) => {
+  const item = form.value.budget_items.find(i => i.name === 'Token/s');
+  if (item) item.total = (Number(newPax) * 1000) || '';
+});
+
 const fetchVenues = async () => {
   try {
     const response = await api.get('venues');
@@ -785,10 +884,14 @@ fetchVenues();
 
 const loadingData = ref(false);
 
-watch(() => form.value.gad_mandate_id, (newVal) => {
+watch(() => form.value.gad_mandate_id, async (newVal, oldVal) => {
     if (loadingData.value) return; // Don't reset during initial data load
-    form.value.gender_issue_id = [];
-    fetchGenderIssues(newVal);
+    
+    // Only reset if it's an actual user change, not a reactivity delay
+    if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+        form.value.gender_issue_id = [];
+        await fetchGenderIssues(newVal);
+    }
   }, { deep: true });
 
   watch([() => form.value.male, () => form.value.female], ([newMale, newFemale]) => {
@@ -898,14 +1001,24 @@ const submitReport = async () => {
     
     formData.append('venue_id', form.value.venue);
 
-    const budgetObj = {
+        const budgetObj = {
         meals_and_snacks: (Number(form.value.budget_items.find(i => i.name === 'Meals')?.total || 0) + Number(form.value.budget_items.find(i => i.name === 'Snacks')?.total || 0)),
+        meals_total: Number(form.value.budget_items.find(i => i.name === 'Meals')?.total || 0),
+        snacks_total: Number(form.value.budget_items.find(i => i.name === 'Snacks')?.total || 0),
+        materials_total: Number(form.value.budget_items.find(i => i.name === 'Materials and Supplies')?.total || 0),
+        others_total: Number(form.value.budget_items.find(i => i.name === 'Others')?.total || 0),
+        materials_others_breakdown: JSON.stringify(othersList.value),
+        breakfast_selected: mealsSelected.value.breakfast ? 1 : 0,
+        lunch_selected: mealsSelected.value.lunch ? 1 : 0,
+        dinner_selected: mealsSelected.value.dinner ? 1 : 0,
+        am_snack_selected: snacksSelected.value.am ? 1 : 0,
+        pm_snack_selected: snacksSelected.value.pm ? 1 : 0,
         function_room_venue: Number(form.value.budget_items.find(i => i.name === 'Function Room/Venue')?.total || 0),
         accommodation: Number(form.value.budget_items.find(i => i.name === 'Accommodation')?.total || 0),
         equipment_rental: Number(form.value.budget_items.find(i => i.name === 'Equipment Rental')?.total || 0),
         professional_fee_honoria: Number(form.value.budget_items.find(i => i.name === 'Professional Fee/Honoraria')?.total || 0),
         tokens: Number(form.value.budget_items.find(i => i.name === 'Token/s')?.total || 0),
-        materials_and_supplies: Number(form.value.budget_items.find(i => i.name === 'Materials and Supplies')?.total || 0),
+        materials_and_supplies: (Number(form.value.budget_items.find(i => i.name === 'Materials and Supplies')?.total || 0) + Number(form.value.budget_items.find(i => i.name === 'Others')?.total || 0)),
         transportation: Number(form.value.budget_items.find(i => i.name === 'Transportation')?.total || 0)
       };
       formData.append('budget_items', JSON.stringify(budgetObj));
@@ -927,9 +1040,14 @@ const submitReport = async () => {
     });
     formData.append('evaluation_results', JSON.stringify(evalObj));
 
-    if (form.value.activity_classification_id) formData.append('activity_classification_id', form.value.activity_classification_id);
-    if (form.value.gad_mandate_id) formData.append('gad_mandate_id', form.value.gad_mandate_id);
-    if (form.value.gender_issue_id) formData.append('gender_issue_id', form.value.gender_issue_id);
+        if (form.value.activity_classification_id) formData.append('activity_classification_id', form.value.activity_classification_id);
+    if (form.value.form_type) formData.append('form_type', form.value.form_type);
+    
+    formData.append('gad_mandate_id', Array.isArray(form.value.gad_mandate_id) ? form.value.gad_mandate_id.join(',') : form.value.gad_mandate_id);
+    formData.append('custom_gad_mandate', customMandate.value);
+    
+    formData.append('gender_issue_id', Array.isArray(form.value.gender_issue_id) ? form.value.gender_issue_id.join(',') : form.value.gender_issue_id);
+    formData.append('custom_gender_issue', customGenderIssue.value);
 
     Object.keys(form.value).forEach(key => {
       if (key !== 'budget_items' && key !== 'evaluation_items' && key !== 'venue') {
@@ -1149,7 +1267,12 @@ const fetchReportDetails = async () => {
       
       if (r.activity_design) {
         form.value.activity_classification_id = r.activity_design.classification_id || '';
-        form.value.form_type = r.activity_design.form_type_name || r.activity_design.form_type || '';
+        let ftype = r.activity_design.form_type || '';
+        if (ftype && isNaN(ftype)) {
+          const found = formTypes.value.find(ft => ft.name === ftype);
+          if (found) ftype = found.id;
+        }
+        form.value.form_type = ftype;
         form.value.gad_mandate_id = r.activity_design.gad_mandate_id ? r.activity_design.gad_mandate_id.split(',').map(s=>s.trim()) : [];
           if (form.value.gad_mandate_id.length > 0) {
             await fetchGenderIssues(form.value.gad_mandate_id);
@@ -1170,20 +1293,43 @@ const fetchReportDetails = async () => {
       // Populate budget_items from nested array
       if (r.budget_items && Array.isArray(r.budget_items) && r.budget_items.length > 0) {
         const b = r.budget_items[0];
-        form.value.budget_items.forEach(item => {
-          switch (item.name) {
-              case 'Meals': item.total = Number(b.meals_and_snacks) || ''; break; // Split meals_and_snacks to meals here, or adjust as needed
-              case 'Snacks': item.total = ''; break; // No separate snacks in DB
-              case 'Function Room/Venue': item.total = Number(b.function_room_venue) || ''; break;
-              case 'Accommodation': item.total = Number(b.accommodation) || ''; break;
-              case 'Equipment Rental': item.total = Number(b.equipment_rental) || ''; break;
-              case 'Professional Fee/Honoraria': item.total = Number(b.professional_fee_honoria) || ''; break;
-              case 'Token/s': item.total = Number(b.tokens) || ''; break;
-              case 'Materials and Supplies': item.total = Number(b.materials_and_supplies) || ''; break;
-              case 'Transportation': item.total = Number(b.transportation) || ''; break;
-              case 'Others': item.total = ''; break; // Others is handled via othersList
-            }
-        });
+        let ob = [];
+        if (b.materials_others_breakdown) {
+          try { ob = JSON.parse(b.materials_others_breakdown); } catch(e){}
+        }
+        
+        // Fall back to meals_and_snacks if meals_total/snacks_total not stored separately (older records)
+        const mealsTotal = Number(b.meals_total) || 0;
+        const snacksTotal = Number(b.snacks_total) || 0;
+        const mealsAndSnacks = Number(b.meals_and_snacks) || 0;
+        const fallbackMeals = (mealsTotal === 0 && snacksTotal === 0 && mealsAndSnacks > 0) ? mealsAndSnacks : mealsTotal;
+        form.value.budget_items = [
+          { name: 'Meals', total: fallbackMeals, breakdown: null },
+          { name: 'Snacks', total: snacksTotal, breakdown: null },
+          { name: 'Function Room/Venue', total: b.function_room_venue || 0, breakdown: null },
+          { name: 'Accommodation', total: b.accommodation || 0, breakdown: null },
+          { name: 'Equipment Rental', total: b.equipment_rental || 0, breakdown: null },
+          { name: 'Transportation', total: b.transportation || 0, breakdown: null },
+          { name: 'Professional Fee/Honoraria', total: b.professional_fee_honoria || 0, breakdown: null },
+          { name: 'Token/s', total: b.tokens || 0, breakdown: null },
+          { name: 'Materials and Supplies', total: b.materials_and_supplies || 0, breakdown: null },
+          { name: 'Others', total: b.others_total || 0, breakdown: null }
+        ];
+        
+        othersList.value = ob;
+        
+        mealsSelected.value = {
+          breakfast: Number(b.breakfast_selected) === 1,
+          lunch: Number(b.lunch_selected) === 1,
+          dinner: Number(b.dinner_selected) === 1
+        };
+        snacksSelected.value = {
+          am: Number(b.am_snack_selected) === 1,
+          pm: Number(b.pm_snack_selected) === 1
+        };
+        
+        pfPax.value = Number(b.professional_fee_honoria) > 0 ? Math.floor(Number(b.professional_fee_honoria) / 2258.25) : '';
+        tokensPax.value = Number(b.tokens) > 0 ? Math.floor(Number(b.tokens) / 1000) : '';
       }
 
       // Populate evaluation_items from nested array
@@ -1223,11 +1369,11 @@ const fetchReportDetails = async () => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   if (!user.value.id || user.value.role !== 'gad_staff') {
     router.push('/login');
   } else {
-    fetchData();
+    await fetchData();
     fetchReportDetails();
   }
 });

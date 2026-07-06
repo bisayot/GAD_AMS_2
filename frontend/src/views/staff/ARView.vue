@@ -83,7 +83,7 @@
                                 <div class="full-width-info" v-if="report.activity_design">
                   <label class="info-label">GAD Mandate</label>
                   <div v-if="report.activity_design.gad_mandate" class="mandate-boxes">
-                    <span v-for="(mandate, index) in report.activity_design.gad_mandate.split(',')" :key="'m'+index" class="mandate-box">
+                    <span v-for="(mandate, index) in report.activity_design.gad_mandate.split(';;;')" :key="'m'+index" class="mandate-box">
                       {{ mandate.trim() }}
                     </span>
                   </div>
@@ -92,7 +92,7 @@
                 <div class="full-width-info" v-if="report.activity_design">
                   <label class="info-label">Gender Issues</label>
                   <div v-if="report.activity_design.gender_issue" class="mandate-boxes">
-                    <span v-for="(issue, index) in report.activity_design.gender_issue.split(',')" :key="'gi'+index" class="mandate-box">
+                    <span v-for="(issue, index) in report.activity_design.gender_issue.split(';;;')" :key="'gi'+index" class="mandate-box">
                       {{ issue.trim() }}
                     </span>
                   </div>
@@ -124,7 +124,7 @@
                 </div>
                 <div>
                   <label class="info-label">Proposed Budget</label>
-                  <p class="text-sm-light mt-1">PHP {{ Number(report.activity_design?.proposed_budget || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</p>
+                  <p class="text-sm-light mt-1">PHP {{ Number(aDBudget?.grand_total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</p>
                 </div>
                 <div>
                   <label class="info-label">Assessment Date</label>
@@ -141,63 +141,85 @@
               </div>
 
               <!-- Approved Budget Breakdown -->
-              <div class="full-width-info mt-4" v-if="parsedADBudget && parsedADBudget.length > 0">
+              <div class="full-width-info mt-4" v-if="aDBudget">
                 <label class="info-label mb-2">Approved Budget Breakdown</label>
-                <div class="table-responsive">
-                  <table class="custom-table">
-                    <thead>
-                      <tr>
-                        <th>Budget Item</th>
-                        <th class="text-right">Amount (PHP)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <template v-for="(item, index) in parsedADBudget" :key="index">
-                        <tr>
-                        <td v-html="formatBudgetName(item.name)"></td>
-                        <td class="text-right">{{ Number(item.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</td>
-                      </tr>
-                        <tr v-if="item.mealsSelected">
-                          <td colspan="2" style="padding: 0; border: none;">
-                            <div style="padding: 8px 12px; background: rgba(0,0,0,0.15); margin: 0 12px 4px 12px; border-radius: 6px; display: flex; flex-wrap: wrap; gap: 12px;">
-                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
-                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.breakfast) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> Breakfast
-                               </label>
-                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
-                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.am_snack) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> AM Snack
-                               </label>
-                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
-                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.lunch) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> Lunch
-                               </label>
-                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
-                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.pm_snack) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> PM Snack
-                               </label>
-                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
-                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.dinner) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> Dinner
-                               </label>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr v-if="item.othersBreakdown && item.othersBreakdown.length">
-                        <td colspan="2" style="padding: 0; border: none;">
-                          <div style="padding: 8px 12px; background: rgba(0,0,0,0.15); margin: 4px 12px; border-radius: 6px;">
-                            <div style="font-size: 11px; text-transform: uppercase; color: #b979cc; margin-bottom: 4px; font-weight: bold;">Others Breakdown</div>
-                            <div v-for="(o, oIdx) in item.othersBreakdown" :key="oIdx" style="display: flex; justify-content: space-between; font-size: 12px; padding: 2px 0;">
-                              <span style="color: #cbd5e1;">{{ o.name || 'Unnamed Item' }}</span>
-                              <span style="color: #f1f5f9;">₱{{ Number(o.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                      </template>
-                    </tbody>
-                    <tfoot>
-                      <tr>
-                        <td class="font-bold text-white">Grand Total (PHP)</td>
-                        <td class="font-bold text-white text-right">{{ Number(report.activity_design?.proposed_budget || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</td>
-                      </tr>
-                    </tfoot>
-                  </table>
+                <div class="budget-breakdown-block">
+
+                  <!-- Catering & Hospitality -->
+                  <div class="bbudget-group">
+                    <div class="bbudget-group-header">🍽️ Catering &amp; Hospitality</div>
+                    <div class="bbudget-subitem">
+                      <div class="bbudget-subitem-row">
+                        <span class="bbudget-subitem-label">Meals</span>
+                        <span class="bbudget-subitem-value">₱{{ Number(aDBudget.meals_total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+                      </div>
+                      <div class="bbudget-checks">
+                        <label class="bbudget-check-label"><input type="checkbox" disabled :checked="Number(aDBudget.breakfast_selected)===1" class="bbudget-checkbox" /> Breakfast</label>
+                        <label class="bbudget-check-label"><input type="checkbox" disabled :checked="Number(aDBudget.lunch_selected)===1" class="bbudget-checkbox" /> Lunch</label>
+                        <label class="bbudget-check-label"><input type="checkbox" disabled :checked="Number(aDBudget.dinner_selected)===1" class="bbudget-checkbox" /> Dinner</label>
+                      </div>
+                    </div>
+                    <div class="bbudget-subitem">
+                      <div class="bbudget-subitem-row">
+                        <span class="bbudget-subitem-label">Snacks</span>
+                        <span class="bbudget-subitem-value">₱{{ Number(aDBudget.snacks_total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+                      </div>
+                      <div class="bbudget-checks">
+                        <label class="bbudget-check-label"><input type="checkbox" disabled :checked="Number(aDBudget.am_snack_selected)===1" class="bbudget-checkbox" /> AM Snack</label>
+                        <label class="bbudget-check-label"><input type="checkbox" disabled :checked="Number(aDBudget.pm_snack_selected)===1" class="bbudget-checkbox" /> PM Snack</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Venue & Logistics -->
+                  <div class="bbudget-group">
+                    <div class="bbudget-group-header">🏢 Venue &amp; Logistics</div>
+                    <div class="bbudget-subitem-row"><span class="bbudget-subitem-label">Function Room/Venue</span><span class="bbudget-subitem-value">₱{{ Number(aDBudget.function_room_venue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span></div>
+                    <div class="bbudget-subitem-row"><span class="bbudget-subitem-label">Accommodation</span><span class="bbudget-subitem-value">₱{{ Number(aDBudget.accommodation || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span></div>
+                    <div class="bbudget-subitem-row"><span class="bbudget-subitem-label">Equipment Rental</span><span class="bbudget-subitem-value">₱{{ Number(aDBudget.equipment_rental || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span></div>
+                    <div class="bbudget-subitem-row"><span class="bbudget-subitem-label">Transportation</span><span class="bbudget-subitem-value">₱{{ Number(aDBudget.transportation || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span></div>
+                  </div>
+
+                  <!-- Program & Speakers -->
+                  <div class="bbudget-group">
+                    <div class="bbudget-group-header">🎤 Program &amp; Speakers</div>
+                    <div class="bbudget-subitem">
+                      <div class="bbudget-subitem-row">
+                        <span class="bbudget-subitem-label">Professional Fee/Honoraria</span>
+                        <span class="bbudget-subitem-value">₱{{ Number(aDBudget.professional_fee_honoria || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+                      </div>
+                      <div class="bbudget-meta">Number of Speakers: <strong>{{ aDBudget.professional_fee_honoria > 0 ? Math.floor(Number(aDBudget.professional_fee_honoria) / 2258.25) : 0 }}</strong></div>
+                    </div>
+                    <div class="bbudget-subitem">
+                      <div class="bbudget-subitem-row">
+                        <span class="bbudget-subitem-label">Token/s</span>
+                        <span class="bbudget-subitem-value">₱{{ Number(aDBudget.tokens || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+                      </div>
+                      <div class="bbudget-meta">Number of Recipients: <strong>{{ aDBudget.tokens > 0 ? Math.floor(Number(aDBudget.tokens) / 1000) : 0 }}</strong></div>
+                    </div>
+                  </div>
+
+                  <!-- Materials & Miscellaneous -->
+                  <div class="bbudget-group">
+                    <div class="bbudget-group-header">📦 Materials &amp; Miscellaneous</div>
+                    <div class="bbudget-subitem-row"><span class="bbudget-subitem-label">Materials and Supplies</span><span class="bbudget-subitem-value">₱{{ Number(aDBudget.materials_and_supplies || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span></div>
+                    <div class="bbudget-subitem">
+                      <div class="bbudget-subitem-row"><span class="bbudget-subitem-label">Others</span><span class="bbudget-subitem-value">₱{{ Number(aDBudget.others_total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span></div>
+                      <div v-if="aDBudget.othersBreakdown && aDBudget.othersBreakdown.length" class="bbudget-others-breakdown">
+                        <div v-for="(o, oIdx) in aDBudget.othersBreakdown" :key="oIdx" class="bbudget-others-row">
+                          <span>{{ o.name || 'Unnamed Item' }}</span>
+                          <span>₱{{ Number(o.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Grand Total -->
+                  <div class="bbudget-total-row">
+                    <span>Grand Total (PHP)</span>
+                    <span>₱{{ Number(aDBudget.grand_total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+                  </div>
+
                 </div>
               </div>
 
@@ -244,7 +266,7 @@
                                 <div class="full-width-info" v-if="report.activity_design">
                   <label class="info-label">GAD Mandate</label>
                   <div v-if="report.activity_design.gad_mandate" class="mandate-boxes">
-                    <span v-for="(mandate, index) in report.activity_design.gad_mandate.split(',')" :key="'m'+index" class="mandate-box">
+                    <span v-for="(mandate, index) in report.activity_design.gad_mandate.split(';;;')" :key="'m'+index" class="mandate-box">
                       {{ mandate.trim() }}
                     </span>
                   </div>
@@ -253,7 +275,7 @@
                 <div class="full-width-info" v-if="report.activity_design">
                   <label class="info-label">Gender Issues</label>
                   <div v-if="report.activity_design.gender_issue" class="mandate-boxes">
-                    <span v-for="(issue, index) in report.activity_design.gender_issue.split(',')" :key="'gi'+index" class="mandate-box">
+                    <span v-for="(issue, index) in report.activity_design.gender_issue.split(';;;')" :key="'gi'+index" class="mandate-box">
                       {{ issue.trim() }}
                     </span>
                   </div>
@@ -294,63 +316,85 @@
               </div>
 
               <!-- Actual Budget Expenditure -->
-              <div class="full-width-info mt-4" v-if="parsedARBudget && parsedARBudget.length > 0">
+              <div class="full-width-info mt-4" v-if="aRBudget">
                 <label class="info-label mb-2">Actual Budget Expenditure</label>
-                <div class="table-responsive">
-                  <table class="custom-table">
-                    <thead>
-                      <tr>
-                        <th>Budget Item</th>
-                        <th class="text-right">Total (PHP)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <template v-for="(item, index) in parsedARBudget" :key="index">
-                        <tr>
-                        <td v-html="formatBudgetName(item.name)"></td>
-                        <td class="text-right">{{ Number(item.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</td>
-                      </tr>
-                        <tr v-if="item.mealsSelected">
-                          <td colspan="2" style="padding: 0; border: none;">
-                            <div style="padding: 8px 12px; background: rgba(0,0,0,0.15); margin: 0 12px 4px 12px; border-radius: 6px; display: flex; flex-wrap: wrap; gap: 12px;">
-                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
-                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.breakfast) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> Breakfast
-                               </label>
-                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
-                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.am_snack) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> AM Snack
-                               </label>
-                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
-                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.lunch) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> Lunch
-                               </label>
-                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
-                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.pm_snack) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> PM Snack
-                               </label>
-                               <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #cbd5e1; cursor: default;">
-                                 <input type="checkbox" disabled :checked="Number(item.mealsSelected.dinner) === 1" style="accent-color: #b979cc; transform: scale(0.9);" /> Dinner
-                               </label>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr v-if="item.othersBreakdown && item.othersBreakdown.length">
-                        <td colspan="2" style="padding: 0; border: none;">
-                          <div style="padding: 8px 12px; background: rgba(0,0,0,0.15); margin: 4px 12px; border-radius: 6px;">
-                            <div style="font-size: 11px; text-transform: uppercase; color: #b979cc; margin-bottom: 4px; font-weight: bold;">Others Breakdown</div>
-                            <div v-for="(o, oIdx) in item.othersBreakdown" :key="oIdx" style="display: flex; justify-content: space-between; font-size: 12px; padding: 2px 0;">
-                              <span style="color: #cbd5e1;">{{ o.name || 'Unnamed Item' }}</span>
-                              <span style="color: #f1f5f9;">₱{{ Number(o.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                      </template>
-                    </tbody>
-                    <tfoot>
-                      <tr>
-                        <td class="font-bold text-white">Grand Total (PHP)</td>
-                        <td class="font-bold text-white text-right">{{ Number(arBudgetTotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</td>
-                      </tr>
-                    </tfoot>
-                  </table>
+                <div class="budget-breakdown-block">
+
+                  <!-- Catering & Hospitality -->
+                  <div class="bbudget-group">
+                    <div class="bbudget-group-header">🍽️ Catering &amp; Hospitality</div>
+                    <div class="bbudget-subitem">
+                      <div class="bbudget-subitem-row">
+                        <span class="bbudget-subitem-label">Meals</span>
+                        <span class="bbudget-subitem-value">₱{{ Number(aRBudget.meals_total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+                      </div>
+                      <div class="bbudget-checks">
+                        <label class="bbudget-check-label"><input type="checkbox" disabled :checked="Number(aRBudget.breakfast_selected)===1" class="bbudget-checkbox" /> Breakfast</label>
+                        <label class="bbudget-check-label"><input type="checkbox" disabled :checked="Number(aRBudget.lunch_selected)===1" class="bbudget-checkbox" /> Lunch</label>
+                        <label class="bbudget-check-label"><input type="checkbox" disabled :checked="Number(aRBudget.dinner_selected)===1" class="bbudget-checkbox" /> Dinner</label>
+                      </div>
+                    </div>
+                    <div class="bbudget-subitem">
+                      <div class="bbudget-subitem-row">
+                        <span class="bbudget-subitem-label">Snacks</span>
+                        <span class="bbudget-subitem-value">₱{{ Number(aRBudget.snacks_total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+                      </div>
+                      <div class="bbudget-checks">
+                        <label class="bbudget-check-label"><input type="checkbox" disabled :checked="Number(aRBudget.am_snack_selected)===1" class="bbudget-checkbox" /> AM Snack</label>
+                        <label class="bbudget-check-label"><input type="checkbox" disabled :checked="Number(aRBudget.pm_snack_selected)===1" class="bbudget-checkbox" /> PM Snack</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Venue & Logistics -->
+                  <div class="bbudget-group">
+                    <div class="bbudget-group-header">🏢 Venue &amp; Logistics</div>
+                    <div class="bbudget-subitem-row"><span class="bbudget-subitem-label">Function Room/Venue</span><span class="bbudget-subitem-value">₱{{ Number(aRBudget.function_room_venue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span></div>
+                    <div class="bbudget-subitem-row"><span class="bbudget-subitem-label">Accommodation</span><span class="bbudget-subitem-value">₱{{ Number(aRBudget.accommodation || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span></div>
+                    <div class="bbudget-subitem-row"><span class="bbudget-subitem-label">Equipment Rental</span><span class="bbudget-subitem-value">₱{{ Number(aRBudget.equipment_rental || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span></div>
+                    <div class="bbudget-subitem-row"><span class="bbudget-subitem-label">Transportation</span><span class="bbudget-subitem-value">₱{{ Number(aRBudget.transportation || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span></div>
+                  </div>
+
+                  <!-- Program & Speakers -->
+                  <div class="bbudget-group">
+                    <div class="bbudget-group-header">🎤 Program &amp; Speakers</div>
+                    <div class="bbudget-subitem">
+                      <div class="bbudget-subitem-row">
+                        <span class="bbudget-subitem-label">Professional Fee/Honoraria</span>
+                        <span class="bbudget-subitem-value">₱{{ Number(aRBudget.professional_fee_honoria || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+                      </div>
+                      <div class="bbudget-meta">Number of Speakers: <strong>{{ aRBudget.professional_fee_honoria > 0 ? Math.floor(Number(aRBudget.professional_fee_honoria) / 2258.25) : 0 }}</strong></div>
+                    </div>
+                    <div class="bbudget-subitem">
+                      <div class="bbudget-subitem-row">
+                        <span class="bbudget-subitem-label">Token/s</span>
+                        <span class="bbudget-subitem-value">₱{{ Number(aRBudget.tokens || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+                      </div>
+                      <div class="bbudget-meta">Number of Recipients: <strong>{{ aRBudget.tokens > 0 ? Math.floor(Number(aRBudget.tokens) / 1000) : 0 }}</strong></div>
+                    </div>
+                  </div>
+
+                  <!-- Materials & Miscellaneous -->
+                  <div class="bbudget-group">
+                    <div class="bbudget-group-header">📦 Materials &amp; Miscellaneous</div>
+                    <div class="bbudget-subitem-row"><span class="bbudget-subitem-label">Materials and Supplies</span><span class="bbudget-subitem-value">₱{{ Number(aRBudget.materials_and_supplies || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span></div>
+                    <div class="bbudget-subitem">
+                      <div class="bbudget-subitem-row"><span class="bbudget-subitem-label">Others</span><span class="bbudget-subitem-value">₱{{ Number(aRBudget.others_total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span></div>
+                      <div v-if="aRBudget.othersBreakdown && aRBudget.othersBreakdown.length" class="bbudget-others-breakdown">
+                        <div v-for="(o, oIdx) in aRBudget.othersBreakdown" :key="oIdx" class="bbudget-others-row">
+                          <span>{{ o.name || 'Unnamed Item' }}</span>
+                          <span>₱{{ Number(o.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Grand Total -->
+                  <div class="bbudget-total-row">
+                    <span>Grand Total (PHP)</span>
+                    <span>₱{{ Number(aRBudget.grand_total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+                  </div>
+
                 </div>
               </div>
 
@@ -578,52 +622,72 @@ const closePdfModal = () => {
 };
 
 
-const parsedADBudget = computed(() => {
-  if (!report.value.activity_design || !report.value.activity_design.budget_items || report.value.activity_design.budget_items.length === 0) return [];
+const aDBudget = computed(() => {
+  if (!report.value.activity_design || !report.value.activity_design.budget_items || report.value.activity_design.budget_items.length === 0) return null;
   const b = report.value.activity_design.budget_items[0];
   let ob = [];
-  if (b.materials_others_breakdown) {
-    try { ob = JSON.parse(b.materials_others_breakdown); } catch(e){}
-  }
-
-  const items = [
-    { name: 'Catering & Hospitality (Meals and Snacks)', total: b.meals_and_snacks, mealsSelected: { breakfast: b.breakfast_selected, am_snack: b.am_snack_selected, lunch: b.lunch_selected, pm_snack: b.pm_snack_selected, dinner: b.dinner_selected } },
-    { name: 'Catering & Hospitality (Accommodation)', total: b.accommodation },
-    { name: 'Venue & Logistics (Function Room/Venue)', total: b.function_room_venue },
-    { name: 'Venue & Logistics (Equipment Rental)', total: b.equipment_rental },
-    { name: 'Venue & Logistics (Transportation)', total: b.transportation },
-    { name: 'Program & Speakers (Professional Fee/Honoraria)', total: b.professional_fee_honoria },
-    { name: 'Program & Speakers (Token/s)', total: b.tokens },
-    { name: 'Materials & Miscellaneous (Materials and Supplies)', total: b.materials_and_supplies },
-    { name: 'Materials & Miscellaneous (Others)', total: ob.reduce((sum, o) => sum + Number(o.amount || 0), 0), othersBreakdown: ob }
-  ];
-  return items.filter(i => parseFloat(i.total) > 0 || (i.othersBreakdown && i.othersBreakdown.length > 0) || (i.mealsSelected && (Number(i.mealsSelected.breakfast)===1 || Number(i.mealsSelected.am_snack)===1 || Number(i.mealsSelected.lunch)===1 || Number(i.mealsSelected.pm_snack)===1 || Number(i.mealsSelected.dinner)===1)));
+  if (b.materials_others_breakdown) { try { ob = JSON.parse(b.materials_others_breakdown); } catch(e){} }
+  const mealsT = Number(b.meals_total) || 0;
+  const snacksT = Number(b.snacks_total) || 0;
+  const combined = Number(b.meals_and_snacks) || 0;
+  const othersTotal = Number(b.others_total) || ob.reduce((s, o) => s + Number(o.amount || 0), 0);
+  const grandTotal = (mealsT === 0 && snacksT === 0 && combined > 0 ? combined : mealsT) + snacksT +
+    Number(b.function_room_venue || 0) + Number(b.accommodation || 0) + Number(b.equipment_rental || 0) +
+    Number(b.transportation || 0) + Number(b.professional_fee_honoria || 0) + Number(b.tokens || 0) +
+    Number(b.materials_and_supplies || 0) + othersTotal;
+  return {
+    meals_total: (mealsT === 0 && snacksT === 0 && combined > 0) ? combined : mealsT,
+    snacks_total: snacksT,
+    breakfast_selected: b.breakfast_selected,
+    lunch_selected: b.lunch_selected,
+    dinner_selected: b.dinner_selected,
+    am_snack_selected: b.am_snack_selected,
+    pm_snack_selected: b.pm_snack_selected,
+    function_room_venue: b.function_room_venue,
+    accommodation: b.accommodation,
+    equipment_rental: b.equipment_rental,
+    transportation: b.transportation,
+    professional_fee_honoria: b.professional_fee_honoria,
+    tokens: b.tokens,
+    materials_and_supplies: b.materials_and_supplies,
+    others_total: othersTotal,
+    othersBreakdown: ob,
+    grand_total: grandTotal
+  };
 });
 
-const parsedARBudget = computed(() => {
-  if (!report.value.budget_items || report.value.budget_items.length === 0) return [];
+const aRBudget = computed(() => {
+  if (!report.value.budget_items || report.value.budget_items.length === 0) return null;
   const b = report.value.budget_items[0];
   let ob = [];
-  if (b.materials_others_breakdown) {
-    try { ob = JSON.parse(b.materials_others_breakdown); } catch(e){}
-  }
-
-  const items = [
-    { name: 'Catering & Hospitality (Meals and Snacks)', total: b.meals_and_snacks, mealsSelected: { breakfast: b.breakfast_selected, am_snack: b.am_snack_selected, lunch: b.lunch_selected, pm_snack: b.pm_snack_selected, dinner: b.dinner_selected } },
-    { name: 'Catering & Hospitality (Accommodation)', total: b.accommodation },
-    { name: 'Venue & Logistics (Function Room/Venue)', total: b.function_room_venue },
-    { name: 'Venue & Logistics (Equipment Rental)', total: b.equipment_rental },
-    { name: 'Venue & Logistics (Transportation)', total: b.transportation },
-    { name: 'Program & Speakers (Professional Fee/Honoraria)', total: b.professional_fee_honoria },
-    { name: 'Program & Speakers (Token/s)', total: b.tokens },
-    { name: 'Materials & Miscellaneous (Materials and Supplies)', total: b.materials_and_supplies },
-    { name: 'Materials & Miscellaneous (Others)', total: ob.reduce((sum, o) => sum + Number(o.amount || 0), 0), othersBreakdown: ob }
-  ];
-  return items.filter(i => parseFloat(i.total) > 0 || (i.othersBreakdown && i.othersBreakdown.length > 0) || (i.mealsSelected && (Number(i.mealsSelected.breakfast)===1 || Number(i.mealsSelected.am_snack)===1 || Number(i.mealsSelected.lunch)===1 || Number(i.mealsSelected.pm_snack)===1 || Number(i.mealsSelected.dinner)===1)));
-});
-
-const arBudgetTotal = computed(() => {
-  return parsedARBudget.value.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
+  if (b.materials_others_breakdown) { try { ob = JSON.parse(b.materials_others_breakdown); } catch(e){} }
+  const mealsT = Number(b.meals_total) || 0;
+  const snacksT = Number(b.snacks_total) || 0;
+  const combined = Number(b.meals_and_snacks) || 0;
+  const othersTotal = Number(b.others_total) || ob.reduce((s, o) => s + Number(o.amount || 0), 0);
+  const grandTotal = (mealsT === 0 && snacksT === 0 && combined > 0 ? combined : mealsT) + snacksT +
+    Number(b.function_room_venue || 0) + Number(b.accommodation || 0) + Number(b.equipment_rental || 0) +
+    Number(b.transportation || 0) + Number(b.professional_fee_honoria || 0) + Number(b.tokens || 0) +
+    Number(b.materials_and_supplies || 0) + othersTotal;
+  return {
+    meals_total: (mealsT === 0 && snacksT === 0 && combined > 0) ? combined : mealsT,
+    snacks_total: snacksT,
+    breakfast_selected: b.breakfast_selected,
+    lunch_selected: b.lunch_selected,
+    dinner_selected: b.dinner_selected,
+    am_snack_selected: b.am_snack_selected,
+    pm_snack_selected: b.pm_snack_selected,
+    function_room_venue: b.function_room_venue,
+    accommodation: b.accommodation,
+    equipment_rental: b.equipment_rental,
+    transportation: b.transportation,
+    professional_fee_honoria: b.professional_fee_honoria,
+    tokens: b.tokens,
+    materials_and_supplies: b.materials_and_supplies,
+    others_total: othersTotal,
+    othersBreakdown: ob,
+    grand_total: grandTotal
+  };
 });
 
 const parsedAREval = computed(() => {
@@ -690,6 +754,23 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.budget-breakdown-block { display: flex; flex-direction: column; gap: 0; border: 1px solid rgba(185,121,204,0.2); border-radius: 10px; overflow: hidden; }
+.bbudget-group { border-bottom: 1px solid rgba(185,121,204,0.15); }
+.bbudget-group:last-child { border-bottom: none; }
+.bbudget-group-header { background: rgba(185,121,204,0.12); padding: 8px 14px; font-size: 12px; font-weight: 700; color: #b979cc; text-transform: uppercase; letter-spacing: 0.06em; }
+.bbudget-subitem { padding: 0 0 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.bbudget-subitem:last-child { border-bottom: none; padding-bottom: 0; }
+.bbudget-subitem-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 14px 7px 22px; gap: 8px; }
+.bbudget-subitem-label { font-size: 13px; color: #cbd5e1; }
+.bbudget-subitem-value { font-size: 13px; color: #f1f5f9; font-weight: 600; white-space: nowrap; }
+.bbudget-checks { display: flex; flex-wrap: wrap; gap: 10px; padding: 4px 14px 8px 30px; }
+.bbudget-check-label { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #94a3b8; cursor: default; user-select: none; }
+.bbudget-checkbox { accent-color: #b979cc; transform: scale(0.9); cursor: default; }
+.bbudget-meta { font-size: 12px; color: #94a3b8; padding: 2px 14px 8px 30px; }
+.bbudget-meta strong { color: #e2e8f0; }
+.bbudget-others-breakdown { padding: 4px 14px 8px 30px; display: flex; flex-direction: column; gap: 3px; }
+.bbudget-others-row { display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; }
+.bbudget-total-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(185,121,204,0.18); font-size: 13px; font-weight: 700; color: #f1f5f9; }
 .main-viewport { flex: 1; overflow-y: auto; background: transparent; }
 .loading-wrapper { display: flex; justify-content: center; align-items: center; min-height: 400px; }
 .error-container { max-width: 48rem; margin: 0 auto; padding: 2.5rem; }
