@@ -390,8 +390,8 @@
                     </div>
                   </div>
                   <div class="doc-actions">
-                    <button @click="previewFile(file, report.is_archived ? 'archived' : 'drafts')" class="preview-btn">Preview</button>
-                    <button @click="downloadFile(file, report.is_archived ? 'archived' : 'drafts', 'Accomplishment_Report')" class="download-btn-icon">
+                    <button @click="previewFile(file, Number(report.is_archived) === 1 ? 'archived' : 'drafts')" class="preview-btn">Preview</button>
+                    <button @click="downloadFile(file, Number(report.is_archived) === 1 ? 'archived' : 'drafts', 'Accomplishment_Report')" class="download-btn-icon">
                       <span class="material-symbols-outlined">download</span>
                     </button>
                   </div>

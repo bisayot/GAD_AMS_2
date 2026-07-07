@@ -603,8 +603,8 @@
                         </div>
                       </div>
                       <div class="doc-actions">
-                        <button type="button" @click="previewFile(file, existingReport.is_archived ? 'archived' : 'drafts')" class="preview-btn">Preview</button>
-                        <button type="button" @click="downloadFile(file, existingReport.is_archived ? 'archived' : 'drafts', 'Accomplishment_Report')" class="download-btn-icon">
+                        <button type="button" @click="previewFile(file, Number(existingReport.is_archived) === 1 ? 'archived' : 'drafts')" class="preview-btn">Preview</button>
+                        <button type="button" @click="downloadFile(file, Number(existingReport.is_archived) === 1 ? 'archived' : 'drafts', 'Accomplishment_Report')" class="download-btn-icon">
                           <span class="material-symbols-outlined">download</span>
                         </button>
                         <button type="button" @click="removeExistingAttachment(file)" class="download-btn-icon text-rose-400 hover:text-rose-300" title="Remove file">
