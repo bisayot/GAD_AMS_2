@@ -364,7 +364,7 @@ class AccomplishmentReportController extends BaseController
                           }
                       }
                       $ad['gad_mandate'] = implode(';;; ', $mandates);
-                      $ad['gad_mandate_ids'] = $ad['gad_mandate_id'];
+                      $ad['gad_mandate_id'] = $ad['gad_mandate_ids'];
                       
                       $issues = [];
                       if (!empty($ad['gender_issue_ids'])) {
@@ -375,7 +375,7 @@ class AccomplishmentReportController extends BaseController
                           }
                       }
                       $ad['gender_issue'] = implode(';;; ', $issues);
-                      $ad['gender_issue_ids'] = $ad['gender_issue_id'];
+                      $ad['gender_issue_id'] = $ad['gender_issue_ids'];
                   }
                 
                 if ($ad) {
