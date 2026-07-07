@@ -324,8 +324,8 @@ const parsedBudget = computed(() => {
       icon: '🎤',
       total: Number(d.professional_fee_honoria || 0) + Number(d.tokens || 0),
       children: [
-        { name: `Professional Fee/Honoraria ${Number(d.professional_fee_honoria || 0) > 0 ? `(Number of Speakers: ${Math.floor(Number(d.professional_fee_honoria || 0) / 2258.25)})` : ''}`, value: Number(d.professional_fee_honoria || 0) },
-        { name: `Token/s ${Number(d.tokens || 0) > 0 ? `(Number of Recipients: ${Math.floor(Number(d.tokens || 0) / 1000)})` : ''}`, value: Number(d.tokens || 0) }
+        { name: `Professional Fee/Honoraria ${Number(d.professional_fee_honoria || 0) > 0 ? `(Number of Speakers: ${d.pf_pax || 0})` : ''}`, value: Number(d.professional_fee_honoria || 0) },
+        { name: `Token/s ${Number(d.tokens || 0) > 0 ? `(Number of Recipients: ${d.tokens_pax || 0})` : ''}`, value: Number(d.tokens || 0) }
       ]
     },
     {
@@ -430,8 +430,10 @@ const editDeadline = async () => {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
   // Get first day of current month
-  const minCurrentMonth = new Date(currentYear, currentMonth, 1).toISOString().split('T')[0];
-  const maxYear = new Date(currentYear, 11, 31).toISOString().split('T')[0];
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  const minCurrentMonth = `${firstDay.getFullYear()}-${String(firstDay.getMonth() + 1).padStart(2, '0')}-${String(firstDay.getDate()).padStart(2, '0')}`;
+  const lastDay = new Date(currentYear, 11, 31);
+  const maxYear = `${lastDay.getFullYear()}-${String(lastDay.getMonth() + 1).padStart(2, '0')}-${String(lastDay.getDate()).padStart(2, '0')}`;
   
   const endD = design.value.end_date ? design.value.end_date.split(' ')[0] : minCurrentMonth;
   // Use the later date between end_date and first day of current month as min

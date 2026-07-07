@@ -173,11 +173,11 @@
                     <div class="bbudget-group-header">🎤 Program &amp; Speakers</div>
                     <div class="bbudget-subitem">
                       <div class="bbudget-subitem-row"><span class="bbudget-subitem-label">Professional Fee/Honoraria</span><span class="bbudget-subitem-value">₱{{ Number(aDBudget.professional_fee_honoria || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span></div>
-                      <div class="bbudget-meta">Number of Speakers: <strong>{{ aDBudget.professional_fee_honoria > 0 ? Math.floor(Number(aDBudget.professional_fee_honoria) / 2258.25) : 0 }}</strong></div>
+                      <div class="bbudget-meta">Number of Speakers: <strong>{{ aDBudget.pf_pax || 0 }}</strong></div>
                     </div>
                     <div class="bbudget-subitem">
                       <div class="bbudget-subitem-row"><span class="bbudget-subitem-label">Token/s</span><span class="bbudget-subitem-value">₱{{ Number(aDBudget.tokens || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span></div>
-                      <div class="bbudget-meta">Number of Recipients: <strong>{{ aDBudget.tokens > 0 ? Math.floor(Number(aDBudget.tokens) / 1000) : 0 }}</strong></div>
+                      <div class="bbudget-meta">Number of Recipients: <strong>{{ aDBudget.tokens_pax || 0 }}</strong></div>
                     </div>
                   </div>
                   <div class="bbudget-group">
@@ -319,11 +319,11 @@
                     <div class="bbudget-group-header">🎤 Program &amp; Speakers</div>
                     <div class="bbudget-subitem">
                       <div class="bbudget-subitem-row"><span class="bbudget-subitem-label">Professional Fee/Honoraria</span><span class="bbudget-subitem-value">₱{{ Number(aRBudget.professional_fee_honoria || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span></div>
-                      <div class="bbudget-meta">Number of Speakers: <strong>{{ aRBudget.professional_fee_honoria > 0 ? Math.floor(Number(aRBudget.professional_fee_honoria) / 2258.25) : 0 }}</strong></div>
+                      <div class="bbudget-meta">Number of Speakers: <strong>{{ aRBudget.pf_pax || 0 }}</strong></div>
                     </div>
                     <div class="bbudget-subitem">
                       <div class="bbudget-subitem-row"><span class="bbudget-subitem-label">Token/s</span><span class="bbudget-subitem-value">₱{{ Number(aRBudget.tokens || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span></div>
-                      <div class="bbudget-meta">Number of Recipients: <strong>{{ aRBudget.tokens > 0 ? Math.floor(Number(aRBudget.tokens) / 1000) : 0 }}</strong></div>
+                      <div class="bbudget-meta">Number of Recipients: <strong>{{ aRBudget.tokens_pax || 0 }}</strong></div>
                     </div>
                   </div>
                   <div class="bbudget-group">
