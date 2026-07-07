@@ -983,8 +983,8 @@ watch(() => form.value.control_number, async (newVal) => {
         dinner: !!Number(dbBudget.dinner_selected)
       };
       
-      pfPax.value = Number(res.data.pf_pax) || '';
-      tokensPax.value = Number(res.data.tokens_pax) || '';
+      pfPax.value = Number(dbBudget.pf_pax) || '';
+      tokensPax.value = Number(dbBudget.tokens_pax) || '';
       
       snacksSelected.value = {
         am: !!Number(dbBudget.am_snack_selected),

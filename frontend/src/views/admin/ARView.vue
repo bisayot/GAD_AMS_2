@@ -538,6 +538,8 @@ const aDBudget = computed(() => {
     function_room_venue: b.function_room_venue, accommodation: b.accommodation,
     equipment_rental: b.equipment_rental, transportation: b.transportation,
     professional_fee_honoria: b.professional_fee_honoria, tokens: b.tokens,
+    pf_pax: b.pf_pax,
+    tokens_pax: b.tokens_pax,
     materials_and_supplies: b.materials_and_supplies,
     others_total: othersTotal,
     othersBreakdown: ob,
@@ -566,6 +568,8 @@ const aRBudget = computed(() => {
     function_room_venue: b.function_room_venue, accommodation: b.accommodation,
     equipment_rental: b.equipment_rental, transportation: b.transportation,
     professional_fee_honoria: b.professional_fee_honoria, tokens: b.tokens,
+    pf_pax: b.pf_pax,
+    tokens_pax: b.tokens_pax,
     materials_and_supplies: b.materials_and_supplies,
     others_total: othersTotal, othersBreakdown: ob, grand_total: grandTotal
   };
