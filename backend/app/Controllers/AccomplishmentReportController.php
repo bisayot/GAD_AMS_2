@@ -846,9 +846,15 @@ class AccomplishmentReportController extends BaseController
         }
 
         $actionUserId = $this->request->getHeaderLine('X-User-Id') ?: $report['user_id'];
+        
         $userModel = new \App\Models\UserModel();
         $actionUser = $userModel->find($actionUserId);
         $isAdmin = $actionUser && $actionUser['role'] === 'admin';
+        $isOwner = ($actionUserId == $report['user_id']);
+
+        if (!$isAdmin && !$isOwner) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Unauthorized: You can only delete documents you submitted.'])->setStatusCode(403);
+        }
 
         if (!$isAdmin && ($report['status'] !== 'Pending' || $report['is_viewed_by_admin'] == 1)) {
             return $this->response->setJSON(['success' => false, 'message' => 'Cannot trash this document as it is already being processed or viewed by admin.'])->setStatusCode(400);

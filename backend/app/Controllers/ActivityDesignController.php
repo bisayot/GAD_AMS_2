@@ -918,11 +918,21 @@ class ActivityDesignController extends BaseController
             return $this->response->setJSON(['success' => false, 'message' => 'Activity design not found'])->setStatusCode(404);
         }
 
-        if ($design['status'] !== 'Pending' || $design['is_viewed_by_admin'] == 1) {
+        $actionUserId = $this->request->getHeaderLine('X-User-Id') ?: $design['user_id'];
+        
+        $userModel = new \App\Models\UserModel();
+        $actionUser = $userModel->find($actionUserId);
+        $isAdmin = $actionUser && $actionUser['role'] === 'admin';
+        $isOwner = ($actionUserId == $design['user_id']);
+
+        if (!$isAdmin && !$isOwner) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Unauthorized: You can only delete documents you submitted.'])->setStatusCode(403);
+        }
+
+        if (!$isAdmin && ($design['status'] !== 'Pending' || $design['is_viewed_by_admin'] == 1)) {
             return $this->response->setJSON(['success' => false, 'message' => 'Cannot trash this document as it is already being processed or viewed by admin.'])->setStatusCode(400);
         }
 
-        $actionUserId = $this->request->getHeaderLine('X-User-Id') ?: $design['user_id'];
         $model->update($id, ['deleted_by' => $actionUserId]);
 
         if ($model->delete($id)) {
