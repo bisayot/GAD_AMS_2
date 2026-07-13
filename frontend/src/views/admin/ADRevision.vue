@@ -67,43 +67,27 @@
                 </select>
               </div>
               <div class="info-item" style="grid-column: span 2;">
-                <span class="info-label">GAD Mandate *</span>
+                <span class="info-label">Gender Issue / GAD Mandate *</span>
                 <div class="checkbox-group-container modal-input" style="min-height: 120px; max-height: 250px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
                   <label v-for="mandate in gadMandates" :key="mandate.id" class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
                     <input type="checkbox" v-model="formData.gad_mandate" :value="mandate.id.toString()" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
                     <span style="font-size: 14px; line-height: 1.4;">{{ mandate.code }} - {{ mandate.title }}</span>
                   </label>
-                  <label class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
-                    <input type="checkbox" v-model="formData.gad_mandate" value="Other" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
-                    <span style="font-size: 14px; line-height: 1.4; font-style: italic;">+ New Mandate</span>
-                  </label>
+                  
                 </div>
-                <input v-if="formData.gad_mandate && formData.gad_mandate.includes('Other')" 
-                      v-model="customMandate" 
-                      type="text" 
-                      placeholder="Enter new mandate name..." 
-                      class="modal-input" 
-                      style="margin-top: 10px;" />
+                
               </div>
               <div class="info-item" style="grid-column: span 2;">
-                <span class="info-label">Gender Issues *</span>
+                <span class="info-label">Cause of Gender Issue *</span>
                 <div class="checkbox-group-container modal-input" style="min-height: 120px; max-height: 250px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
                   <label v-for="issue in genderIssues" :key="issue.id" class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
                     <input type="checkbox" v-model="formData.gender_issue" :value="issue.id.toString()" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
                     <span style="font-size: 14px; line-height: 1.4;">{{ issue.title }}</span>
                   </label>
-                  <label class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
-                    <input type="checkbox" v-model="formData.gender_issue" value="Other" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
-                    <span style="font-size: 14px; line-height: 1.4; font-style: italic;">+ New Gender Issue</span>
-                  </label>
+                  
                   <p v-if="!formData.gad_mandate || formData.gad_mandate.length === 0" style="color: #94a3b8; font-size: 13px; font-style: italic; margin: 0;">Select a mandate first to see gender issues.</p>
                 </div>
-                <input v-if="formData.gender_issue && formData.gender_issue.includes('Other')" 
-                      v-model="customGenderIssue" 
-                      type="text" 
-                      placeholder="Enter new gender issue..." 
-                      class="modal-input" 
-                      style="margin-top: 10px;" />
+                
               </div>
             </div>
           </div>
@@ -188,9 +172,7 @@
                               <input type="checkbox" v-model="mealsSelected.dinner" class="budget-checkbox" /> Dinner
                             </label>
                           </div>
-                          <div v-if="formData.target_participants < 50 && formData.target_participants !== ''" class="budget-warning-inline">
-                            ⚠️ Participants &lt; 50. GAD cannot fund meals.
-                          </div>
+                          
                         </div>
                         <div class="budget-item-value">
                           <span class="budget-currency-symbol">₱</span>
@@ -217,9 +199,7 @@
                               <input type="checkbox" v-model="snacksSelected.pm" class="budget-checkbox" /> PM Snack
                             </label>
                           </div>
-                          <div v-if="formData.target_participants < 50 && formData.target_participants !== ''" class="budget-warning-inline">
-                            ⚠️ Participants &lt; 50. GAD cannot fund snacks.
-                          </div>
+                          
                         </div>
                         <div class="budget-item-value">
                           <span class="budget-currency-symbol">₱</span>
@@ -642,7 +622,7 @@ watch(
       const mealsCount = (mealsSelected.value.breakfast ? 1 : 0) + (mealsSelected.value.lunch ? 1 : 0) + (mealsSelected.value.dinner ? 1 : 0);
       const mealsRate = isOutsideBsu.value ? 350 : 220;
       const pax = Number(formData.value.target_participants) || 0;
-      const calculated = pax >= 50 ? (mealsCount * mealsRate * pax * computedDays.value) : 0;
+      const calculated = (mealsCount * mealsRate * pax * computedDays.value);
       item.total = calculated || '';
     }
   },
@@ -658,7 +638,7 @@ watch(
       const snacksCount = (snacksSelected.value.am ? 1 : 0) + (snacksSelected.value.pm ? 1 : 0);
       const snacksRate = isOutsideBsu.value ? 150 : 80;
       const pax = Number(formData.value.target_participants) || 0;
-      const calculated = pax >= 50 ? (snacksCount * snacksRate * pax * computedDays.value) : 0;
+      const calculated = (snacksCount * snacksRate * pax * computedDays.value);
       item.total = calculated || '';
     }
   },
@@ -732,8 +712,12 @@ const fetchActivityClassifications = async () => {
 };
 
 const fetchGADMandates = async () => {
-  try {
-    const response = await api.get('get-gad-mandates');
+    try {
+      let url = 'get-gad-mandates';
+      if (formData.value && formData.value.activity_classification) {
+          url += '?classification=' + formData.value.activity_classification;
+      }
+      const response = await api.get(url);
     if (response.data) gadMandates.value = response.data;
   } catch (error) {
     console.error('Error fetching mandates:', error);
@@ -792,15 +776,20 @@ const fetchDesignDetails = async () => {
         }
 
         // Initialize default structures
-      mealsSelected.value = { 
-        breakfast: !!Number(design.value.breakfast_selected), 
-        lunch: !!Number(design.value.lunch_selected), 
-        dinner: !!Number(design.value.dinner_selected) 
-      };
-      snacksSelected.value = { 
-        am: !!Number(design.value.am_snack_selected), 
-        pm: !!Number(design.value.pm_snack_selected) 
-      };
+              const dbMealsItem = design.value.budget_items?.find(i => i.item_name === 'Meals') || {};
+        const dbSnacksItem = design.value.budget_items?.find(i => i.item_name === 'Snacks') || {};
+        const mealsSub = dbMealsItem.sub_item || '';
+        const snacksSub = dbSnacksItem.sub_item || '';
+        
+        mealsSelected.value = { 
+          breakfast: mealsSub.includes('Breakfast'), 
+          lunch: mealsSub.includes('Lunch'), 
+          dinner: mealsSub.includes('Dinner') 
+        };
+        snacksSelected.value = { 
+          am: snacksSub.includes('AM'), 
+          pm: snacksSub.includes('PM') 
+        };
       pfPax.value = Number(design.value.pf_pax) || '';
       tokensPax.value = Number(design.value.tokens_pax) || '';
       if (design.value.materials_others_breakdown) {
@@ -867,8 +856,23 @@ const fetchDesignDetails = async () => {
       if (!design.value.venue_id) {
         customVenue.value = design.value.venue;
       }
-    } else {
-      error.value = "Activity design not found.";
+    
+        await fetchGADMandates();
+        const mapLoadedMandates = () => {
+            if (gadMandates.value.length > 0 && formData.value.gad_mandate.length > 0) {
+                const loadedIds = formData.value.gad_mandate.map(String);
+                const mappedIds = gadMandates.value
+                    .filter(m => loadedIds.some(id => m.id.split(',').includes(id)))
+                    .map(m => m.id.toString());
+                if (mappedIds.length > 0) {
+                    formData.value.gad_mandate = mappedIds;
+                }
+            }
+        };
+        mapLoadedMandates();
+        await fetchGenderIssues(formData.value.gad_mandate);
+      } else {
+        error.value = "Activity design not found.";
     }
   } catch (err) {
     error.value = "Failed to load activity design details.";
@@ -944,28 +948,32 @@ const handleUpdate = async () => {
       return;
     }
 
-    const budgetObj = {
-      meals_and_snacks: (Number(formData.value.budget_items.find(i => i.name === 'Meals')?.total || 0) + Number(formData.value.budget_items.find(i => i.name === 'Snacks')?.total || 0)),
-      meals_total: Number(formData.value.budget_items.find(i => i.name === 'Meals')?.total || 0),
-      snacks_total: Number(formData.value.budget_items.find(i => i.name === 'Snacks')?.total || 0),
-      materials_total: Number(formData.value.budget_items.find(i => i.name === 'Materials and Supplies')?.total || 0),
-      others_total: Number(formData.value.budget_items.find(i => i.name === 'Others')?.total || 0),
-      materials_others_breakdown: JSON.stringify(othersList.value),
-      breakfast_selected: mealsSelected.value.breakfast ? 1 : 0,
-      lunch_selected: mealsSelected.value.lunch ? 1 : 0,
-      dinner_selected: mealsSelected.value.dinner ? 1 : 0,
-      am_snack_selected: snacksSelected.value.am ? 1 : 0,
-      pm_snack_selected: snacksSelected.value.pm ? 1 : 0,
-      function_room_venue: Number(formData.value.budget_items.find(i => i.name === 'Function Room/Venue')?.total || 0),
-      accommodation: Number(formData.value.budget_items.find(i => i.name === 'Accommodation')?.total || 0),
-      equipment_rental: Number(formData.value.budget_items.find(i => i.name === 'Equipment Rental')?.total || 0),
-      professional_fee_honoria: Number(formData.value.budget_items.find(i => i.name === 'Professional Fee/Honoraria')?.total || 0),
-      tokens: Number(formData.value.budget_items.find(i => i.name === 'Token/s')?.total || 0),
-      materials_and_supplies: Number(formData.value.budget_items.find(i => i.name === 'Materials and Supplies')?.total || 0) + Number(formData.value.budget_items.find(i => i.name === 'Others')?.total || 0),
-      transportation: Number(formData.value.budget_items.find(i => i.name === 'Transportation')?.total || 0)
-    };
-
-    submitData.append('budget_items', JSON.stringify(budgetObj));
+          const normalizedBudgetItems = [];
+      formData.value.budget_items.forEach(item => {
+        if (item.name !== 'Others') {
+          normalizedBudgetItems.push({
+            category_id: null,
+            item_name: item.name,
+            sub_item: null,
+            pax: (item.name === 'Professional Fee/Honoraria') ? (typeof pfPax !== 'undefined' ? pfPax?.value : null) : (item.name === 'Token/s') ? (typeof tokensPax !== 'undefined' ? tokensPax?.value : null) : null,
+            amount: Number(item.total) || 0
+          });
+        }
+      });
+      if (typeof othersList !== 'undefined') {
+        othersList.value.forEach(o => {
+          if (o.name && Number(o.amount) > 0) {
+            normalizedBudgetItems.push({
+              category_id: null,
+              item_name: 'Others',
+              sub_item: o.name,
+              pax: null,
+              amount: Number(o.amount) || 0
+            });
+          }
+        });
+      }
+      submitData.append('budget_items', JSON.stringify(normalizedBudgetItems));
 
     submitData.append('status', 'Pending'); // Reset status so admin can review again
     
@@ -993,14 +1001,27 @@ const handleUpdate = async () => {
   }
 };
 
-onMounted(() => {
+
+  watch(() => formData.value.activity_classification, (newVal) => {
+      if (typeof loadingData !== 'undefined' && loadingData.value) return;
+      formData.value.gad_mandate = [];
+      formData.value.gender_issue = [];
+      fetchGADMandates();
+  });
+  
+  watch(() => formData.value.gad_mandate, (newVal) => {
+      if (typeof loadingData !== 'undefined' && loadingData.value) return;
+      formData.value.gender_issue = [];
+      fetchGenderIssues(newVal);
+  });
+  
+  onMounted(() => {
   if (!user.value.id || user.value.role !== 'admin') {
     router.push('/login');
   } else {
     fetchVenues();
     fetchFormTypes();
     fetchActivityClassifications();
-    fetchGADMandates();
     fetchDesignDetails();
   }
 });

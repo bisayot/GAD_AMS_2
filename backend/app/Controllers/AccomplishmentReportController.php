@@ -358,10 +358,14 @@ class AccomplishmentReportController extends BaseController
                       $mandates = [];
                       if (!empty($ad['gad_mandate_ids'])) {
                             $mandateIds = array_map('trim', explode(',', $ad['gad_mandate_ids']));
-                          $mandatesData = $db->table('gad_mandates')->whereIn('id', $mandateIds)->get()->getResultArray();
-                          foreach ($mandatesData as $m) {
-                              $mandates[] = $m['code'] ? ($m['code'] . ' - ' . $m['title']) : $m['title'];
-                          }
+                          $mandatesData = $db->table('gpb_items')->whereIn('id', $mandateIds)->get()->getResultArray();
+                            foreach ($mandatesData as $m) {
+                                  if (empty($m['mandate'])) {
+                                      $mandates[] = 'GPB - N/A (Attributed Program) - ' . $m['activity'];
+                                  } else {
+                                      $mandates[] = 'GPB - ' . $m['mandate'];
+                                  }
+                              }
                       }
                       $ad['gad_mandate'] = implode(';;; ', $mandates);
                       $ad['gad_mandate_id'] = $ad['gad_mandate_ids'];
@@ -369,10 +373,14 @@ class AccomplishmentReportController extends BaseController
                       $issues = [];
                       if (!empty($ad['gender_issue_ids'])) {
                             $issueIds = array_map('trim', explode(',', $ad['gender_issue_ids']));
-                          $issuesData = $db->table('gender_issues')->whereIn('id', $issueIds)->get()->getResultArray();
-                          foreach ($issuesData as $i) {
-                              $issues[] = $i['title'];
-                          }
+                          $issuesData = $db->table('gpb_items')->whereIn('id', $issueIds)->get()->getResultArray();
+                            foreach ($issuesData as $i) {
+                                  if (empty($i['cause'])) {
+                                      $issues[] = 'N/A (Attributed Program) - ' . $i['activity'];
+                                  } else {
+                                      $issues[] = $i['cause'];
+                                  }
+                              }
                       }
                       $ad['gender_issue'] = implode(';;; ', $issues);
                       $ad['gender_issue_id'] = $ad['gender_issue_ids'];

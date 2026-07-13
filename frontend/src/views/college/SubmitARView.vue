@@ -76,36 +76,25 @@
                   </div>
 
                   <div class="input-group-ar">
-                    <label class="form-label-ar">GAD Mandate *</label>
+                    <label class="form-label-ar">Gender Issue / GAD Mandate *</label>
                     <div class="checkbox-group-container custom-input-field" style="min-height: 120px; max-height: 250px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
                       <label v-for="mandate in GADMandates" :key="mandate.id" class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
                         <input type="checkbox" v-model="form.gad_mandate_id" :value="mandate.id.toString()" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
                         <span style="font-size: 14px; line-height: 1.4;">{{ mandate.code }} - {{ mandate.title }}</span>
                       </label>
-                      <label class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
-                        <input type="checkbox" v-model="form.gad_mandate_id" value="Other" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
-                        <span style="font-size: 14px; line-height: 1.4; font-style: italic;">+ New Mandate</span>
-                      </label>
+                      
                     </div>
-                    <input v-if="form.gad_mandate_id && form.gad_mandate_id.includes('Other')" 
-                          v-model="customMandate" 
-                          type="text" 
-                          placeholder="Enter new mandate name..." 
-                          class="custom-input-field" 
-                          style="margin-top: 10px;" />
+                    
                   </div>
 
                   <div class="input-group-ar">
-                    <label class="form-label-ar">Gender Issue *</label>
+                    <label class="form-label-ar">Cause of Gender Issue *</label>
                     <div class="checkbox-group-container custom-input-field" style="min-height: 120px; max-height: 250px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
                       <label v-for="issue in genderIssues" :key="issue.id" class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
                         <input type="checkbox" v-model="form.gender_issue_id" :value="issue.id.toString()" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
                         <span style="font-size: 14px; line-height: 1.4;">{{ issue.title }}</span>
                       </label>
-                      <label class="checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
-                        <input type="checkbox" v-model="form.gender_issue_id" value="Other" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
-                        <span style="font-size: 14px; line-height: 1.4; font-style: italic;">+ New Gender Issue</span>
-                      </label>
+                      
                       <p v-if="!form.gad_mandate_id || form.gad_mandate_id.length === 0" style="color: #94a3b8; font-size: 13px; font-style: italic; margin: 0;">Select a mandate first to see gender issues.</p>
                     </div>
                     <input v-if="form.gender_issue_id && form.gender_issue_id.includes('Other')" 
@@ -862,7 +851,11 @@ const fetchGenderIssues = async (mandateIds) => {
     const allIssues = [];
     for (const mandateId of ids) {
        if (mandateId !== 'Other') {
-           const res = await api.get(`get-gender-issues/${mandateId}`);
+           let url = `get-gender-issues?mandates=${mandateId}`;
+             if (form.value && form.value.activity_classification_id) {
+                 url += '&classification=' + form.value.activity_classification_id;
+             }
+             const res = await api.get(url);
            allIssues.push(...res.data);
        }
     }
@@ -1031,7 +1024,13 @@ watch(tokensPax, (newPax) => {
   const item = form.value.budget_items.find(i => i.name === 'Token/s');
   if (item) item.total = (Number(newPax) * 1000) || '';
 });
-watch(() => form.value.gad_mandate_id, (newVal) => {
+watch(() => form.value.activity_classification_id, (newVal) => {
+    form.value.gad_mandate_id = [];
+    form.value.gender_issue_id = [];
+    fetchGADMandates();
+  });
+
+  watch(() => form.value.gad_mandate_id, (newVal) => {
   form.value.gender_issue_id = [];
   fetchGenderIssues(newVal);
 }, { deep: true });

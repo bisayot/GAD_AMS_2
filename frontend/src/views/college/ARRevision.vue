@@ -86,7 +86,7 @@
                     <p class="text-sm-light mt-1 uppercase">{{ existingReport.activity_design.form_type_name || existingReport.activity_design.form_type || '---' }}</p>
                   </div>
                   <div class="full-width-info">
-                    <label class="info-label">GAD Mandate</label>
+                    <label class="info-label">Gender Issue / GAD Mandate</label>
                     <div v-if="existingReport.activity_design.gad_mandate" class="mandate-boxes">
                       <span v-for="(mandate, index) in existingReport.activity_design.gad_mandate.split(';;;')" :key="'m'+index" class="mandate-box">
                         {{ mandate.trim() }}
@@ -95,7 +95,7 @@
                     <p v-else class="text-sm-light mt-1">---</p>
                   </div>
                   <div class="full-width-info">
-                    <label class="info-label">Gender Issues</label>
+                    <label class="info-label">Cause of Gender Issue</label>
                     <div v-if="existingReport.activity_design.gender_issue" class="mandate-boxes">
                       <span v-for="(issue, index) in existingReport.activity_design.gender_issue.split(';;;')" :key="'gi'+index" class="mandate-box">
                         {{ issue.trim() }}
@@ -215,7 +215,7 @@
                     </select>
                   </div>
                   <div class="full-width-info">
-                    <label class="info-label">GAD Mandate</label>
+                    <label class="info-label">Gender Issue / GAD Mandate</label>
                     <div class="checkbox-group-container custom-input-field mt-1" style="max-height: 200px; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 8px;">
                       <label v-for="mandate in GADMandates" :key="mandate.id" class="mandate-checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
                         <input type="checkbox" v-model="form.gad_mandate_id" :value="mandate.id.toString()" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
@@ -234,7 +234,7 @@
                           style="margin-top: 10px;" />
                   </div>
                   <div class="full-width-info">
-                    <label class="info-label">Gender Issues</label>
+                    <label class="info-label">Cause of Gender Issue</label>
                     <div class="checkbox-group-container custom-input-field mt-1" style="max-height: 200px; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 8px;">
                       <label v-for="issue in genderIssues" :key="issue.id" class="mandate-checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
                         <input type="checkbox" v-model="form.gender_issue_id" :value="issue.id.toString()" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
@@ -786,17 +786,20 @@ const fetchData = async () => {
 };
 
 const fetchGenderIssues = async (mandateIds) => {
-    const ids = mandateIds || form.value?.gad_mandate_id;
-    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    const ids = mandateIds || formData.value?.gad_mandate || [];
+    if (!ids || !Array.isArray(ids) || ids.length === 0 ) {
       genderIssues.value = [];
       return;
     }
-  try {
-    const allIssues = [];
-    for (const mandateId of ids) {
-       if (mandateId !== 'Other') {
-           if (mandateId !== 'Other') {
-             const res = await api.get(`get-gender-issues/${mandateId}`);
+    try {
+      const idString = ids.join(',');
+      let url = `get-gender-issues?mandates=${idString}`;
+      if (formData.value && formData.value.activity_classification) {
+          url += '&classification=' + formData.value.activity_classification;
+      }
+      const res = await api.get(url);
+      genderIssues.value = res.data;
+    } catch (error) {
              allIssues.push(...res.data);
          }
        }

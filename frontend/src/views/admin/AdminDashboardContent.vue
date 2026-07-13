@@ -361,7 +361,8 @@ const metricsStats = ref([
   { label: 'Pending Act Designs', value: '0', icon: 'description', iconColor: 'text-purple-400', bgClass: 'bg-purple-500/10' },
   { label: 'Pending Acc Reports', value: '0', icon: 'analytics', iconColor: 'text-blue-400', bgClass: 'bg-blue-500/10' },
   { label: 'Total GAD Budget', value: '₱0', icon: 'payments', iconColor: 'text-emerald-400', bgClass: 'bg-emerald-500/10' },
-  { label: 'Remaining Balance', value: '₱0', icon: 'account_balance_wallet', iconColor: 'text-pink-400', bgClass: 'bg-pink-500/10' }
+  { label: 'Remaining Balance', value: '₱0', icon: 'account_balance_wallet', iconColor: 'text-pink-400', bgClass: 'bg-pink-500/10' },
+  { label: '% GAD Allocation', value: '0%', icon: 'pie_chart', iconColor: 'text-amber-400', bgClass: 'bg-amber-500/10' }
 ]);
 
 const pendingActivities = ref([]);
@@ -393,7 +394,7 @@ const fetchStats = async () => {
       api.get('activity-reports'),
       api.get('archives'),
       api.get('activity-logs'),
-      api.get('budget/summary')
+      api.get('/plan')
     ]);
     
     if (logsRes && logsRes.data && logsRes.data.success) {
@@ -523,10 +524,43 @@ const fetchStats = async () => {
     dl.sort((a, b) => a.sortDate - b.sortDate);
     upcomingDeadlines.value = dl;
 
-    if (budgetRes && budgetRes.data && budgetRes.data.success) {
+    if (budgetRes && budgetRes.data) {
+      const orgBudget = parseFloat(budgetRes.data.org?.totalOrgBudget) || 0;
+      let allocated = 0;
+      if (budgetRes.data.items && Array.isArray(budgetRes.data.items)) {
+        budgetRes.data.items.forEach(item => {
+          if (item.budgetLines && Array.isArray(item.budgetLines)) {
+            item.budgetLines.forEach(bl => {
+              allocated += parseFloat(bl.amount) || 0;
+            });
+          }
+        });
+      }
+              // Sum up consumed budget from approved/archived designs
+        let consumed = 0;
+        if (designsRes && designsRes.data && designsRes.data.success) {
+          designsRes.data.data.forEach(d => {
+            if (d.status && (d.status.toLowerCase() === 'approved' || d.status.toLowerCase() === 'archived' || d.status.toLowerCase() === 'verified')) {
+              consumed += parseFloat(d.proposed_budget) || 0;
+            }
+          });
+        }
+        if (archiveRes && archiveRes.data && archiveRes.data.success) {
+          archiveRes.data.data.forEach(a => {
+            if (a.type === 'design' && a.status && (a.status.toLowerCase() === 'approved' || a.status.toLowerCase() === 'archived' || a.status.toLowerCase() === 'verified')) {
+              consumed += parseFloat(a.proposed_budget) || 0;
+            }
+          });
+        }
+
+        const gadBudget = allocated;
+        const remaining = gadBudget - consumed;
+        const percent = orgBudget > 0 ? ((gadBudget / orgBudget) * 100).toFixed(1) : '0.0';
+
       const budgetFormat = new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      metricsStats.value[2].value = '₱' + budgetFormat.format(budgetRes.data.data.total_budget || 0);
-      metricsStats.value[3].value = '₱' + budgetFormat.format(budgetRes.data.data.remaining_balance || 0);
+      metricsStats.value[2].value = '₱' + budgetFormat.format(gadBudget);
+      metricsStats.value[3].value = '₱' + budgetFormat.format(remaining);
+      metricsStats.value[4].value = percent + '%';
     }
 
   } catch (err) {
@@ -671,8 +705,8 @@ onMounted(() => {
 
 .stats-section {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
 }
 
 .stat-card {

@@ -53,7 +53,7 @@
               <tr class="table-header">
                 <th class="th-col th-col-center th-col-num">#</th>
                 <th class="th-col th-col-center th-col-mandate">Gender Issue / GAD Mandate</th>
-                <th class="th-col th-col-center th-col-cause">Cause of Issue</th>
+                <th class="th-col th-col-center th-col-cause">Cause of Gender Issue</th>
                 <th class="th-col th-col-center th-col-result">GAD Result / Objective</th>
                 <th class="th-col th-col-center th-col-mfo">Relevant MFO</th>
                 <th class="th-col th-col-center th-col-activity">GAD Activity</th>

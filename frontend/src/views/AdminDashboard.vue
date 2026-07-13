@@ -32,7 +32,7 @@
         </div>
       </header>
 
-      <main class="flex-grow p-4 md:p-10 w-full overflow-x-hidden">
+      <main :class="['flex-grow w-full overflow-x-hidden', $route.path.includes('/plan-and-budget') ? 'p-0' : 'p-4 md:p-10']">
         <router-view />
       </main>
     </div>
@@ -69,7 +69,7 @@ const adminMenu = ref([
   { label: 'Accomplishment Report List', icon: 'description', href: '/admin/ar-list' },
   { label: 'Archives', icon: 'archive', href: '/admin/archive' },
   { label: 'Document Trash Bin', icon: 'delete', href: '/admin/trash-bin' },
-  { label: 'Mandates Management', icon: 'account_balance', href: '/admin/mandates' },
+  { label: 'Plan and Budget', icon: 'account_balance', href: '/admin/plan-and-budget' },
   { label: 'Report Monitoring', icon: 'bar_chart', href: '/admin/reports' },
   { label: 'Budget Monitoring', icon: 'account_balance_wallet', href: '/admin/budget' },
   { label: 'Office/Unit Management', icon: 'domain', href: '/admin/office-management' },

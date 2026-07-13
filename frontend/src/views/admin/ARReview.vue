@@ -104,7 +104,7 @@
                   <p class="text-sm-light mt-1 uppercase">{{ report.activity_design.form_type_name || report.activity_design.form_type || '---' }}</p>
                 </div>
                                 <div class="full-width-info" v-if="report.activity_design">
-                  <label class="info-label">GAD Mandate</label>
+                  <label class="info-label">Gender Issue / GAD Mandate</label>
                   <div v-if="report.activity_design.gad_mandate" class="mandate-boxes">
                     <span v-for="(mandate, index) in report.activity_design.gad_mandate.split(';;;')" :key="'m'+index" class="mandate-box">
                       {{ mandate.trim() }}
@@ -113,7 +113,7 @@
                   <p v-else class="text-sm-light mt-1">---</p>
                 </div>
                 <div class="full-width-info" v-if="report.activity_design">
-                  <label class="info-label">Gender Issues</label>
+                  <label class="info-label">Cause of Gender Issue</label>
                   <div v-if="report.activity_design.gender_issue" class="mandate-boxes">
                     <span v-for="(issue, index) in report.activity_design.gender_issue.split(';;;')" :key="'gi'+index" class="mandate-box">
                       {{ issue.trim() }}
@@ -259,7 +259,7 @@
                   <p class="text-sm-light mt-1 uppercase">{{ report.activity_design.form_type_name || report.activity_design.form_type || '---' }}</p>
                 </div>
                                 <div class="full-width-info" v-if="report.activity_design">
-                  <label class="info-label">GAD Mandate</label>
+                  <label class="info-label">Gender Issue / GAD Mandate</label>
                   <div v-if="report.activity_design.gad_mandate" class="mandate-boxes">
                     <span v-for="(mandate, index) in report.activity_design.gad_mandate.split(';;;')" :key="'m'+index" class="mandate-box">
                       {{ mandate.trim() }}
@@ -268,7 +268,7 @@
                   <p v-else class="text-sm-light mt-1">---</p>
                 </div>
                 <div class="full-width-info" v-if="report.activity_design">
-                  <label class="info-label">Gender Issues</label>
+                  <label class="info-label">Cause of Gender Issue</label>
                   <div v-if="report.activity_design.gender_issue" class="mandate-boxes">
                     <span v-for="(issue, index) in report.activity_design.gender_issue.split(';;;')" :key="'gi'+index" class="mandate-box">
                       {{ issue.trim() }}

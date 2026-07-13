@@ -32,7 +32,7 @@
         </div>
       </header>
 
-      <main class="flex-grow p-4 md:p-10 w-full overflow-x-hidden">
+      <main :class="['flex-grow w-full overflow-x-hidden', $route.path.includes('/plan-and-budget') ? 'p-0' : 'p-4 md:p-10']">
         <router-view />
       </main>
     </div>
@@ -68,7 +68,7 @@ const collegeMenu = ref([
   { label: 'Submitted List', icon: 'list', href: '/college/submitted-list' },
   { label: 'Archives', icon: 'archive', href: '/college/archive' },
   { label: 'Document Trash Bin', icon: 'delete', href: '/college/trashbin' },
-  { label: 'Mandates', icon: 'gavel', href: '/college/mandates' },
+  { label: 'Plan and Budget', icon: 'gavel', href: '/college/plan-and-budget' },
   { label: 'User Manual', icon: 'menu_book', href: '/college/user-manual' },
   { label: 'Data Privacy Policy', icon: 'privacy_tip', href: '/college/data-privacy-policy' },
   { label: 'Activity Logs', icon: 'history', href: '/college/activity-logs' }
