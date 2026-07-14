@@ -15,9 +15,9 @@
         <button id="btnExport" class="topbar-btn primary" @click="exportToExcel" :disabled="exporting">
           <span>📥</span> {{ exporting ? 'Exporting…' : 'Export to Excel' }}
         </button>
-        <button id="btnImportExcel" class="topbar-btn primary" @click="$refs.excelImport.click()">
-          <span>📤</span> Import Excel
-        </button>
+        <button id="btnImportExcel" class="topbar-btn primary" @click="promptExcelImport">
+           <span>📤</span> Import Excel
+         </button>
         <button id="btnReset" v-if="!isReadOnly" class="topbar-btn danger" @click="resetToSeed">Reset</button>
       </div>
     </header>
@@ -315,6 +315,7 @@ export default {
     const exporting     = ref(false);
     const topPanel      = ref(null);
     const fileImport    = ref(null);
+    const excelImport   = ref(null);
 
     // Save chip
     const saveChipClass = computed(() => {
@@ -520,6 +521,31 @@ export default {
     }
 
     // ─── Excel Import ─────────────────────────────────────────────────────────
+    async function promptExcelImport() {
+      const { isConfirmed } = await Swal.fire({
+         title: 'Import Excel',
+         html: `
+           <p style="font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 20px;">You are about to import a GAD Plan & Budget Excel file.</p>
+           <div style="background: rgba(245, 158, 11, 0.1); border: 2px solid rgba(245, 158, 11, 0.4); border-left: 6px solid #f59e0b; padding: 20px; border-radius: 8px; font-size: 15.5px; text-align: left; line-height: 1.6; margin-top: 18px; color: var(--text);">
+             <b style="color: #d97706; display: block; font-size: 18px; margin-bottom: 12px;">⚠️ Important Notice</b>
+             <ul style="margin: 0; padding-left: 22px; margin-bottom: 0px;">
+                <li style="margin-bottom: 8px;">Only the standard 9 columns (Mandate, Cause, Objective, MFO/PAP, Activity, Indicators, Budget, Source, Office) are imported.</li>
+                <li>For best results, it is highly recommended to convert your PDF to an Excel file as a <b>single table</b> rather than multiple disconnected tables. You may use <a href="https://www.adobe.com/ph_en/acrobat/online/pdf-to-excel.html" target="_blank" style="color: #2563eb; text-decoration: underline;">Adobe Acrobat Online</a> or any other PDF to Excel converter of your choice.</li>
+             </ul>
+           </div>
+         `,
+         width: 600,
+         icon: 'info',
+         showCancelButton: true,
+         confirmButtonText: 'Select File',
+         cancelButtonText: 'Cancel'
+      });
+      
+      if (isConfirmed) {
+         excelImport.value.click();
+      }
+    }
+
     function handleExcelImport(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -585,8 +611,25 @@ export default {
              }
 
              const budgetLines = [];
-             const bParts = rawBudget.split('\n');
+             const bPartsRaw = rawBudget.split('\n');
              const sParts = rawSource.split('\n');
+             
+             let bParts = [];
+             let currentPart = '';
+             for (let i = 0; i < bPartsRaw.length; i++) {
+                 let bStr = bPartsRaw[i].trim();
+                 if (!bStr) continue;
+                 if (currentPart) currentPart += ' ' + bStr;
+                 else currentPart = bStr;
+                 
+                 // If the concatenated string ends with a valid amount, save it and reset
+                 if (/^[0-9.,]+$/.test(currentPart) || currentPart.match(/^(.*?)\s+([0-9]{1,3}(,[0-9]{3})+(\.[0-9]{1,2})?|[0-9]+\.[0-9]{1,2})$/)) {
+                     bParts.push(currentPart);
+                     currentPart = '';
+                 } else if (i === bPartsRaw.length - 1) {
+                     bParts.push(currentPart);
+                 }
+             }
 
              for (let j = 0; j < bParts.length; j++) {
                  const bStr = bParts[j].trim();
@@ -655,19 +698,12 @@ export default {
           const { isConfirmed } = await Swal.fire({
              title: 'Import ' + importedItems.length + ' Items?',
              html: `
-               <p style="font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 20px;">This will add the new items to your current plan.</p>
-               <div style="background: rgba(245, 158, 11, 0.1); border: 2px solid rgba(245, 158, 11, 0.4); border-left: 6px solid #f59e0b; padding: 20px; border-radius: 8px; font-size: 15.5px; text-align: left; line-height: 1.6; margin-top: 18px; color: var(--text);">
-                 <b style="color: #d97706; display: block; font-size: 18px; margin-bottom: 12px;">⚠️ Important Notice</b>
-                 <ul style="margin: 0; padding-left: 22px; margin-bottom: 16px;">
-                    <li style="margin-bottom: 8px;">Only the standard 9 columns (Mandate, Cause, Objective, MFO/PAP, Activity, Indicators, Budget, Source, Office) are imported.</li>
-                    <li>For best results, it is highly recommended to convert your PDF to an Excel file as a <b>single table</b> rather than multiple disconnected tables.</li>
-                 </ul>
-                 <div style="background: #fef3c7; border: 1px solid #fcd34d; padding: 12px; border-radius: 6px; text-align: center;">
-                    <b style="color: #b45309; font-size: 16px;">Please thoroughly review and double-check all items and budget values after importation.</b>
-                 </div>
+               <p style="font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 16px;">This will add the new items to your current plan.</p>
+               <div style="background: #fef3c7; border: 1px solid #fcd34d; padding: 16px; border-radius: 8px; text-align: center;">
+                  <b style="color: #b45309; font-size: 16px;">Please thoroughly review and double-check all items and budget values after importation.</b>
                </div>
              `,
-             width: 600,
+             width: 500,
              icon: 'question',
              showCancelButton: true,
              confirmButtonText: 'Yes, Import'
@@ -714,6 +750,19 @@ export default {
     // ─── Excel export ─────────────────────────────────────────────────────────
     function setExportStatus(text, kind) { exportStatus.value = { text, class: kind || '' }; }
     async function exportToExcel() {
+      const { isConfirmed } = await Swal.fire({
+         title: 'Export to Excel',
+         html: `
+           <p style="font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 20px;">You are about to export this plan.</p>
+         `,
+         width: 500,
+         icon: 'info',
+         showCancelButton: true,
+         confirmButtonText: 'Yes, Export',
+         cancelButtonText: 'Cancel'
+      });
+      if (!isConfirmed) return;
+
       exporting.value = true;
       setExportStatus('');
       try {
@@ -831,13 +880,13 @@ export default {
       SECTION_ORDER, SECTION_LABELS, SECTION_SHORT, SOURCE_OPTIONS,
       state, budgetSummary, currentTab, searchQuery, expandedCards,
       saveStatus, saveChipClass, saveTooltip,
-      exportStatus, exporting, topPanel, fileImport,
+      exportStatus, exporting, topPanel, fileImport, excelImport,
       ledger, peso, truncate, itemSubtotal,
       getSectionItems, matchesSearch, getItemNumber,
       toggleCard, expandAll, collapseAll,
       addItemInline, markDirty, saveItem, savePlan,
       deleteItem, addBudgetLine, removeBudgetLine,
-      handleFileImport, handleExcelImport, exportToExcel, resetToSeed,
+      handleFileImport, promptExcelImport, handleExcelImport, exportToExcel, resetToSeed,
     };
   }
 };
