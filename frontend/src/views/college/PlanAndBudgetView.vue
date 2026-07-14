@@ -220,7 +220,7 @@ export default {
   name: 'App',
   setup() {
     const userRole = JSON.parse(localStorage.getItem('user'))?.user_role?.toLowerCase() || '';
-    const isReadOnly = false;
+    const isReadOnly = true;
 
     const SECTION_ORDER  = ['client', 'org', 'attributed'];
     const SECTION_LABELS = { client: 'Client-Focused Activities', org: 'Organization-Focused Activities', attributed: 'Attributed Program' };

@@ -512,12 +512,13 @@ onMounted(async () => {
     return;
   }
   try {
-    const [designsRes, reportsRes, archiveRes, logsRes, budgetRes] = await Promise.all([
+    const [designsRes, reportsRes, archiveRes, logsRes, budgetRes, summaryRes] = await Promise.all([
       api.get('activity-designs'),
       api.get('activity-reports'),
       api.get('archives'),
       api.get('activity-logs', { params: { exclude_admin: 'true' } }),
-      api.get('/plan')
+      api.get('/plan'),
+      api.get('/budget/summary')
     ]);
 
     if (logsRes && logsRes.data && logsRes.data.success) {
@@ -639,36 +640,16 @@ onMounted(async () => {
 
     if (budgetRes && budgetRes.data) {
       const orgBudget = parseFloat(budgetRes.data.org?.totalOrgBudget) || 0;
-      let allocated = 0;
-      if (budgetRes.data.items && Array.isArray(budgetRes.data.items)) {
-        budgetRes.data.items.forEach(item => {
-          if (item.budgetLines && Array.isArray(item.budgetLines)) {
-            item.budgetLines.forEach(bl => {
-              allocated += parseFloat(bl.amount) || 0;
-            });
-          }
-        });
-      }
-              // Sum up consumed budget from approved/archived designs
-        let consumed = 0;
-        if (designsRes && designsRes.data && designsRes.data.success) {
-          designsRes.data.data.forEach(d => {
-            if (d.status && (d.status.toLowerCase() === 'approved' || d.status.toLowerCase() === 'archived' || d.status.toLowerCase() === 'verified')) {
-              consumed += parseFloat(d.proposed_budget) || 0;
-            }
-          });
-        }
-        if (archiveRes && archiveRes.data && archiveRes.data.success) {
-          archiveRes.data.data.forEach(a => {
-            if (a.type === 'design' && a.status && (a.status.toLowerCase() === 'approved' || a.status.toLowerCase() === 'archived' || a.status.toLowerCase() === 'verified')) {
-              consumed += parseFloat(a.proposed_budget) || 0;
-            }
-          });
-        }
+      let gadBudget = 0;
+      let remaining = 0;
+      let percent = '0.0';
 
-        const gadBudget = allocated;
-        const remaining = gadBudget - consumed;
-        const percent = orgBudget > 0 ? ((gadBudget / orgBudget) * 100).toFixed(1) : '0.0';
+      if (summaryRes && summaryRes.data && summaryRes.data.success) {
+         gadBudget = summaryRes.data.data.total_budget || 0;
+         remaining = summaryRes.data.data.remaining_balance || 0;
+      }
+      
+      percent = orgBudget > 0 ? ((gadBudget / orgBudget) * 100).toFixed(2) : '0.00';
 
       const budgetFormat = new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       metricsStats.value[2].value = '₱' + budgetFormat.format(gadBudget);

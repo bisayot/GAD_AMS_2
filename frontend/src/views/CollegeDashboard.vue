@@ -105,7 +105,10 @@ const handleLogout = async () => {
 onMounted(() => {
   window.addEventListener('scroll', handleScroll);
   user.value = JSON.parse(localStorage.getItem('user') || '{}');
-  if (!user.value.id || !['twg', 'non-twg'].includes(user.value.role)) {
+  
+  const role = (user.value.role || user.value.user_role || '').toLowerCase();
+  
+  if (!user.value.id || !['twg', 'non-twg'].includes(role)) {
     router.push('/login');
   } else {
     fetchUnreadCount();

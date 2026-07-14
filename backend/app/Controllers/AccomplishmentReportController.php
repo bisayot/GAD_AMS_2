@@ -718,31 +718,12 @@ class AccomplishmentReportController extends BaseController
         if (!$item) {
             return $this->response->setJSON(['success' => false, 'message' => 'Report not found'])->setStatusCode(404);
         }
-
-        // Insert into archived_accomplishment_reports
-        $archiveData = [
-            'original_report_id' => $item['id'],
-            'control_number'     => $item['control_number'],
-            'act_design_id'      => $item['act_design_id'] ?? null,
-            'activity_title'     => $item['activity_title'],
-            'start_date'         => $item['start_date'],
-            'end_date'           => $item['end_date'],
-            'start_time'         => $item['start_time'],
-            'end_time'           => $item['end_time'],
-            'venue'              => $item['venue'],
-            'attendees'          => $item['attendees'],
-            'male'               => $item['male'],
-            'female'             => $item['female'],
-            'rating'             => $item['rating'],
-            'attachment'         => $item['attachment'],
-            'user_id'            => $item['user_id'],
-            'status'             => 'Verified',
-            'remarks'            => $remarks,
-        ];
-        $db->table('archived_accomplishment_reports')->insert($archiveData);
-
-        // Delete from active table
-        $db->table('accomplishment_report')->where('id', $id)->delete();
+        $db->table('accomplishment_report')->where('id', $id)->update([
+            'status'      => 'Verified',
+            'remarks'     => $remarks,
+            'is_archived' => 1,
+            'archived_at' => date('Y-m-d H:i:s')
+        ]);
 
         $db->transComplete();
 
