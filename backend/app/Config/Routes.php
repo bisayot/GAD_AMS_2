@@ -328,6 +328,8 @@ $routes->group('api', function($routes) {
 });
 
 $routes->group('api', function($routes) {
+    $routes->options('gpb/import', 'AuthController::handleOptions');
+    $routes->post('gpb/import', 'GpbController::import');
     $routes->options('gpb/item', 'AuthController::handleOptions');
     $routes->get('gpb/item', 'GpbController::index');
     $routes->post('gpb/item', 'GpbController::create');

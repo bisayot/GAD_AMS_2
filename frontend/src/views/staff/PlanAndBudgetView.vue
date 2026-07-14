@@ -15,6 +15,9 @@
         <button id="btnExport" class="topbar-btn primary" @click="exportToExcel" :disabled="exporting">
           <span>📥</span> {{ exporting ? 'Exporting…' : 'Export to Excel' }}
         </button>
+        <button id="btnImportExcel" class="topbar-btn primary" @click="$refs.excelImport.click()">
+          <span>📤</span> Import Excel
+        </button>
         <button id="btnReset" v-if="!isReadOnly" class="topbar-btn danger" @click="resetToSeed">Reset</button>
       </div>
     </header>
@@ -178,6 +181,7 @@
                       <input :disabled="isReadOnly" type="text" v-model="l.label" placeholder="e.g. Supplies and Materials" @input="markDirty(item)">
                       <input :disabled="isReadOnly" type="number" step="0.01" min="0" v-model.number="l.amount" @input="markDirty(item)">
                       <select :disabled="isReadOnly" v-model="l.source" @change="markDirty(item)">
+                         <option v-if="!SOURCE_OPTIONS.includes(l.source) && l.source" :value="l.source">{{ l.source }}</option>
                         <option v-for="s in SOURCE_OPTIONS" :key="s" :value="s">{{ s }}</option>
                       </select>
                       <button class="remove-line" v-if="!isReadOnly" aria-label="Remove line" @click="removeBudgetLine(item, l.id)">×</button>
@@ -208,12 +212,14 @@
     </main>
 
     <input :disabled="isReadOnly" type="file" ref="fileImport" accept="application/json" style="display:none" @change="handleFileImport">
+    <input :disabled="isReadOnly" type="file" ref="excelImport" accept=".xlsx, .xls, .csv" style="display:none" @change="handleExcelImport">
   </div>
 </template>
 
 <script>
 import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue';
 import Swal from 'sweetalert2';
+import * as XLSX from 'xlsx';
 import api from '../../api';
 
 export default {
@@ -513,6 +519,198 @@ export default {
       e.target.value = '';
     }
 
+    // ─── Excel Import ─────────────────────────────────────────────────────────
+    function handleExcelImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const json = XLSX.utils.sheet_to_json(worksheet, { header: "A", defval: '' });
+
+          if (!json || json.length === 0) throw new Error('Empty Excel file');
+
+          const importedItems = [];
+          
+          let currentSection = 'client';
+          
+          for (let i = 0; i < json.length; i++) {
+             const row = json[i];
+             
+             const textA = (row['A'] || '').toString().toLowerCase();
+             const textB = (row['B'] || '').toString().toLowerCase();
+             const fullText = textA + " " + textB;
+             
+             if (fullText.includes('client-focused') || fullText.includes('client focused')) {
+                 currentSection = 'client';
+                 continue;
+             } else if (fullText.includes('organization-focused') || fullText.includes('organization focused')) {
+                 currentSection = 'org';
+                 continue;
+             } else if (fullText.includes('attributed program') || fullText.includes('attributed')) {
+                 currentSection = 'attributed';
+                 continue;
+             }
+
+             const mandate = (row['B'] || '').toString().trim();
+             const cause = (row['C'] || '').toString().trim();
+             const objective = (row['E'] || '').toString().trim();
+             const ppa = (row['H'] || '').toString().trim();
+             const activity = (row['J'] || '').toString().trim();
+             const targets = (row['K'] || '').toString().trim();
+             const rawBudget = (row['L'] || '').toString().trim();
+             const rawSource = (row['N'] || '').toString().trim();
+             const office = (row['O'] || '').toString().trim();
+
+             if (!mandate && !activity && !ppa) continue;
+
+             const isHeaderRow = 
+                 mandate.replace(/\s+/g, '').toLowerCase() === 'genderissue/gadmandate' ||
+                 activity.replace(/\s+/g, '').toLowerCase() === 'gadactivity' ||
+                 cause.replace(/\s+/g, '').toLowerCase() === 'causeofgenderissue' ||
+                 (mandate === '1' && activity === '5');
+                 
+             const isTotalRow = 
+                 mandate.toLowerCase().includes('sub-total') || 
+                 mandate.toLowerCase().includes('grand total') ||
+                 cause.toLowerCase().includes('sub-total') || 
+                 cause.toLowerCase().includes('grand total');
+
+             if (isHeaderRow || isTotalRow) {
+                 continue;
+             }
+
+             const budgetLines = [];
+             const bParts = rawBudget.split('\n');
+             const sParts = rawSource.split('\n');
+
+             for (let j = 0; j < bParts.length; j++) {
+                 const bStr = bParts[j].trim();
+                 if (!bStr) continue;
+
+                 let label = 'Imported Budget Line';
+                 let amountStr = '';
+                 
+                 // If the string is strictly a number (with commas/decimals), it's the amount
+                 if (/^[0-9.,]+$/.test(bStr)) {
+                     amountStr = bStr;
+                 } else {
+                     // Look for a strict currency amount at the end of the string (must have comma or decimal)
+                     const match = bStr.match(/^(.*?)\s+([0-9]{1,3}(,[0-9]{3})+(\.[0-9]{1,2})?|[0-9]+\.[0-9]{1,2})$/);
+                     if (match) {
+                         label = match[1].replace(/\s*-\s*$/, '').trim(); // Remove trailing dash if present
+                         amountStr = match[2];
+                     } else {
+                         const dashIdx = bStr.lastIndexOf('-');
+                         if (dashIdx > -1) {
+                             label = bStr.substring(0, dashIdx).trim();
+                             amountStr = bStr.substring(dashIdx + 1).trim();
+                         } else {
+                             label = bStr;
+                             amountStr = '0';
+                         }
+                     }
+                 }
+                 
+                 if (!label || label === 'Imported') label = 'Imported Budget Line';
+
+                 const amount = parseFloat(amountStr.replace(/[^0-9.-]+/g,"")) || 0;
+                 const sourceStr = sParts[j] ? sParts[j].trim() : (sParts[0] ? sParts[0].trim() : 'GAA');
+
+                 budgetLines.push({
+                     id: uid('l'),
+                     label: label,
+                     amount: amount,
+                     source: sourceStr || 'GAA'
+                 });
+             }
+
+             if (budgetLines.length === 0) {
+                 budgetLines.push({
+                     id: uid('l'),
+                     label: 'Imported Budget Line',
+                     amount: 0,
+                     source: 'GAA'
+                 });
+             }
+             
+             importedItems.push({
+                section: currentSection,
+                mandate: mandate,
+                cause: cause,
+                result: objective,
+                mfo: ppa,
+                activity: activity,
+                indicators: targets,
+                responsible: office,
+                budgetLines: budgetLines,
+                fiscal_year: parseInt(state.value.org.year) || new Date().getFullYear()
+             });
+          }
+
+          const { isConfirmed } = await Swal.fire({
+             title: 'Import ' + importedItems.length + ' Items?',
+             html: `
+               <p style="font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 20px;">This will add the new items to your current plan.</p>
+               <div style="background: rgba(245, 158, 11, 0.1); border: 2px solid rgba(245, 158, 11, 0.4); border-left: 6px solid #f59e0b; padding: 20px; border-radius: 8px; font-size: 15.5px; text-align: left; line-height: 1.6; margin-top: 18px; color: var(--text);">
+                 <b style="color: #d97706; display: block; font-size: 18px; margin-bottom: 12px;">⚠️ Important Notice</b>
+                 <ul style="margin: 0; padding-left: 22px; margin-bottom: 16px;">
+                    <li style="margin-bottom: 8px;">Only the standard 9 columns (Mandate, Cause, Objective, MFO/PAP, Activity, Indicators, Budget, Source, Office) are imported.</li>
+                    <li>For best results, it is highly recommended to convert your PDF to an Excel file as a <b>single table</b> rather than multiple disconnected tables.</li>
+                 </ul>
+                 <div style="background: #fef3c7; border: 1px solid #fcd34d; padding: 12px; border-radius: 6px; text-align: center;">
+                    <b style="color: #b45309; font-size: 16px;">Please thoroughly review and double-check all items and budget values after importation.</b>
+                 </div>
+               </div>
+             `,
+             width: 600,
+             icon: 'question',
+             showCancelButton: true,
+             confirmButtonText: 'Yes, Import'
+          });
+
+          if (isConfirmed) {
+             Swal.fire({ title: 'Importing...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+             
+             const dbPayload = importedItems.map((item, idx) => ({
+                fiscal_year: item.fiscal_year,
+                section: item.section,
+                mandate: item.mandate,
+                cause: item.cause,
+                objective: item.result,
+                result: item.result,
+                ppa: item.mfo,
+                mfo: item.mfo,
+                activity: item.activity,
+                targets: item.indicators,
+                indicators: item.indicators,
+                budget: item.budgetLines[0].amount,
+                source: item.budgetLines[0].source,
+                office: item.responsible,
+                responsible: item.responsible,
+                budget_lines: JSON.stringify(item.budgetLines),
+                sort_order: state.value.items.filter(i => i.section === item.section).length + idx + 1
+             }));
+
+             const res = await api.post('/gpb/import', dbPayload);
+             if (res.status === 201) {
+                Swal.fire('Success', 'Imported ' + res.data.count + ' items successfully.', 'success');
+                await loadFromAPI(); 
+             }
+          }
+        } catch(e) { 
+           console.error(e);
+           Swal.fire('Error', 'Could not process the Excel file. Please ensure it follows the correct template format.', 'error'); 
+        }
+      };
+      reader.readAsArrayBuffer(file);
+      e.target.value = '';
+    }
+
     // ─── Excel export ─────────────────────────────────────────────────────────
     function setExportStatus(text, kind) { exportStatus.value = { text, class: kind || '' }; }
     async function exportToExcel() {
@@ -544,11 +742,11 @@ export default {
 
     // ─── Reset ────────────────────────────────────────────────────────────────
     async function resetToSeed() {
-      const { isConfirmed } = await Swal.fire({title: 'Start New Fiscal Year?', text: 'This will completely reset the system for another fiscal year. All data will be deleted. This cannot be undone.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, Reset System'});
+      const { isConfirmed } = await Swal.fire({title: 'Reset Plan?', text: 'This will completely clear the current plan. All data will be deleted. This cannot be undone.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, Reset Plan'});
       if (!isConfirmed) return;
       
       const currentYear = parseInt(state.value.org.year);
-      const nextYear = isNaN(currentYear) ? new Date().getFullYear() + 1 : currentYear + 1;
+      const yearToSet = isNaN(currentYear) ? new Date().getFullYear() : currentYear;
       
       state.value = {
         settings: { apiBaseUrl: '' },
@@ -556,7 +754,7 @@ export default {
           name: state.value.org.name || '',
           category: state.value.org.category || '',
           hierarchy: state.value.org.hierarchy || '',
-          year: String(nextYear),
+          year: String(yearToSet),
           totalOrgBudget: 0,
           otherSources: 0,
           preparedByName: '',
@@ -639,7 +837,7 @@ export default {
       toggleCard, expandAll, collapseAll,
       addItemInline, markDirty, saveItem, savePlan,
       deleteItem, addBudgetLine, removeBudgetLine,
-      handleFileImport, exportToExcel, resetToSeed,
+      handleFileImport, handleExcelImport, exportToExcel, resetToSeed,
     };
   }
 };

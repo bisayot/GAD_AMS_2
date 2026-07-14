@@ -82,6 +82,26 @@ class GpbController extends BaseController
         if ($model->delete($id)) {
             return $this->respondDeleted(['success' => true]);
         }
+    }
+
+    // Bulk import items
+    public function import()
+    {
+        $model = new GpbModel();
+        $data = $this->request->getJSON(true);
+        
+        if (!is_array($data) || empty($data)) {
+            return $this->failValidationErrors('Invalid or empty data for import.');
+        }
+
+        try {
+            if ($model->insertBatch($data)) {
+                return $this->respondCreated(['success' => true, 'count' => count($data)]);
+            }
+        } catch (\Exception $e) {
+            return $this->failServerError('Database error during import: ' . $e->getMessage());
+        }
+
         return $this->failValidationErrors($model->errors());
     }
 }
