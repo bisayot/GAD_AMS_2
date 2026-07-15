@@ -160,4 +160,269 @@ class PlanController extends ResourceController
 
         return $this->respond(['status' => 'success', 'message' => 'Plan saved successfully']);
     }
+
+    public function getMandateStatistics()
+    {
+        $db = \Config\Database::connect();
+        
+        // 1. Get all GPB Items
+        $gpbItems = $db->table('gpb_items')->get()->getResultArray();
+        
+        $mandateStats = [];
+        
+        // Group by mandate + cause + activity to ensure distinct entries
+        foreach($gpbItems as $item) {
+            $mandateName = trim($item['mandate']);
+            $causeName = trim($item['cause']);
+            $activityName = trim($item['activity']);
+            
+            if (empty($mandateName)) {
+                $mandateName = $activityName ?: 'Attributed Program / Unspecified';
+            }
+            
+            // Unique key for grouping
+            $groupKey = md5($mandateName . '|' . $causeName . '|' . $activityName);
+            
+            if (!isset($mandateStats[$groupKey])) {
+                $mandateStats[$groupKey] = [
+                    'key' => $groupKey,
+                    'classification' => $item['section'] ?? '',
+                    'mandate' => $mandateName,
+                    'cause' => $causeName,
+                    'activity' => $activityName,
+                    'budget' => 0.0,
+                    'approved_ad_count' => 0,
+                    'approved_ar_count' => 0,
+                    'remaining_budget' => 0.0,
+                    'utilized_budget' => 0.0,
+                    'pending_budget' => 0.0,
+                    'gpb_ids' => []
+                ];
+            }
+            
+            // Add budget
+            $mandateStats[$groupKey]['budget'] += (float)$item['budget'];
+            $mandateStats[$groupKey]['gpb_ids'][] = $item['id'];
+        }
+        
+        // Now calculate AD and AR for each group
+        foreach($mandateStats as &$stat) {
+            if (empty($stat['gpb_ids'])) {
+                continue;
+            }
+            
+            // Get all Approved ADs linked to these gpb_ids
+            $adLinks = $db->table('activity_design_mandates adm')
+                ->select('ad.act_design_id, ad.proposed_budget, ad.control_number')
+                ->join('activity_design ad', 'ad.act_design_id = adm.act_design_id')
+                ->whereIn('adm.mandate_id', $stat['gpb_ids'])
+                ->where('ad.status', 'Approved')
+                ->where('ad.deleted_at', null)
+                ->groupBy('ad.act_design_id')
+                ->get()->getResultArray();
+                
+            $stat['approved_ad_count'] = count($adLinks);
+            
+            foreach($adLinks as $ad) {
+                // Check AR
+                $ar = $db->table('accomplishment_report')
+                    ->where('control_number', $ad['control_number'])
+                    ->where('status', 'Verified')
+                    ->where('deleted_at', null)
+                    ->get()->getRowArray();
+                    
+                if ($ar) {
+                    $stat['approved_ar_count']++;
+                    
+                    $arAllocationsExist = $db->table('budget_item_mandate_allocations bima')
+                        ->join('accomplishment_budget_items abi', 'abi.id = bima.budget_item_id')
+                        ->where('bima.item_type', 'AR')
+                        ->where('abi.accomplishment_report_id', $ar['id'])
+                        ->countAllResults() > 0;
+                        
+                    if ($arAllocationsExist) {
+                        $manualCostRow = $db->table('budget_item_mandate_allocations bima')
+                            ->selectSum('bima.allocated_amount')
+                            ->join('accomplishment_budget_items abi', 'abi.id = bima.budget_item_id')
+                            ->where('bima.item_type', 'AR')
+                            ->where('abi.accomplishment_report_id', $ar['id'])
+                            ->whereIn('bima.mandate_id', $stat['gpb_ids'])
+                            ->get()->getRowArray();
+                        $actualCost = $manualCostRow ? (float)$manualCostRow['allocated_amount'] : 0.0;
+                    } else {
+                        // Fallback to AD allocations if AR is unassigned
+                        $manualPendingRow = $db->table('budget_item_mandate_allocations bima')
+                            ->selectSum('bima.allocated_amount')
+                            ->join('activity_budget_items abi', 'abi.id = bima.budget_item_id')
+                            ->where('bima.item_type', 'AD')
+                            ->where('abi.act_design_id', $ad['act_design_id'])
+                            ->whereIn('bima.mandate_id', $stat['gpb_ids'])
+                            ->get()->getRowArray();
+                        $actualCost = $manualPendingRow ? (float)$manualPendingRow['allocated_amount'] : 0.0;
+                    }
+                    
+                    $stat['utilized_budget'] += $actualCost;
+                } else {
+                    // Sum only manually allocated activity_budget_items for this specific group of mandates
+                    $manualPendingRow = $db->table('budget_item_mandate_allocations bima')
+                        ->selectSum('bima.allocated_amount')
+                        ->join('activity_budget_items abi', 'abi.id = bima.budget_item_id')
+                        ->where('bima.item_type', 'AD')
+                        ->where('abi.act_design_id', $ad['act_design_id'])
+                        ->whereIn('bima.mandate_id', $stat['gpb_ids'])
+                        ->get()->getRowArray();
+                        
+                    $pendingCost = $manualPendingRow ? (float)$manualPendingRow['allocated_amount'] : 0.0;
+                    $stat['pending_budget'] += $pendingCost;
+                }
+            }
+            
+            $stat['remaining_budget'] = $stat['budget'] - $stat['utilized_budget'] - $stat['pending_budget'];
+            // Do not unset gpb_ids; frontend needs it for manual allocations
+        }
+        
+        // Re-index array
+        $finalStats = array_values($mandateStats);
+        
+        return $this->respond([
+            'success' => true,
+            'data' => $finalStats
+        ]);
+    }
+
+    public function getMandateAllocations()
+    {
+        $gpbIds = $this->request->getGet('gpb_ids');
+        if (empty($gpbIds)) return $this->fail('gpb_ids required');
+        $gpbIds = explode(',', $gpbIds);
+
+        $db = \Config\Database::connect();
+
+        $adLinks = $db->table('activity_design_mandates adm')
+            ->select('ad.act_design_id, ad.activity_title as title, ad.control_number, ad.attachment')
+            ->join('activity_design ad', 'ad.act_design_id = adm.act_design_id')
+            ->whereIn('adm.mandate_id', $gpbIds)
+            ->where('ad.status', 'Approved')
+            ->where('ad.deleted_at', null)
+            ->groupBy('ad.act_design_id')
+            ->get()->getResultArray();
+
+        $documents = [];
+
+        foreach($adLinks as $ad) {
+            $ar = $db->table('accomplishment_report')
+                ->where('control_number', $ad['control_number'])
+                ->where('status', 'Verified')
+                ->where('deleted_at', null)
+                ->get()->getRowArray();
+
+            if ($ar) {
+                $items = $db->table('accomplishment_budget_items')
+                    ->where('accomplishment_report_id', $ar['id'])
+                    ->get()->getResultArray();
+                
+                foreach ($items as &$item) {
+                    $allocations = $db->table('budget_item_mandate_allocations')
+                        ->where('item_type', 'AR')
+                        ->where('budget_item_id', $item['id'])
+                        ->get()->getResultArray();
+                    $item['allocations'] = $allocations;
+                    
+                    $allocatedToCurrent = 0;
+                    foreach ($allocations as $al) {
+                        if (in_array($al['mandate_id'], $gpbIds)) {
+                            $allocatedToCurrent += (float)$al['allocated_amount'];
+                        }
+                    }
+                    $item['allocated_to_current'] = $allocatedToCurrent;
+                }
+
+                $documents[] = [
+                    'type' => 'AR',
+                    'id' => $ar['id'],
+                    'title' => 'AR for ' . ($ad['title'] ?? $ad['control_number']),
+                    'control_number' => $ar['control_number'],
+                    'attachment' => $ar['attachment'],
+                    'items' => $items
+                ];
+            } 
+            
+            // Only show the AD if it does NOT have a verified AND archived AR
+            $hasVerifiedAndArchivedAR = ($ar && $ar['is_archived'] == 1);
+            
+            if (!$hasVerifiedAndArchivedAR) {
+                $items = $db->table('activity_budget_items')
+                    ->where('act_design_id', $ad['act_design_id'])
+                    ->get()->getResultArray();
+
+                foreach ($items as &$item) {
+                    $allocations = $db->table('budget_item_mandate_allocations')
+                        ->where('item_type', 'AD')
+                        ->where('budget_item_id', $item['id'])
+                        ->get()->getResultArray();
+                    $item['allocations'] = $allocations;
+                    
+                    $allocatedToCurrent = 0;
+                    foreach ($allocations as $al) {
+                        if (in_array($al['mandate_id'], $gpbIds)) {
+                            $allocatedToCurrent += (float)$al['allocated_amount'];
+                        }
+                    }
+                    $item['allocated_to_current'] = $allocatedToCurrent;
+                }
+
+                $documents[] = [
+                    'type' => 'AD',
+                    'id' => $ad['act_design_id'],
+                    'title' => $ad['title'],
+                    'control_number' => $ad['control_number'],
+                    'attachment' => $ad['attachment'],
+                    'items' => $items
+                ];
+            }
+        }
+
+        return $this->respond([
+            'success' => true,
+            'data' => $documents
+        ]);
+    }
+
+    public function saveMandateAllocations()
+    {
+        $input = $this->request->getJSON(true);
+        $gpbIds = $input['gpb_ids'] ?? [];
+        $allocations = $input['allocations'] ?? [];
+
+        if (empty($gpbIds)) return $this->fail('gpb_ids required');
+
+        $db = \Config\Database::connect();
+        
+        $targetMandateId = $gpbIds[0];
+
+        foreach ($allocations as $alloc) {
+            $itemId = $alloc['budget_item_id'];
+            $itemType = $alloc['item_type'];
+            $amount = (float)$alloc['allocated_amount'];
+
+            $db->table('budget_item_mandate_allocations')
+               ->where('budget_item_id', $itemId)
+               ->where('item_type', $itemType)
+               ->whereIn('mandate_id', $gpbIds)
+               ->delete();
+
+            if ($amount > 0) {
+                $db->table('budget_item_mandate_allocations')->insert([
+                    'budget_item_id' => $itemId,
+                    'item_type' => $itemType,
+                    'mandate_id' => $targetMandateId,
+                    'allocated_amount' => $amount,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+            }
+        }
+
+        return $this->respond(['success' => true]);
+    }
 }

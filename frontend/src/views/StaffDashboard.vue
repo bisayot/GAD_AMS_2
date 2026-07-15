@@ -69,15 +69,25 @@ const staffMenu = ref([
   { label: 'Activity Design List', icon: 'list', href: '/staff/ad-list' },
   { label: 'Accomplishment Report List', icon: 'list', href: '/staff/ar-list' },
   { label: 'Archives', icon: 'archive', href: '/staff/archive' },
-  { label: 'Document Trash Bin', icon: 'delete', href: '/staff/trashbin' },
   { label: 'Plan and Budget', icon: 'gavel', href: '/staff/plan-and-budget' },
   { label: 'Report Monitoring', icon: 'description', href: '/staff/reports' },
   { label: 'Budget Monitoring', icon: 'payments', href: '/staff/budget' },
-  { label: 'Office/Unit Management', icon: 'domain', href: '/staff/office-management' },
-  { label: 'User Management', icon: 'manage_accounts', href: '/staff/user-management' },
-  { label: 'Activity Logs', icon: 'history', href: '/staff/activity-logs' },
-  { label: 'User Manual', icon: 'menu_book', href: '/staff/user-manual' },
-  { label: 'Data Privacy Policy', icon: 'privacy_tip', href: '/staff/data-privacy-policy' }
+  {
+    label: 'System Controls', icon: 'admin_panel_settings',
+    children: [
+      { label: 'Office/Unit Management', icon: 'domain', href: '/staff/office-management' },
+      { label: 'User Management', icon: 'manage_accounts', href: '/staff/user-management' },
+      { label: 'Activity Logs', icon: 'history', href: '/staff/activity-logs' },
+      { label: 'Document Trash Bin', icon: 'delete', href: '/staff/trashbin' }
+    ]
+  },
+  {
+    label: 'Legal and Guides', icon: 'policy',
+    children: [
+      { label: 'User Manual', icon: 'menu_book', href: '/staff/user-manual' },
+      { label: 'Data Privacy Policy', icon: 'privacy_tip', href: '/staff/data-privacy-policy' }
+    ]
+  }
 ]);
 
 const fetchUnreadCount = async () => {

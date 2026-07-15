@@ -1,15 +1,19 @@
 <template>
-  <div class="app-wrapper app">
-    <!-- TOP BAR -->
-    <header class="topbar">
-      <div class="topbar-brand">
-        <span class="topbar-eyebrow">GAD Plan &amp; Budget Editor</span>
-        <h1 class="topbar-title" id="orgTitle">{{ state.org.name || 'Untitled Organization' }}</h1>
-      </div>
-
-      <!-- nav removed -->
-
-      <div class="topbar-actions">
+  <div class="app-wrapper app" style="background: #ffffff;">
+    <div style="margin: 32px 32px 0 32px; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); background: var(--surface); display: flex; flex-direction: column;">
+      <!-- TOP BAR -->
+      <header class="topbar">
+        <div class="topbar-brand">
+          <span class="topbar-eyebrow">GAD Plan &amp; Budget Editor</span>
+          <h1 class="topbar-title" id="orgTitle">{{ state.org.name || 'Untitled Organization' }}</h1>
+        </div>
+  
+        <!-- nav removed -->
+  
+        <div class="topbar-actions">
+          <button class="topbar-btn secondary" @click="scrollToStats" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+            Budget Distribution
+          </button>
         <button id="btnExpandAll" class="topbar-btn outline" @click="expandAll">Expand All</button>
         <button id="btnCollapseAll" class="topbar-btn outline" @click="collapseAll">Collapse All</button>
         <button id="btnExport" class="topbar-btn primary" @click="exportToExcel" :disabled="exporting">
@@ -210,9 +214,166 @@
 
       <footer class="note">Reference: Republic Act No. 9710 (Magna Carta of Women) IRR Section 36(b) sets the GAD budget mandate at a minimum of 5% of an agency's total annual appropriations.</footer>
     </main>
+    </div>
+
+    <!-- MANDATE STATISTICS SECTION -->
+    <div id="mandate-statistics-section" class="card" style="margin: 24px 32px 32px 32px; padding: 24px; border-top: 1px solid var(--border); border-radius: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h2 style="display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 1.25rem; margin: 0; font-weight: 600;">
+          GAD Budget Distribution by Mandate
+        </h2>
+        <div style="display: flex; align-items: center; gap: 8px;">
+           <label style="color: var(--text-muted); font-size: 0.85rem;">Filter by Classification:</label>
+           <select v-model="mandateStatsFilter" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 6px 12px; border-radius: 6px; outline: none; font-size: 0.9rem;">
+             <option value="all">All Classifications</option>
+             <option value="client">Client-Focused</option>
+             <option value="org">Organization-Focused</option>
+             <option value="attributed">Attributed Program</option>
+           </select>
+        </div>
+      </div>
+      <div v-if="loadingStats" style="text-align: center; color: var(--text-muted); padding: 40px;">
+        Loading statistics...
+      </div>
+      <div v-else-if="mandateStats.length === 0" style="text-align: center; color: var(--text-muted); padding: 40px;">
+        <span style="font-size: 2rem; display: block; margin-bottom: 12px;">📭</span>
+        <h3 style="color: var(--text); margin-bottom: 8px;">No Mandate Data Available</h3>
+        <p style="font-size: 0.9rem;">The statistics are generated from your saved GAD Plan.<br>Please click <b>"Save Plan"</b> first to generate statistics.</p>
+      </div>
+      <div v-else>
+         <div v-if="filteredMandateStats.length === 0" style="text-align: center; color: var(--text-muted); padding: 24px;">No mandates found for this classification.</div>
+         <!-- Data Cards Grid -->
+         <div v-else style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px;">
+           <div v-for="(stat, idx) in filteredMandateStats" :key="idx" style="background: rgba(0,0,0,0.25); border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';">
+             
+             <!-- Content Section -->
+             <div style="display: flex; flex-direction: column; gap: 12px; flex: 1;">
+               <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border-left: 3px solid #6366f1;">
+                 <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px;">Gender Issue / Mandate</div>
+                 <div style="font-size: 0.95rem; color: var(--text-primary); font-weight: 500; line-height: 1.4;">{{ stat.mandate || 'N/A' }}</div>
+               </div>
+               
+               <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border-left: 3px solid #8b5cf6;">
+                 <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px;">Cause of Gender Issue</div>
+                 <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">{{ stat.cause || 'N/A' }}</div>
+               </div>
+               
+               <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border-left: 3px solid #ec4899;">
+                 <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px;">GAD Activity</div>
+                 <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">{{ stat.activity || 'N/A' }}</div>
+               </div>
+             </div>
+             
+             <!-- Stats Section -->
+             <div style="background: rgba(0,0,0,0.15); border-radius: 8px; padding: 16px; border: 1px solid rgba(255,255,255,0.03);">
+               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                 <div style="text-align: center; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 6px;">
+                   <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Approved ADs</div>
+                   <div style="font-size: 1.1rem; color: var(--text-primary); font-weight: 700;">{{ stat.approved_ad_count }}</div>
+                 </div>
+                 <div style="text-align: center; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 6px;">
+                   <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Approved ARs</div>
+                   <div style="font-size: 1.1rem; color: var(--text-primary); font-weight: 700;">{{ stat.approved_ar_count }}</div>
+                 </div>
+               </div>
+               
+               <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; color: var(--text-secondary);">
+                 <div style="display: flex; justify-content: space-between; align-items: center;">
+                   <span style="font-weight: 500;">Budget:</span>
+                   <span style="color: var(--text-primary); font-family: monospace; font-size: 0.95rem;">₱{{ Number(stat.budget).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</span>
+                 </div>
+                 <div style="display: flex; justify-content: space-between; align-items: center;">
+                   <span style="font-weight: 500;">Utilized:</span>
+                   <span style="color: #10b981; font-family: monospace; font-size: 0.95rem;">₱{{ Number(stat.utilized_budget).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</span>
+                 </div>
+                 <div style="display: flex; justify-content: space-between; align-items: center;">
+                   <span style="font-weight: 500;">Pending (ADs):</span>
+                   <span style="color: #f59e0b; font-family: monospace; font-size: 0.95rem;">₱{{ Number(stat.pending_budget).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</span>
+                 </div>
+                 <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1); margin-top: 4px;">
+                    <span style="text-transform: uppercase; font-size: 0.75rem;">Remaining:</span>
+                    <span :style="{ color: stat.remaining_budget < 0 ? '#ef4444' : '#3b82f6' }" style="font-family: monospace; font-size: 1.05rem;">₱{{ Number(stat.remaining_budget).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <button @click="openAllocationModal(stat)" v-if="!isReadOnly" style="width: 100%; padding: 10px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #93c5fd; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(59, 130, 246, 0.25)'; this.style.color='#bfdbfe';" onmouseout="this.style.background='rgba(59, 130, 246, 0.15)'; this.style.color='#93c5fd';">
+                Manage Allocations
+              </button>
+            </div>
+          </div>
+       </div>
+    </div>
+
+    <!-- Allocation Modal -->
+    <div v-if="showAllocationModal" class="modal-backdrop" @click.self="closeAllocationModal" style="z-index: 1000; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center;">
+      <div class="card" style="width: 100%; max-width: 800px; max-height: 90vh; overflow-y: auto; background: #1e293b; padding: 24px; border-radius: 12px; border: 1px solid var(--border);">
+        <h2 style="margin-bottom: 8px; color: var(--text-primary);">Budget Allocations</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 0.9rem;">
+          Assign specific Activity Design and Accomplishment Report budgets to this mandate.
+        </p>
+
+        <div v-if="loadingAllocations" style="padding: 20px; text-align: center; color: var(--text-muted);">Loading...</div>
+        <div v-else-if="allocationsData.length === 0" style="padding: 20px; text-align: center; color: var(--text-muted);">
+          No approved Activity Designs or Accomplishment Reports found for this mandate.
+        </div>
+        <div v-else>
+          <div v-for="doc in allocationsData" :key="doc.type + doc.id" style="margin-bottom: 16px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+            <div style="background: rgba(0,0,0,0.2); padding: 12px 16px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" @click="doc._expanded = !doc._expanded">
+              <div style="color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                 <span :style="{ color: doc.type === 'AR' ? '#10b981' : '#f59e0b' }">[{{ doc.type }}]</span>
+                 {{ doc.title || doc.control_number }}
+                 <button v-if="doc.attachment" @click.stop="openDocumentPreview(doc.attachment, doc.type)" style="background: transparent; border: none; color: #3b82f6; cursor: pointer; text-decoration: underline; font-size: 0.85rem; padding: 0 4px;" title="Preview Document">
+                   Click here to preview document
+                 </button>
+              </div>
+              <span style="color: var(--text-muted);">{{ doc._expanded ? '▼' : '▶' }}</span>
+            </div>
+            
+            <div v-if="doc._expanded" style="padding: 16px; background: rgba(255,255,255,0.02);">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--border); text-align: left; color: var(--text-muted);">
+                    <th style="padding: 8px; font-weight: 600;">Item Name</th>
+                    <th style="padding: 8px; font-weight: 600;">Total Cost</th>
+                    <th style="padding: 8px; font-weight: 600;">Allocated Here (₱)</th>
+                    <th style="padding: 8px; font-weight: 600;">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="item in doc.items" :key="item.id" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 12px 8px; color: var(--text-primary);">{{ item.item_name }} <span v-if="item.sub_item" style="color: var(--text-muted); font-size: 0.8rem;">- {{ item.sub_item }}</span></td>
+                    <td style="padding: 12px 8px; color: var(--text-primary);">₱{{ Number(item.amount).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</td>
+                    <td style="padding: 12px 8px;">
+                      <input v-if="item.amount > 0" type="number" step="0.01" min="0" :max="item.amount" v-model.number="item.allocated_to_current" style="width: 120px; padding: 6px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 4px;" @input="markAllocationsDirty">
+                      <span v-else style="color: var(--text-muted); font-size: 0.8rem;">N/A</span>
+                    </td>
+                    <td style="padding: 12px 8px; font-size: 0.8rem;">
+                       <span v-if="item.amount <= 0" style="color: var(--text-muted);" title="This item has no cost to allocate.">No Cost</span>
+                       <span v-else-if="item.allocated_to_current > 0" style="color: #10b981; font-weight: 600;">Assigned</span>
+                       <span v-else-if="getAllocatedElsewhere(item) >= item.amount" style="color: #ef4444; font-weight: 600;" title="This budget item has been fully assigned to other mandates. It cannot be assigned here unless it is removed from the other mandate first.">🔒 Locked</span>
+                       <span v-else style="color: var(--text-muted);">Unassigned</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border); padding-top: 16px;">
+           <button @click="closeAllocationModal" style="padding: 8px 16px; background: transparent; border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; cursor: pointer;">Cancel</button>
+           <button @click="saveAllocations" :disabled="savingAllocations || !allocationsDirty" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; opacity: allocationsDirty ? 1 : 0.5;">
+             {{ savingAllocations ? 'Saving...' : 'Save Allocations' }}
+           </button>
+        </div>
+      </div>
+    </div>
 
     <input :disabled="isReadOnly" type="file" ref="fileImport" accept="application/json" style="display:none" @change="handleFileImport">
     <input :disabled="isReadOnly" type="file" ref="excelImport" accept=".xlsx, .xls, .csv" style="display:none" @change="handleExcelImport">
+
+    <PdfPreviewModal :isOpen="isPdfModalOpen" :fileUrl="pdfFileUrl" @close="closePdfModal" />
   </div>
 </template>
 
@@ -220,10 +381,13 @@
 import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue';
 import Swal from 'sweetalert2';
 import * as XLSX from 'xlsx';
+import Chart from 'chart.js/auto';
 import api from '../../api';
+import PdfPreviewModal from '../../components/PdfPreviewModal.vue';
 
 export default {
   name: 'App',
+  components: { PdfPreviewModal },
   setup() {
     const userRole = JSON.parse(localStorage.getItem('user'))?.user_role?.toLowerCase() || '';
     const isReadOnly = false;
@@ -233,6 +397,184 @@ export default {
     const SECTION_SHORT  = { client: 'CF', org: 'OF', attributed: 'AP' };
     const SOURCE_OPTIONS = ['GAA', 'Other'];
     const EXPORT_URL     = '/gpb/export-live'; // Vite proxy → http://localhost:8080
+
+    const mandateStats = ref([]);
+    const mandateStatsFilter = ref('all');
+    const filteredMandateStats = computed(() => {
+      if (mandateStatsFilter.value === 'all') return mandateStats.value;
+      return mandateStats.value.filter(s => s.classification === mandateStatsFilter.value);
+    });
+    const loadingStats = ref(true);
+    const statsChartCanvas = ref(null);
+    let statsChartInstance = null;
+    
+    const scrollToStats = () => {
+      const el = document.getElementById('mandate-statistics-section');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+    
+    const fetchMandateStats = async () => {
+      loadingStats.value = true;
+      try {
+        const response = await api.get('/plan/mandate-statistics');
+        if (response.data.success) {
+          mandateStats.value = response.data.data;
+        }
+      } catch (err) {
+        console.error('Failed to fetch mandate stats', err);
+      } finally {
+        loadingStats.value = false;
+        nextTick(() => {
+          renderStatsChart();
+        });
+      }
+    };
+    
+    const renderStatsChart = () => {
+      if (statsChartInstance) {
+        statsChartInstance.destroy();
+      }
+      if (!statsChartCanvas.value || mandateStats.value.length === 0) return;
+      
+      const labels = mandateStats.value.map(s => {
+         let title = s.activity || s.mandate || 'Untitled';
+         return title.length > 25 ? title.substring(0, 25) + '...' : title;
+      });
+      const budgetData = mandateStats.value.map(s => s.budget);
+      const utilizedData = mandateStats.value.map(s => s.utilized_budget);
+      const remainingData = mandateStats.value.map(s => s.remaining_budget);
+      
+      const textColor = getComputedStyle(document.body).getPropertyValue('--text-secondary').trim() || 'rgba(255,255,255,0.7)';
+      const gridColor = 'rgba(255,255,255,0.05)';
+      
+      const bgColors = mandateStats.value.map((_, i) => `hsl(${(i * 360) / Math.max(1, mandateStats.value.length)}, 70%, 60%)`);
+      
+      statsChartInstance = new Chart(statsChartCanvas.value, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              data: budgetData,
+              backgroundColor: bgColors,
+              borderWidth: 3,
+              borderColor: 'rgba(0,0,0,0.6)'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                 label: (context) => {
+                   const value = context.raw;
+                   return ' ₱' + Number(value).toLocaleString('en-US', {minimumFractionDigits: 2});
+                 },
+                 title: (context) => {
+                   const item = mandateStats.value[context[0].dataIndex];
+                   return `Activity: ${item.activity}\nMandate: ${item.mandate}\nCause: ${item.cause}`;
+                 }
+              }
+            },
+            legend: {
+              position: 'right',
+              labels: {
+                color: textColor
+              }
+            }
+          }
+        }
+      });
+    };
+
+    const showAllocationModal = ref(false);
+    const loadingAllocations = ref(false);
+    const savingAllocations = ref(false);
+    const allocationsData = ref([]);
+    const currentAllocationStat = ref(null);
+    const allocationsDirty = ref(false);
+
+    const openAllocationModal = async (stat) => {
+      currentAllocationStat.value = stat;
+      showAllocationModal.value = true;
+      loadingAllocations.value = true;
+      allocationsDirty.value = false;
+      allocationsData.value = [];
+      
+      try {
+        const res = await api.get(`/plan/mandate-allocations?gpb_ids=${stat.gpb_ids.join(',')}`);
+        if (res.data.success) {
+           allocationsData.value = res.data.data.map(d => ({ ...d, _expanded: true }));
+        } else {
+           Swal.fire('Error', res.data.message || 'Failed to load allocations.', 'error');
+        }
+      } catch (err) {
+        Swal.fire('Error', 'Network error while loading allocations.', 'error');
+      } finally {
+        loadingAllocations.value = false;
+      }
+    };
+
+    const closeAllocationModal = () => {
+       showAllocationModal.value = false;
+       currentAllocationStat.value = null;
+    };
+
+    const markAllocationsDirty = () => { allocationsDirty.value = true; };
+
+    const getAllocatedElsewhere = (item) => {
+       if (!item.allocations || !currentAllocationStat.value) return 0;
+       return item.allocations.reduce((sum, al) => {
+          if (!currentAllocationStat.value.gpb_ids.includes(parseInt(al.mandate_id))) {
+              return sum + parseFloat(al.allocated_amount);
+          }
+          return sum;
+       }, 0);
+    };
+
+    const saveAllocations = async () => {
+       savingAllocations.value = true;
+       
+       const flatAllocs = [];
+       for (const doc of allocationsData.value) {
+           for (const item of doc.items) {
+               let val = parseFloat(item.allocated_to_current) || 0;
+               const elsewhere = getAllocatedElsewhere(item);
+               const maxAllowed = parseFloat(item.amount) - elsewhere;
+               if (val > maxAllowed) val = maxAllowed;
+               if (val < 0) val = 0;
+
+               flatAllocs.push({
+                   budget_item_id: item.id,
+                   item_type: doc.type,
+                   allocated_amount: val
+               });
+           }
+       }
+
+       try {
+          const res = await api.post('/plan/mandate-allocations', {
+             gpb_ids: currentAllocationStat.value.gpb_ids,
+             allocations: flatAllocs
+          });
+          if (res.data.success) {
+             allocationsDirty.value = false;
+             closeAllocationModal();
+             await fetchMandateStats();
+             Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Allocations saved successfully', showConfirmButton: false, timer: 3000 });
+          } else {
+             Swal.fire('Error', res.data.message || 'Failed to save allocations.', 'error');
+          }
+       } catch (err) {
+          Swal.fire('Error', 'Network error while saving allocations.', 'error');
+       } finally {
+          savingAllocations.value = false;
+       }
+    };
 
     // ─── Seed ───────────────────────────────────────────────────────────────
     function seedState() {
@@ -855,6 +1197,7 @@ export default {
     }
 
     onMounted(async () => {
+      fetchMandateStats();
       loadFromAPI();
       try {
         const res = await api.get('/budget/summary');
@@ -865,8 +1208,29 @@ export default {
         console.error('Error fetching budget summary:', e);
       }
     });
+    const isPdfModalOpen = ref(false);
+    const pdfFileUrl = ref('');
+
+    const openDocumentPreview = (attachment, type) => {
+      if (attachment) {
+        let fileName = attachment;
+        if (typeof attachment === 'string' && attachment.startsWith('[')) {
+           try {
+               const parsed = JSON.parse(attachment);
+               if (parsed.length > 0) fileName = parsed[0];
+           } catch(e) {}
+        }
+        pdfFileUrl.value = `http://localhost:8080/api/files/archived/${fileName}`;
+        isPdfModalOpen.value = true;
+      }
+    };
+    const closePdfModal = () => {
+      isPdfModalOpen.value = false;
+      pdfFileUrl.value = '';
+    };
 
     return {
+      mandateStats, mandateStatsFilter, filteredMandateStats, loadingStats, statsChartCanvas, scrollToStats,
       isReadOnly,
 
       SECTION_ORDER, SECTION_LABELS, SECTION_SHORT, SOURCE_OPTIONS,
@@ -879,6 +1243,10 @@ export default {
       addItemInline, markDirty, saveItem, savePlan,
       deleteItem, addBudgetLine, removeBudgetLine,
       handleFileImport, promptExcelImport, handleExcelImport, exportToExcel, resetToSeed,
+      showAllocationModal, loadingAllocations, savingAllocations, allocationsData,
+      allocationsDirty, openAllocationModal, closeAllocationModal, markAllocationsDirty,
+      getAllocatedElsewhere, saveAllocations,
+      isPdfModalOpen, pdfFileUrl, openDocumentPreview, closePdfModal
     };
   }
 };
@@ -1340,13 +1708,13 @@ select option { background: var(--surface-2); color: var(--text); }
 }
 .card-head-text { flex: 1; min-width: 0; }
 .card-title {
-  font-size: 14.5px; font-weight: 600; margin: 0;
+  font-size: 16px; font-weight: 600; margin: 0;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   color: var(--text);
 }
-.card-sub { font-size: 12.5px; color: var(--text-muted); margin: 2px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card-amount { font-family: 'IBM Plex Mono', monospace; color: var(--primary-bright); font-size: 14px; white-space: nowrap; font-weight: 700; }
-.unsaved-dot { color: var(--warn); font-size: 10px; line-height: 1; flex-shrink: 0; }
+.card-sub { font-size: 14px; color: var(--text-muted); margin: 2px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-amount { font-family: 'IBM Plex Mono', monospace; color: var(--primary-bright); font-size: 15.5px; white-space: nowrap; font-weight: 700; }
+.unsaved-dot { color: var(--warn); font-size: 12px; line-height: 1; flex-shrink: 0; }
 .chevron { background: none; border: none; font-size: 17px; color: var(--text-dim); transition: transform 0.2s ease; padding: 0 4px; }
 .card.expanded .chevron { transform: rotate(180deg); }
 
@@ -1355,16 +1723,16 @@ select option { background: var(--surface-2); color: var(--text); }
 
 /* Fields inside card body */
 .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
-.field-grid label { grid-column: span 1; font-size: 11.5px; font-weight: 700; color: var(--text-muted); display: block; text-transform: uppercase; letter-spacing: 0.06em; }
+.field-grid label { grid-column: span 1; font-size: 13px; font-weight: 700; color: var(--text-muted); display: block; text-transform: uppercase; letter-spacing: 0.06em; }
 .field-grid label.full { grid-column: 1 / -1; }
 .field-grid textarea, .field-grid input {
   width: 100%; margin-top: 5px;
-  padding: 9px 12px;
+  padding: 10px 12px;
   background: var(--surface-3);
   border: 1px solid var(--border);
   border-radius: 8px;
   resize: vertical;
-  font-size: 13.5px;
+  font-size: 15px;
   color: var(--text);
 }
 .field-grid textarea::placeholder, .field-grid input::placeholder { color: var(--text-dim); }
@@ -1381,7 +1749,7 @@ select option { background: var(--surface-2); color: var(--text); }
   display: grid;
   grid-template-columns: 1fr 150px 130px 34px;
   gap: 8px;
-  font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em;
+  font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
   color: var(--text-dim); font-weight: 700;
   padding: 0 2px 8px;
   border-bottom: 1px solid var(--border);
@@ -1393,11 +1761,11 @@ select option { background: var(--surface-2); color: var(--text); }
   gap: 8px; margin-bottom: 8px; align-items: center;
 }
 .budget-line input, .budget-line select {
-  padding: 8px 10px;
+  padding: 9px 10px;
   background: var(--surface-3);
   border: 1px solid var(--border);
   border-radius: 7px;
-  width: 100%; font-size: 13px;
+  width: 100%; font-size: 14.5px;
   color: var(--text);
 }
 .remove-line { background: none; border: none; color: var(--error); font-size: 19px; line-height: 1; opacity: 0.7; transition: opacity 0.15s; }

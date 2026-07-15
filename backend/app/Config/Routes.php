@@ -320,6 +320,13 @@ $routes->group('api', function($routes) {
     $routes->get('plan', 'PlanController::getPlan');
     $routes->post('plan', 'PlanController::savePlan');
     
+    $routes->options('plan/mandate-statistics', 'AuthController::handleOptions');
+    $routes->get('plan/mandate-statistics', 'PlanController::getMandateStatistics');
+
+    $routes->options('plan/mandate-allocations', 'AuthController::handleOptions');
+    $routes->get('plan/mandate-allocations', 'PlanController::getMandateAllocations');
+    $routes->post('plan/mandate-allocations', 'PlanController::saveMandateAllocations');
+    
     $routes->options('gpb/export/(:num)', 'AuthController::handleOptions');
     $routes->get('gpb/export/(:num)', 'GpbExportController::export/$1');
     

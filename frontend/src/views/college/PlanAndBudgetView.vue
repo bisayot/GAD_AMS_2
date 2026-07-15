@@ -1,20 +1,24 @@
 <template>
-  <div class="app-wrapper app">
-    <!-- TOP BAR -->
-    <header class="topbar">
-      <div class="topbar-brand">
-        <span class="topbar-eyebrow">GAD Plan &amp; Budget Editor</span>
-        <h1 class="topbar-title" id="orgTitle">{{ state.org.name || 'Untitled Organization' }}</h1>
-      </div>
-
-      <!-- nav removed -->
-
-      <div class="topbar-actions">
-        <button id="btnExpandAll" class="topbar-btn outline" @click="expandAll">Expand All</button>
-        <button id="btnCollapseAll" class="topbar-btn outline" @click="collapseAll">Collapse All</button>
-        <button id="btnExport" class="topbar-btn primary" @click="exportToExcel" :disabled="exporting">
-          <span>📥</span> {{ exporting ? 'Exporting…' : 'Export to Excel' }}
-        </button>
+  <div class="app-wrapper app" style="background: #ffffff;">
+    <div style="margin: 32px 32px 0 32px; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); background: var(--surface); display: flex; flex-direction: column;">
+      <!-- TOP BAR -->
+      <header class="topbar">
+        <div class="topbar-brand">
+          <span class="topbar-eyebrow">GAD Plan &amp; Budget Editor</span>
+          <h1 class="topbar-title" id="orgTitle">{{ state.org.name || 'Untitled Organization' }}</h1>
+        </div>
+  
+        <!-- nav removed -->
+  
+        <div class="topbar-actions">
+          <button class="topbar-btn secondary" @click="scrollToStats" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+            Budget Distribution
+          </button>
+          <button id="btnExpandAll" class="topbar-btn outline" @click="expandAll">Expand All</button>
+          <button id="btnCollapseAll" class="topbar-btn outline" @click="collapseAll">Collapse All</button>
+          <button id="btnExport" class="topbar-btn primary" @click="exportToExcel" :disabled="exporting">
+            <span>📥</span> {{ exporting ? 'Exporting…' : 'Export to Excel' }}
+          </button>
         <button id="btnReset" v-if="!isReadOnly" class="topbar-btn danger" @click="resetToSeed">Reset</button>
       </div>
     </header>
@@ -177,8 +181,9 @@
                     <div v-for="l in item.budgetLines" :key="l.id" class="budget-line">
                       <input :disabled="isReadOnly" type="text" v-model="l.label" placeholder="e.g. Supplies and Materials" @input="markDirty(item)">
                       <input :disabled="isReadOnly" type="number" step="0.01" min="0" v-model.number="l.amount" @input="markDirty(item)">
-                      <select :disabled="isReadOnly" v-model="l.source" @change="markDirty(item)">
-                        <option v-for="s in SOURCE_OPTIONS" :key="s" :value="s">{{ s }}</option>
+                      <select v-model="l.source" :disabled="isReadOnly" @change="markDirty(item)">
+                         <option v-if="!SOURCE_OPTIONS.includes(l.source) && l.source" :value="l.source">{{ l.source }}</option>
+                         <option v-for="s in SOURCE_OPTIONS" :key="s" :value="s">{{ s }}</option>
                       </select>
                       <button class="remove-line" v-if="!isReadOnly" aria-label="Remove line" @click="removeBudgetLine(item, l.id)">×</button>
                     </div>
@@ -206,18 +211,179 @@
 
       <footer class="note">Reference: Republic Act No. 9710 (Magna Carta of Women) IRR Section 36(b) sets the GAD budget mandate at a minimum of 5% of an agency's total annual appropriations.</footer>
     </main>
+    </div>
+
+    <!-- MANDATE STATISTICS SECTION -->
+    <div id="mandate-statistics-section" class="card" style="margin: 24px 32px 32px 32px; padding: 24px; border-top: 1px solid var(--border); border-radius: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h2 style="display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 1.25rem; margin: 0; font-weight: 600;">
+          GAD Budget Distribution by Mandate
+        </h2>
+        <div style="display: flex; align-items: center; gap: 8px;">
+           <label style="color: var(--text-muted); font-size: 0.85rem;">Filter by Classification:</label>
+           <select v-model="mandateStatsFilter" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 6px 12px; border-radius: 6px; outline: none; font-size: 0.9rem;">
+             <option value="all">All Classifications</option>
+             <option value="client">Client-Focused</option>
+             <option value="org">Organization-Focused</option>
+             <option value="attributed">Attributed Program</option>
+           </select>
+        </div>
+      </div>
+      <div v-if="loadingStats" style="text-align: center; color: var(--text-muted); padding: 40px;">
+        Loading statistics...
+      </div>
+      <div v-else-if="mandateStats.length === 0" style="text-align: center; color: var(--text-muted); padding: 40px;">
+        <span style="font-size: 2rem; display: block; margin-bottom: 12px;">📭</span>
+        <h3 style="color: var(--text); margin-bottom: 8px;">No Mandate Data Available</h3>
+        <p style="font-size: 0.9rem;">The statistics are generated from your saved GAD Plan.<br>Please click <b>"Save Plan"</b> first to generate statistics.</p>
+      </div>
+      <div v-else>
+         <div v-if="filteredMandateStats.length === 0" style="text-align: center; color: var(--text-muted); padding: 24px;">No mandates found for this classification.</div>
+         <!-- Data Cards Grid -->
+         <div v-else style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px;">
+           <div v-for="(stat, idx) in filteredMandateStats" :key="idx" style="background: rgba(0,0,0,0.25); border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';">
+             
+             <!-- Content Section -->
+             <div style="display: flex; flex-direction: column; gap: 12px; flex: 1;">
+               <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border-left: 3px solid #6366f1;">
+                 <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px;">Gender Issue / Mandate</div>
+                 <div style="font-size: 0.95rem; color: var(--text-primary); font-weight: 500; line-height: 1.4;">{{ stat.mandate || 'N/A' }}</div>
+               </div>
+               
+               <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border-left: 3px solid #8b5cf6;">
+                 <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px;">Cause of Gender Issue</div>
+                 <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">{{ stat.cause || 'N/A' }}</div>
+               </div>
+               
+               <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border-left: 3px solid #ec4899;">
+                 <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px;">GAD Activity</div>
+                 <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">{{ stat.activity || 'N/A' }}</div>
+               </div>
+             </div>
+             
+             <!-- Stats Section -->
+             <div style="background: rgba(0,0,0,0.15); border-radius: 8px; padding: 16px; border: 1px solid rgba(255,255,255,0.03);">
+               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                 <div style="text-align: center; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 6px;">
+                   <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Approved ADs</div>
+                   <div style="font-size: 1.1rem; color: var(--text-primary); font-weight: 700;">{{ stat.approved_ad_count }}</div>
+                 </div>
+                 <div style="text-align: center; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 6px;">
+                   <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Approved ARs</div>
+                   <div style="font-size: 1.1rem; color: var(--text-primary); font-weight: 700;">{{ stat.approved_ar_count }}</div>
+                 </div>
+               </div>
+               
+               <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; color: var(--text-secondary);">
+                 <div style="display: flex; justify-content: space-between; align-items: center;">
+                   <span style="font-weight: 500;">Budget:</span>
+                   <span style="color: var(--text-primary); font-family: monospace; font-size: 0.95rem;">₱{{ Number(stat.budget).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</span>
+                 </div>
+                 <div style="display: flex; justify-content: space-between; align-items: center;">
+                   <span style="font-weight: 500;">Utilized:</span>
+                   <span style="color: #10b981; font-family: monospace; font-size: 0.95rem;">₱{{ Number(stat.utilized_budget).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</span>
+                 </div>
+                 <div style="display: flex; justify-content: space-between; align-items: center;">
+                   <span style="font-weight: 500;">Pending (ADs):</span>
+                   <span style="color: #f59e0b; font-family: monospace; font-size: 0.95rem;">₱{{ Number(stat.pending_budget).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</span>
+                 </div>
+                 <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1); margin-top: 4px;">
+                    <span style="text-transform: uppercase; font-size: 0.75rem;">Remaining:</span>
+                    <span :style="{ color: stat.remaining_budget < 0 ? '#ef4444' : '#3b82f6' }" style="font-family: monospace; font-size: 1.05rem;">₱{{ Number(stat.remaining_budget).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <button @click="openAllocationModal(stat)" v-if="!isReadOnly" style="width: 100%; padding: 10px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #93c5fd; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(59, 130, 246, 0.25)'; this.style.color='#bfdbfe';" onmouseout="this.style.background='rgba(59, 130, 246, 0.15)'; this.style.color='#93c5fd';">
+                Manage Allocations
+              </button>
+            </div>
+          </div>
+       </div>
+    </div>
+
+    <!-- Allocation Modal -->
+    <div v-if="showAllocationModal" class="modal-backdrop" @click.self="closeAllocationModal" style="z-index: 1000; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center;">
+      <div class="card" style="width: 100%; max-width: 800px; max-height: 90vh; overflow-y: auto; background: #1e293b; padding: 24px; border-radius: 12px; border: 1px solid var(--border);">
+        <h2 style="margin-bottom: 8px; color: var(--text-primary);">Budget Allocations</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 0.9rem;">
+          Assign specific Activity Design and Accomplishment Report budgets to this mandate.
+        </p>
+
+        <div v-if="loadingAllocations" style="padding: 20px; text-align: center; color: var(--text-muted);">Loading...</div>
+        <div v-else-if="allocationsData.length === 0" style="padding: 20px; text-align: center; color: var(--text-muted);">
+          No approved Activity Designs or Accomplishment Reports found for this mandate.
+        </div>
+        <div v-else>
+          <div v-for="doc in allocationsData" :key="doc.type + doc.id" style="margin-bottom: 16px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+            <div style="background: rgba(0,0,0,0.2); padding: 12px 16px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" @click="doc._expanded = !doc._expanded">
+              <div style="color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                 <span :style="{ color: doc.type === 'AR' ? '#10b981' : '#f59e0b' }">[{{ doc.type }}]</span>
+                 {{ doc.title || doc.control_number }}
+                 <button v-if="doc.attachment" @click.stop="openDocumentPreview(doc.attachment, doc.type)" style="background: transparent; border: none; color: #3b82f6; cursor: pointer; text-decoration: underline; font-size: 0.85rem; padding: 0 4px;" title="Preview Document">
+                   Click here to preview document
+                 </button>
+              </div>
+              <span style="color: var(--text-muted);">{{ doc._expanded ? '▼' : '▶' }}</span>
+            </div>
+            
+            <div v-if="doc._expanded" style="padding: 16px; background: rgba(255,255,255,0.02);">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--border); text-align: left; color: var(--text-muted);">
+                    <th style="padding: 8px; font-weight: 600;">Item Name</th>
+                    <th style="padding: 8px; font-weight: 600;">Total Cost</th>
+                    <th style="padding: 8px; font-weight: 600;">Allocated Here (₱)</th>
+                    <th style="padding: 8px; font-weight: 600;">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="item in doc.items" :key="item.id" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 12px 8px; color: var(--text-primary);">{{ item.item_name }} <span v-if="item.sub_item" style="color: var(--text-muted); font-size: 0.8rem;">- {{ item.sub_item }}</span></td>
+                    <td style="padding: 12px 8px; color: var(--text-primary);">₱{{ Number(item.amount).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</td>
+                    <td style="padding: 12px 8px;">
+                      <input v-if="item.amount > 0" type="number" step="0.01" min="0" :max="item.amount" v-model.number="item.allocated_to_current" style="width: 120px; padding: 6px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 4px;" @input="markAllocationsDirty">
+                      <span v-else style="color: var(--text-muted); font-size: 0.8rem;">N/A</span>
+                    </td>
+                    <td style="padding: 12px 8px; font-size: 0.8rem;">
+                       <span v-if="item.amount <= 0" style="color: var(--text-muted);" title="This item has no cost to allocate.">No Cost</span>
+                       <span v-else-if="item.allocated_to_current > 0" style="color: #10b981; font-weight: 600;">Assigned</span>
+                       <span v-else-if="getAllocatedElsewhere(item) >= item.amount" style="color: #ef4444; font-weight: 600;" title="This budget item has been fully assigned to other mandates. It cannot be assigned here unless it is removed from the other mandate first.">🔒 Locked</span>
+                       <span v-else style="color: var(--text-muted);">Unassigned</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border); padding-top: 16px;">
+           <button @click="closeAllocationModal" style="padding: 8px 16px; background: transparent; border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; cursor: pointer;">Cancel</button>
+           <button @click="saveAllocations" :disabled="savingAllocations || !allocationsDirty" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; opacity: allocationsDirty ? 1 : 0.5;">
+             {{ savingAllocations ? 'Saving...' : 'Save Allocations' }}
+           </button>
+        </div>
+      </div>
+    </div>
 
     <input :disabled="isReadOnly" type="file" ref="fileImport" accept="application/json" style="display:none" @change="handleFileImport">
+
+    <PdfPreviewModal :isOpen="isPdfModalOpen" :fileUrl="pdfFileUrl" @close="closePdfModal" />
   </div>
 </template>
 
 <script>
 import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue';
 import Swal from 'sweetalert2';
+import * as XLSX from 'xlsx';
+import Chart from 'chart.js/auto';
 import api from '../../api';
+import PdfPreviewModal from '../../components/PdfPreviewModal.vue';
 
 export default {
   name: 'App',
+  components: { PdfPreviewModal },
   setup() {
     const userRole = JSON.parse(localStorage.getItem('user'))?.user_role?.toLowerCase() || '';
     const isReadOnly = true;
@@ -227,6 +393,184 @@ export default {
     const SECTION_SHORT  = { client: 'CF', org: 'OF', attributed: 'AP' };
     const SOURCE_OPTIONS = ['GAA', 'Other'];
     const EXPORT_URL     = '/gpb/export-live'; // Vite proxy → http://localhost:8080
+
+    const mandateStats = ref([]);
+    const mandateStatsFilter = ref('all');
+    const filteredMandateStats = computed(() => {
+      if (mandateStatsFilter.value === 'all') return mandateStats.value;
+      return mandateStats.value.filter(s => s.classification === mandateStatsFilter.value);
+    });
+    const loadingStats = ref(true);
+    const statsChartCanvas = ref(null);
+    let statsChartInstance = null;
+    
+    const scrollToStats = () => {
+      const el = document.getElementById('mandate-statistics-section');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+    
+    const fetchMandateStats = async () => {
+      loadingStats.value = true;
+      try {
+        const response = await api.get('/plan/mandate-statistics');
+        if (response.data.success) {
+          mandateStats.value = response.data.data;
+        }
+      } catch (err) {
+        console.error('Failed to fetch mandate stats', err);
+      } finally {
+        loadingStats.value = false;
+        nextTick(() => {
+          renderStatsChart();
+        });
+      }
+    };
+    
+    const renderStatsChart = () => {
+      if (statsChartInstance) {
+        statsChartInstance.destroy();
+      }
+      if (!statsChartCanvas.value || mandateStats.value.length === 0) return;
+      
+      const labels = mandateStats.value.map(s => {
+         let title = s.activity || s.mandate || 'Untitled';
+         return title.length > 25 ? title.substring(0, 25) + '...' : title;
+      });
+      const budgetData = mandateStats.value.map(s => s.budget);
+      const utilizedData = mandateStats.value.map(s => s.utilized_budget);
+      const remainingData = mandateStats.value.map(s => s.remaining_budget);
+      
+      const textColor = getComputedStyle(document.body).getPropertyValue('--text-secondary').trim() || 'rgba(255,255,255,0.7)';
+      const gridColor = 'rgba(255,255,255,0.05)';
+      
+      const bgColors = mandateStats.value.map((_, i) => `hsl(${(i * 360) / Math.max(1, mandateStats.value.length)}, 70%, 60%)`);
+      
+      statsChartInstance = new Chart(statsChartCanvas.value, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              data: budgetData,
+              backgroundColor: bgColors,
+              borderWidth: 3,
+              borderColor: 'rgba(0,0,0,0.6)'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                 label: (context) => {
+                   const value = context.raw;
+                   return ' ₱' + Number(value).toLocaleString('en-US', {minimumFractionDigits: 2});
+                 },
+                 title: (context) => {
+                   const item = mandateStats.value[context[0].dataIndex];
+                   return `Activity: ${item.activity}\nMandate: ${item.mandate}\nCause: ${item.cause}`;
+                 }
+              }
+            },
+            legend: {
+              position: 'right',
+              labels: {
+                color: textColor
+              }
+            }
+          }
+        }
+      });
+    };
+
+    const showAllocationModal = ref(false);
+    const loadingAllocations = ref(false);
+    const savingAllocations = ref(false);
+    const allocationsData = ref([]);
+    const currentAllocationStat = ref(null);
+    const allocationsDirty = ref(false);
+
+    const openAllocationModal = async (stat) => {
+      currentAllocationStat.value = stat;
+      showAllocationModal.value = true;
+      loadingAllocations.value = true;
+      allocationsDirty.value = false;
+      allocationsData.value = [];
+      
+      try {
+        const res = await api.get(`/plan/mandate-allocations?gpb_ids=${stat.gpb_ids.join(',')}`);
+        if (res.data.success) {
+           allocationsData.value = res.data.data.map(d => ({ ...d, _expanded: true }));
+        } else {
+           Swal.fire('Error', res.data.message || 'Failed to load allocations.', 'error');
+        }
+      } catch (err) {
+        Swal.fire('Error', 'Network error while loading allocations.', 'error');
+      } finally {
+        loadingAllocations.value = false;
+      }
+    };
+
+    const closeAllocationModal = () => {
+       showAllocationModal.value = false;
+       currentAllocationStat.value = null;
+    };
+
+    const markAllocationsDirty = () => { allocationsDirty.value = true; };
+
+    const getAllocatedElsewhere = (item) => {
+       if (!item.allocations || !currentAllocationStat.value) return 0;
+       return item.allocations.reduce((sum, al) => {
+          if (!currentAllocationStat.value.gpb_ids.includes(parseInt(al.mandate_id))) {
+              return sum + parseFloat(al.allocated_amount);
+          }
+          return sum;
+       }, 0);
+    };
+
+    const saveAllocations = async () => {
+       savingAllocations.value = true;
+       
+       const flatAllocs = [];
+       for (const doc of allocationsData.value) {
+           for (const item of doc.items) {
+               let val = parseFloat(item.allocated_to_current) || 0;
+               const elsewhere = getAllocatedElsewhere(item);
+               const maxAllowed = parseFloat(item.amount) - elsewhere;
+               if (val > maxAllowed) val = maxAllowed;
+               if (val < 0) val = 0;
+
+               flatAllocs.push({
+                   budget_item_id: item.id,
+                   item_type: doc.type,
+                   allocated_amount: val
+               });
+           }
+       }
+
+       try {
+          const res = await api.post('/plan/mandate-allocations', {
+             gpb_ids: currentAllocationStat.value.gpb_ids,
+             allocations: flatAllocs
+          });
+          if (res.data.success) {
+             allocationsDirty.value = false;
+             closeAllocationModal();
+             await fetchMandateStats();
+             Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Allocations saved successfully', showConfirmButton: false, timer: 3000 });
+          } else {
+             Swal.fire('Error', res.data.message || 'Failed to save allocations.', 'error');
+          }
+       } catch (err) {
+          Swal.fire('Error', 'Network error while saving allocations.', 'error');
+       } finally {
+          savingAllocations.value = false;
+       }
+    };
 
     // ─── Seed ───────────────────────────────────────────────────────────────
     function seedState() {
@@ -309,6 +653,7 @@ export default {
     const exporting     = ref(false);
     const topPanel      = ref(null);
     const fileImport    = ref(null);
+    const excelImport   = ref(null);
 
     // Save chip
     const saveChipClass = computed(() => {
@@ -343,8 +688,6 @@ export default {
       const markPct   = Math.min(100, (5 / scaleMax) * 100);
       const diff      = pct - 5;
       return {
-      isReadOnly,
-
         total, other, primary, pct, bySection, fillPct, markPct,
         complianceClass: pct >= 5 ? 'good' : 'alert',
         complianceNote:  pct >= 5
@@ -383,7 +726,6 @@ export default {
     function collapseAll(){ expandedCards.value = []; }
 
     // ─── Add item inline (like gad-plan-editor.html) ─────────────────────────
-    // Creates a blank card directly in the list, auto-expanded, ready to fill.
     function addItemInline(section) {
       const newId = uid(section.charAt(0));
       const item = {
@@ -392,34 +734,30 @@ export default {
         mandate: '', cause: '', result: '', mfo: '',
         activity: '', indicators: '', responsible: '',
         budgetLines: [{ id: uid('l'), label: '', amount: 0, source: 'GAA' }],
-        _isNew: true,   // flag: not yet saved to DB
+        _isNew: true,
         _dirty: true,
         _saving: false,
         _saved: false,
       };
       state.value.items.push(item);
       expandedCards.value.push(newId);
-      // Scroll to the new card and focus the first input field
       nextTick(() => {
         const el = document.querySelector(`[data-id="${newId}"]`);
         if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
           const firstInput = el.querySelector('textarea, input');
           if (firstInput) {
-            // Slight delay to allow smooth scroll before focusing
             setTimeout(() => firstInput.focus(), 300);
           }
         }
       });
     }
 
-    // ─── Mark item as having unsaved edits ────────────────────────────────────
     function markDirty(item) {
       item._dirty = true;
       item._saved = false;
     }
 
-    // ─── Save a single item to the DB ─────────────────────────────────────────
     async function saveItem(item) {
       const { isConfirmed } = await Swal.fire({title: 'Save Item?', text: 'Are you sure you want to save this item?', icon: 'question', showCancelButton: true, confirmButtonText: 'Yes, Save'});
       if (!isConfirmed) return;
@@ -449,7 +787,6 @@ export default {
 
       try {
         let res;
-        // If it has a numeric DB id, update; else create
         const numericId = item._dbId || (String(item.id).match(/^\d+$/) ? item.id : null);
         if (numericId) {
           res = await api.put(`/gpb/item/${numericId}`, { ...dbPayload, id: numericId });
@@ -513,9 +850,249 @@ export default {
       e.target.value = '';
     }
 
+    // ─── Excel Import ─────────────────────────────────────────────────────────
+    async function promptExcelImport() {
+      const { isConfirmed } = await Swal.fire({
+         title: 'Import Excel',
+         html: `
+           <p style="font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 20px;">You are about to import a GAD Plan & Budget Excel file.</p>
+           <div style="background: rgba(245, 158, 11, 0.1); border: 2px solid rgba(245, 158, 11, 0.4); border-left: 6px solid #f59e0b; padding: 20px; border-radius: 8px; font-size: 15.5px; text-align: left; line-height: 1.6; margin-top: 18px; color: var(--text);">
+             <b style="color: #d97706; display: block; font-size: 18px; margin-bottom: 12px;">⚠️ Important Notice</b>
+             <ul style="margin: 0; padding-left: 22px; margin-bottom: 0px;">
+                <li style="margin-bottom: 8px;">Only the standard 9 columns (Mandate, Cause, Objective, MFO/PAP, Activity, Indicators, Budget, Source, Office) are imported.</li>
+                <li>For best results, it is highly recommended to convert your PDF to an Excel file as a <b>single table</b> rather than multiple disconnected tables. You may use <a href="https://www.adobe.com/ph_en/acrobat/online/pdf-to-excel.html" target="_blank" style="color: #2563eb; text-decoration: underline;">Adobe Acrobat Online</a> or any other PDF to Excel converter of your choice.</li>
+             </ul>
+           </div>
+         `,
+         width: 600,
+         icon: 'info',
+         showCancelButton: true,
+         confirmButtonText: 'Select File',
+         cancelButtonText: 'Cancel'
+      });
+      
+      if (isConfirmed) {
+         excelImport.value.click();
+      }
+    }
+
+    function handleExcelImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const json = XLSX.utils.sheet_to_json(worksheet, { header: "A", defval: '' });
+
+          if (!json || json.length === 0) throw new Error('Empty Excel file');
+
+          const importedItems = [];
+          
+          let currentSection = 'client';
+          
+          for (let i = 0; i < json.length; i++) {
+             const row = json[i];
+             
+             const textA = (row['A'] || '').toString().toLowerCase();
+             const textB = (row['B'] || '').toString().toLowerCase();
+             const fullText = textA + " " + textB;
+             
+             if (fullText.includes('client-focused') || fullText.includes('client focused')) {
+                 currentSection = 'client';
+                 continue;
+             } else if (fullText.includes('organization-focused') || fullText.includes('organization focused')) {
+                 currentSection = 'org';
+                 continue;
+             } else if (fullText.includes('attributed program') || fullText.includes('attributed')) {
+                 currentSection = 'attributed';
+                 continue;
+             }
+
+             const mandate = (row['B'] || '').toString().trim();
+             const cause = (row['C'] || '').toString().trim();
+             const objective = (row['E'] || '').toString().trim();
+             const ppa = (row['H'] || '').toString().trim();
+             const activity = (row['J'] || '').toString().trim();
+             const targets = (row['K'] || '').toString().trim();
+             const rawBudget = (row['L'] || '').toString().trim();
+             const rawSource = (row['N'] || '').toString().trim();
+             const office = (row['O'] || '').toString().trim();
+
+             if (!mandate && !activity && !ppa) continue;
+
+             const isHeaderRow = 
+                 mandate.replace(/\s+/g, '').toLowerCase() === 'genderissue/gadmandate' ||
+                 activity.replace(/\s+/g, '').toLowerCase() === 'gadactivity' ||
+                 cause.replace(/\s+/g, '').toLowerCase() === 'causeofgenderissue' ||
+                 (mandate === '1' && activity === '5');
+                 
+             const isTotalRow = 
+                 mandate.toLowerCase().includes('sub-total') || 
+                 mandate.toLowerCase().includes('grand total') ||
+                 cause.toLowerCase().includes('sub-total') || 
+                 cause.toLowerCase().includes('grand total');
+
+             if (isHeaderRow || isTotalRow) {
+                 continue;
+             }
+
+             const budgetLines = [];
+             const bPartsRaw = rawBudget.split('\n');
+             const sParts = rawSource.split('\n');
+             
+             let bParts = [];
+             let currentPart = '';
+             for (let i = 0; i < bPartsRaw.length; i++) {
+                 let bStr = bPartsRaw[i].trim();
+                 if (!bStr) continue;
+                 if (currentPart) currentPart += ' ' + bStr;
+                 else currentPart = bStr;
+                 
+                 // If the concatenated string ends with a valid amount, save it and reset
+                 if (/^[0-9.,]+$/.test(currentPart) || currentPart.match(/^(.*?)\s+([0-9]{1,3}(,[0-9]{3})+(\.[0-9]{1,2})?|[0-9]+\.[0-9]{1,2})$/)) {
+                     bParts.push(currentPart);
+                     currentPart = '';
+                 } else if (i === bPartsRaw.length - 1) {
+                     bParts.push(currentPart);
+                 }
+             }
+
+             for (let j = 0; j < bParts.length; j++) {
+                 const bStr = bParts[j].trim();
+                 if (!bStr) continue;
+
+                 let label = 'Imported Budget Line';
+                 let amountStr = '';
+                 
+                 // If the string is strictly a number (with commas/decimals), it's the amount
+                 if (/^[0-9.,]+$/.test(bStr)) {
+                     amountStr = bStr;
+                 } else {
+                     // Look for a strict currency amount at the end of the string (must have comma or decimal)
+                     const match = bStr.match(/^(.*?)\s+([0-9]{1,3}(,[0-9]{3})+(\.[0-9]{1,2})?|[0-9]+\.[0-9]{1,2})$/);
+                     if (match) {
+                         label = match[1].replace(/\s*-\s*$/, '').trim(); // Remove trailing dash if present
+                         amountStr = match[2];
+                     } else {
+                         const dashIdx = bStr.lastIndexOf('-');
+                         if (dashIdx > -1) {
+                             label = bStr.substring(0, dashIdx).trim();
+                             amountStr = bStr.substring(dashIdx + 1).trim();
+                         } else {
+                             label = bStr;
+                             amountStr = '0';
+                         }
+                     }
+                 }
+                 
+                 if (!label || label === 'Imported') label = 'Imported Budget Line';
+
+                 const amount = parseFloat(amountStr.replace(/[^0-9.-]+/g,"")) || 0;
+                 const sourceStr = sParts[j] ? sParts[j].trim() : (sParts[0] ? sParts[0].trim() : 'GAA');
+
+                 budgetLines.push({
+                     id: uid('l'),
+                     label: label,
+                     amount: amount,
+                     source: sourceStr || 'GAA'
+                 });
+             }
+
+             if (budgetLines.length === 0) {
+                 budgetLines.push({
+                     id: uid('l'),
+                     label: 'Imported Budget Line',
+                     amount: 0,
+                     source: 'GAA'
+                 });
+             }
+             
+             importedItems.push({
+                section: currentSection,
+                mandate: mandate,
+                cause: cause,
+                result: objective,
+                mfo: ppa,
+                activity: activity,
+                indicators: targets,
+                responsible: office,
+                budgetLines: budgetLines,
+                fiscal_year: parseInt(state.value.org.year) || new Date().getFullYear()
+             });
+          }
+
+          const { isConfirmed } = await Swal.fire({
+             title: 'Import ' + importedItems.length + ' Items?',
+             html: `
+               <p style="font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 16px;">This will add the new items to your current plan.</p>
+               <div style="background: #fef3c7; border: 1px solid #fcd34d; padding: 16px; border-radius: 8px; text-align: center;">
+                  <b style="color: #b45309; font-size: 16px;">Please thoroughly review and double-check all items and budget values after importation.</b>
+               </div>
+             `,
+             width: 500,
+             icon: 'question',
+             showCancelButton: true,
+             confirmButtonText: 'Yes, Import'
+          });
+
+          if (isConfirmed) {
+             Swal.fire({ title: 'Importing...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+             
+             const dbPayload = importedItems.map((item, idx) => ({
+                fiscal_year: item.fiscal_year,
+                section: item.section,
+                mandate: item.mandate,
+                cause: item.cause,
+                objective: item.result,
+                result: item.result,
+                ppa: item.mfo,
+                mfo: item.mfo,
+                activity: item.activity,
+                targets: item.indicators,
+                indicators: item.indicators,
+                budget: item.budgetLines[0].amount,
+                source: item.budgetLines[0].source,
+                office: item.responsible,
+                responsible: item.responsible,
+                budget_lines: JSON.stringify(item.budgetLines),
+                sort_order: state.value.items.filter(i => i.section === item.section).length + idx + 1
+             }));
+
+             const res = await api.post('/gpb/import', dbPayload);
+             if (res.status === 201) {
+                Swal.fire('Success', 'Imported ' + res.data.count + ' items successfully.', 'success');
+                await loadFromAPI(); 
+             }
+          }
+        } catch(e) { 
+           console.error(e);
+           Swal.fire('Error', 'Could not process the Excel file. Please ensure it follows the correct template format.', 'error'); 
+        }
+      };
+      reader.readAsArrayBuffer(file);
+      e.target.value = '';
+    }
+
     // ─── Excel export ─────────────────────────────────────────────────────────
     function setExportStatus(text, kind) { exportStatus.value = { text, class: kind || '' }; }
     async function exportToExcel() {
+      const { isConfirmed } = await Swal.fire({
+         title: 'Export to Excel',
+         html: `
+           <p style="font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 20px;">You are about to export this plan.</p>
+         `,
+         width: 500,
+         icon: 'info',
+         showCancelButton: true,
+         confirmButtonText: 'Yes, Export',
+         cancelButtonText: 'Cancel'
+      });
+      if (!isConfirmed) return;
+
       exporting.value = true;
       setExportStatus('');
       try {
@@ -544,11 +1121,11 @@ export default {
 
     // ─── Reset ────────────────────────────────────────────────────────────────
     async function resetToSeed() {
-      const { isConfirmed } = await Swal.fire({title: 'Start New Fiscal Year?', text: 'This will completely reset the system for another fiscal year. All data will be deleted. This cannot be undone.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, Reset System'});
+      const { isConfirmed } = await Swal.fire({title: 'Reset Plan?', text: 'This will completely clear the current plan. All data will be deleted. This cannot be undone.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, Reset Plan'});
       if (!isConfirmed) return;
       
       const currentYear = parseInt(state.value.org.year);
-      const nextYear = isNaN(currentYear) ? new Date().getFullYear() + 1 : currentYear + 1;
+      const yearToSet = isNaN(currentYear) ? new Date().getFullYear() : currentYear;
       
       state.value = {
         settings: { apiBaseUrl: '' },
@@ -556,7 +1133,7 @@ export default {
           name: state.value.org.name || '',
           category: state.value.org.category || '',
           hierarchy: state.value.org.hierarchy || '',
-          year: String(nextYear),
+          year: String(yearToSet),
           totalOrgBudget: 0,
           otherSources: 0,
           preparedByName: '',
@@ -616,6 +1193,7 @@ export default {
     }
 
     onMounted(async () => {
+      fetchMandateStats();
       loadFromAPI();
       try {
         const res = await api.get('/budget/summary');
@@ -626,20 +1204,45 @@ export default {
         console.error('Error fetching budget summary:', e);
       }
     });
+    const isPdfModalOpen = ref(false);
+    const pdfFileUrl = ref('');
+
+    const openDocumentPreview = (attachment, type) => {
+      if (attachment) {
+        let fileName = attachment;
+        if (typeof attachment === 'string' && attachment.startsWith('[')) {
+           try {
+               const parsed = JSON.parse(attachment);
+               if (parsed.length > 0) fileName = parsed[0];
+           } catch(e) {}
+        }
+        pdfFileUrl.value = `http://localhost:8080/api/files/archived/${fileName}`;
+        isPdfModalOpen.value = true;
+      }
+    };
+    const closePdfModal = () => {
+      isPdfModalOpen.value = false;
+      pdfFileUrl.value = '';
+    };
 
     return {
+      mandateStats, mandateStatsFilter, filteredMandateStats, loadingStats, statsChartCanvas, scrollToStats,
       isReadOnly,
 
       SECTION_ORDER, SECTION_LABELS, SECTION_SHORT, SOURCE_OPTIONS,
       state, budgetSummary, currentTab, searchQuery, expandedCards,
       saveStatus, saveChipClass, saveTooltip,
-      exportStatus, exporting, topPanel, fileImport,
+      exportStatus, exporting, topPanel, fileImport, excelImport,
       ledger, peso, truncate, itemSubtotal,
       getSectionItems, matchesSearch, getItemNumber,
       toggleCard, expandAll, collapseAll,
       addItemInline, markDirty, saveItem, savePlan,
       deleteItem, addBudgetLine, removeBudgetLine,
-      handleFileImport, exportToExcel, resetToSeed,
+      handleFileImport, promptExcelImport, handleExcelImport, exportToExcel, resetToSeed,
+      showAllocationModal, loadingAllocations, savingAllocations, allocationsData,
+      allocationsDirty, openAllocationModal, closeAllocationModal, markAllocationsDirty,
+      getAllocatedElsewhere, saveAllocations,
+      isPdfModalOpen, pdfFileUrl, openDocumentPreview, closePdfModal
     };
   }
 };
@@ -1101,13 +1704,13 @@ select option { background: var(--surface-2); color: var(--text); }
 }
 .card-head-text { flex: 1; min-width: 0; }
 .card-title {
-  font-size: 14.5px; font-weight: 600; margin: 0;
+  font-size: 16px; font-weight: 600; margin: 0;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   color: var(--text);
 }
-.card-sub { font-size: 12.5px; color: var(--text-muted); margin: 2px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card-amount { font-family: 'IBM Plex Mono', monospace; color: var(--primary-bright); font-size: 14px; white-space: nowrap; font-weight: 700; }
-.unsaved-dot { color: var(--warn); font-size: 10px; line-height: 1; flex-shrink: 0; }
+.card-sub { font-size: 14px; color: var(--text-muted); margin: 2px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-amount { font-family: 'IBM Plex Mono', monospace; color: var(--primary-bright); font-size: 15.5px; white-space: nowrap; font-weight: 700; }
+.unsaved-dot { color: var(--warn); font-size: 12px; line-height: 1; flex-shrink: 0; }
 .chevron { background: none; border: none; font-size: 17px; color: var(--text-dim); transition: transform 0.2s ease; padding: 0 4px; }
 .card.expanded .chevron { transform: rotate(180deg); }
 
@@ -1116,16 +1719,16 @@ select option { background: var(--surface-2); color: var(--text); }
 
 /* Fields inside card body */
 .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
-.field-grid label { grid-column: span 1; font-size: 11.5px; font-weight: 700; color: var(--text-muted); display: block; text-transform: uppercase; letter-spacing: 0.06em; }
+.field-grid label { grid-column: span 1; font-size: 13px; font-weight: 700; color: var(--text-muted); display: block; text-transform: uppercase; letter-spacing: 0.06em; }
 .field-grid label.full { grid-column: 1 / -1; }
 .field-grid textarea, .field-grid input {
   width: 100%; margin-top: 5px;
-  padding: 9px 12px;
+  padding: 10px 12px;
   background: var(--surface-3);
   border: 1px solid var(--border);
   border-radius: 8px;
   resize: vertical;
-  font-size: 13.5px;
+  font-size: 15px;
   color: var(--text);
 }
 .field-grid textarea::placeholder, .field-grid input::placeholder { color: var(--text-dim); }
@@ -1142,7 +1745,7 @@ select option { background: var(--surface-2); color: var(--text); }
   display: grid;
   grid-template-columns: 1fr 150px 130px 34px;
   gap: 8px;
-  font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em;
+  font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
   color: var(--text-dim); font-weight: 700;
   padding: 0 2px 8px;
   border-bottom: 1px solid var(--border);
@@ -1154,11 +1757,11 @@ select option { background: var(--surface-2); color: var(--text); }
   gap: 8px; margin-bottom: 8px; align-items: center;
 }
 .budget-line input, .budget-line select {
-  padding: 8px 10px;
+  padding: 9px 10px;
   background: var(--surface-3);
   border: 1px solid var(--border);
   border-radius: 7px;
-  width: 100%; font-size: 13px;
+  width: 100%; font-size: 14.5px;
   color: var(--text);
 }
 .remove-line { background: none; border: none; color: var(--error); font-size: 19px; line-height: 1; opacity: 0.7; transition: opacity 0.15s; }

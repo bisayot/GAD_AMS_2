@@ -8,21 +8,25 @@ class AddArchivedAtToDocuments extends Migration
 {
     public function up()
     {
-        $this->forge->addColumn('activity_design', [
-            'archived_at' => [
-                'type' => 'DATETIME',
-                'null' => true,
-                'default' => null,
-            ],
-        ]);
+        if (!$this->db->fieldExists('archived_at', 'activity_design')) {
+            $this->forge->addColumn('activity_design', [
+                'archived_at' => [
+                    'type' => 'DATETIME',
+                    'null' => true,
+                    'default' => null,
+                ],
+            ]);
+        }
 
-        $this->forge->addColumn('accomplishment_report', [
-            'archived_at' => [
-                'type' => 'DATETIME',
-                'null' => true,
-                'default' => null,
-            ],
-        ]);
+        if (!$this->db->fieldExists('archived_at', 'accomplishment_report')) {
+            $this->forge->addColumn('accomplishment_report', [
+                'archived_at' => [
+                    'type' => 'DATETIME',
+                    'null' => true,
+                    'default' => null,
+                ],
+            ]);
+        }
         
         // Populate existing ones with current timestamp as fallback
         $db = \Config\Database::connect();

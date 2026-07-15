@@ -8,6 +8,8 @@ class CreateGpbItemsTable extends Migration
 {
     public function up()
     {
+        if ($this->db->tableExists('gpb_items')) return;
+        
         $this->forge->addField([
             'id' => [
                 'type'           => 'INT',
