@@ -490,7 +490,7 @@
 
           <div class="form-group">
             <label>Revision Deadline</label>
-            <input type="date" v-model="revisionDeadline" :min="todayDate" class="modal-input">
+            <input type="date" v-model="revisionDeadline" :min="todayDate" :max="maxDate" class="modal-input" @change="validateRevisionDeadline">
             <p class="input-hint">Proponent must resubmit by this date.</p>
           </div>
         </div>
@@ -568,6 +568,35 @@ const getTodayDate = () => {
   return `${year}-${month}-${day}`;
 };
 const todayDate = ref(getTodayDate());
+
+const getMaxDate = () => {
+  const d = new Date();
+  const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+  const phDate = new Date(utc + (3600000 * 8));
+  const year = phDate.getUTCFullYear();
+  return `${year}-12-31`;
+};
+const maxDate = ref(getMaxDate());
+
+const validateRevisionDeadline = () => {
+  if (revisionDeadline.value) {
+    const deadline = new Date(revisionDeadline.value);
+    const today = new Date(todayDate.value);
+    const endOfYear = new Date(maxDate.value);
+    
+    deadline.setHours(0,0,0,0);
+    today.setHours(0,0,0,0);
+    endOfYear.setHours(0,0,0,0);
+
+    if (deadline < today) {
+      Swal.fire('Invalid Date', 'Revision deadline cannot be in the past.', 'warning');
+      revisionDeadline.value = '';
+    } else if (deadline > endOfYear) {
+      Swal.fire('Invalid Date', 'Revision deadline must be within the current year.', 'warning');
+      revisionDeadline.value = '';
+    }
+  }
+};
 
 const handleBeforeUnload = () => {
   if (report.value && report.value.id && report.value.status === 'Pending') {

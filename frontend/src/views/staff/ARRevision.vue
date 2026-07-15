@@ -198,7 +198,7 @@
                   </div>
                   <div class="full-width-info">
                     <label class="info-label">Activity Classification</label>
-                    <select v-model="form.activity_classification_id" class="custom-input-field select-arrow-fix mt-1">
+                    <select v-model="form.activity_classification_id" @change="handleClassificationChange" class="custom-input-field select-arrow-fix mt-1">
                       <option value="" disabled class="dark-option">Select Classification</option>
                       <option v-for="cls in ActClassification" :key="cls.id" :value="cls.id" class="dark-option">
                         {{ cls.classification_name }}
@@ -218,7 +218,7 @@
                     <label class="info-label">Gender Issue / GAD Mandate</label>
                     <div class="checkbox-group-container custom-input-field mt-1" style="max-height: 200px; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 8px;">
                       <label v-for="mandate in GADMandates" :key="mandate.id" class="mandate-checkbox-label" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ffffff;">
-                        <input type="checkbox" v-model="form.gad_mandate_id" :value="mandate.id.toString()" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
+                        <input type="checkbox" @change="handleMandateChange" v-model="form.gad_mandate_id" :value="mandate.id.toString()" style="margin-top: 2px; accent-color: #b979cc; transform: scale(1.1);" />
                         <span style="font-size: 13px; color: #fff; line-height: 1.4;">{{ mandate.code }} - {{ mandate.title }}</span>
                       </label>
                       </div>
@@ -239,19 +239,19 @@
                   </div>
                   <div>
                     <label class="info-label">Start Date of Implementation *</label>
-                    <input type="date" v-model="form.start_date" class="custom-input-field code-icon-calendar mt-1">
+                    <input type="date" v-model="form.start_date" :min="minDate" :max="maxDate" required class="custom-input-field code-icon-calendar mt-1">
                   </div>
                   <div>
                     <label class="info-label">End Date of Implementation *</label>
-                    <input type="date" v-model="form.end_date" class="custom-input-field code-icon-calendar mt-1">
+                    <input type="date" v-model="form.end_date" :min="minDate" :max="maxDate" required class="custom-input-field code-icon-calendar mt-1">
                   </div>
                   <div>
                     <label class="info-label">Start Time *</label>
-                    <input type="time" v-model="form.start_time" class="custom-input-field code-icon-clock mt-1">
+                    <input type="time" v-model="form.start_time" min="04:00" max="20:00" required class="custom-input-field code-icon-clock mt-1">
                   </div>
                   <div>
                     <label class="info-label">End Time *</label>
-                    <input type="time" v-model="form.end_time" class="custom-input-field code-icon-clock mt-1">
+                    <input type="time" v-model="form.end_time" min="04:00" max="20:00" required class="custom-input-field code-icon-clock mt-1">
                   </div>
                   <div class="full-width-info">
                     <label class="info-label">Venue *</label>
@@ -749,6 +749,7 @@ const formTypes = ref([]);
 const GADMandates = ref([]);
 const genderIssues = ref([]);
 
+
 const fetchGADMandates = async () => {
   try {
     let url = 'get-gad-mandates';
@@ -761,6 +762,19 @@ const fetchGADMandates = async () => {
     console.error('Error fetching GAD mandates:', error);
   }
 };
+
+const handleClassificationChange = async () => {
+  form.value.gad_mandate_id = [];
+  form.value.gender_issue_id = [];
+  await fetchGADMandates();
+  await fetchGenderIssues();
+};
+
+const handleMandateChange = async () => {
+  form.value.gender_issue_id = [];
+  await fetchGenderIssues(form.value.gad_mandate_id);
+};
+
 
 const fetchData = async () => {
   try {
@@ -795,20 +809,9 @@ const fetchGenderIssues = async (mandateIds) => {
     }
 };
 
-watch(() => form.value.activity_classification_id, async (newVal, oldVal) => {
-    if (loadingData.value) return;
-    if (newVal !== oldVal) {
-        form.value.gad_mandate_id = [];
-        form.value.gender_issue_id = [];
-        await fetchGADMandates();
-        await fetchGenderIssues();
-    }
-});
+// watcher removed in favor of @change
 
-watch(() => form.value.gad_mandate_id, async (newVal, oldVal) => {
-    if (loadingData.value) return;
-    await fetchGenderIssues(newVal);
-}, { deep: true });
+// watcher removed in favor of @change
 
 const fetchApprovedControls = async () => {
   loadingControls.value = true;
@@ -879,20 +882,107 @@ fetchVenues();
 
 const loadingData = ref(false);
 
-watch(() => form.value.gad_mandate_id, async (newVal, oldVal) => {
-    if (loadingData.value) return; // Don't reset during initial data load
-    
-    // Only reset if it's an actual user change, not a reactivity delay
-    if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-        form.value.gender_issue_id = [];
-        await fetchGenderIssues(newVal);
-    }
-  }, { deep: true });
+// watcher removed in favor of @change
 
   watch([() => form.value.male, () => form.value.female], ([newMale, newFemale]) => {
   const m = parseInt(newMale) || 0;
   const f = parseInt(newFemale) || 0;
   form.value.attendees = m + f;
+});
+
+
+const minDate = computed(() => {
+  if (existingReport.value?.activity_design?.start_date) {
+    return existingReport.value.activity_design.start_date;
+  }
+  const currentYear = new Date().getFullYear();
+  return `${currentYear}-01-01`;
+});
+const maxDate = computed(() => {
+  const currentYear = new Date().getFullYear();
+  return `${currentYear}-12-31`;
+});
+
+const isCurrentYear = (dateString) => {
+  const date = new Date(dateString + 'T00:00:00');
+  const manilaTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" });
+  const currentYear = new Date(manilaTime).getFullYear();
+  return date.getFullYear() === currentYear;
+};
+
+const isValidTime = (timeStr) => {
+  if (!timeStr) return true;
+  return timeStr >= "04:00" && timeStr <= "20:00";
+};
+
+watch(() => form.value.start_date, (newDate) => {
+  if (newDate) {
+    if (newDate < minDate.value) {
+      document.activeElement?.blur();
+      Swal.fire({ icon: 'warning', title: 'Invalid Date', text: 'Start date cannot be earlier than the approved Activity Design start date.', confirmButtonColor: '#b979cc' });
+      form.value.start_date = '';
+      return;
+    }
+    if (!isCurrentYear(newDate)) {
+      document.activeElement?.blur();
+      Swal.fire({ icon: 'warning', title: 'Invalid Date', text: 'Activity must be within the current year.', confirmButtonColor: '#b979cc' });
+      form.value.start_date = '';
+      return;
+    }
+    if (form.value.end_date && form.value.end_date < newDate) {
+        document.activeElement?.blur();
+        Swal.fire({ icon: 'warning', title: 'Invalid Duration', text: 'End date cannot be before start date.', confirmButtonColor: '#b979cc' });
+        form.value.start_date = '';
+    }
+  }
+});
+
+watch(() => form.value.end_date, (newDate) => {
+  if (newDate) {
+    if (newDate < minDate.value) {
+      document.activeElement?.blur();
+      Swal.fire({ icon: 'warning', title: 'Invalid Date', text: 'End date cannot be earlier than the approved Activity Design start date.', confirmButtonColor: '#b979cc' });
+      form.value.end_date = '';
+      return;
+    }
+    if (!isCurrentYear(newDate)) {
+      document.activeElement?.blur();
+      Swal.fire({ icon: 'warning', title: 'Invalid Date', text: 'Activity must be within the current year.', confirmButtonColor: '#b979cc' });
+      form.value.end_date = '';
+      return;
+    }
+    if (form.value.start_date && newDate < form.value.start_date) {
+        document.activeElement?.blur();
+        Swal.fire({ icon: 'warning', title: 'Invalid Duration', text: 'End date cannot be before start date.', confirmButtonColor: '#b979cc' });
+        form.value.end_date = '';
+    }
+  }
+});
+
+watch(() => form.value.start_time, (newTime) => {
+  if (newTime && !isValidTime(newTime)) {
+    document.activeElement?.blur();
+    Swal.fire({ icon: 'warning', title: 'Invalid Time', text: 'Must be set between 04:00 AM and 08:00 PM.', confirmButtonColor: '#b979cc' });
+    form.value.start_time = '';
+  }
+  if (form.value.start_time && form.value.end_time && form.value.start_time >= form.value.end_time) {
+      document.activeElement?.blur();
+      Swal.fire({ icon: 'warning', title: 'Invalid Time Range', text: 'End time must be after start time.', confirmButtonColor: '#b979cc' });
+      form.value.start_time = '';
+  }
+});
+
+watch(() => form.value.end_time, (newTime) => {
+  if (newTime && !isValidTime(newTime)) {
+    document.activeElement?.blur();
+    Swal.fire({ icon: 'warning', title: 'Invalid Time', text: 'Must be set between 04:00 AM and 08:00 PM.', confirmButtonColor: '#b979cc' });
+    form.value.end_time = '';
+  }
+  if (form.value.start_time && form.value.end_time && form.value.start_time >= form.value.end_time) {
+      document.activeElement?.blur();
+      Swal.fire({ icon: 'warning', title: 'Invalid Time Range', text: 'End time must be after start time.', confirmButtonColor: '#b979cc' });
+      form.value.end_time = '';
+  }
 });
 
 const getInterpretation = (rating) => {
@@ -1251,6 +1341,26 @@ const formatTime = (time) => {
   return `${h % 12 || 12}:${m} ${h >= 12 ? 'PM' : 'AM'}`;
 };
 
+
+const aDBudget = computed(() => {
+  if (!existingReport.value?.activity_design || !existingReport.value.activity_design.budget_items || existingReport.value.activity_design.budget_items.length === 0) return null;
+  const b = existingReport.value.activity_design.budget_items[0];
+  let ob = [];
+  if (b.materials_others_breakdown) { try { ob = JSON.parse(b.materials_others_breakdown); } catch(e){} }
+  const mealsT = Number(b.meals_total) || 0;
+  const snacksT = Number(b.snacks_total) || 0;
+  const combined = Number(b.meals_and_snacks) || 0;
+  const othersTotal = Number(b.others_total) || ob.reduce((s, o) => s + Number(o.amount || 0), 0);
+  const grandTotal = (mealsT === 0 && snacksT === 0 && combined > 0 ? combined : mealsT) + snacksT +
+    Number(b.function_room_venue || 0) + Number(b.accommodation || 0) + Number(b.equipment_rental || 0) +
+    Number(b.transportation || 0) + Number(b.professional_fee_honoria || 0) + Number(b.tokens || 0) +
+    Number(b.materials_and_supplies || 0) + othersTotal;
+  return {
+    ...b,
+    grand_total: grandTotal
+  };
+});
+
 const parsedADBudget = computed(() => {
   if (!existingReport.value?.activity_design || !existingReport.value.activity_design.budget_items || existingReport.value.activity_design.budget_items.length === 0) return [];
   const b = existingReport.value.activity_design.budget_items[0];
@@ -1300,25 +1410,27 @@ const fetchReportDetails = async () => {
         }
         form.value.form_type = ftype;
         
-        const mandateIdsArr = r.activity_design.gad_mandate_id ? r.activity_design.gad_mandate_id.split(',').map(s=>s.trim()) : [];
-        form.value.gad_mandate_id = GADMandates.value
-          .filter(m => {
-            const mIds = m.id.toString().split(',').map(s=>s.trim());
-            return mIds.some(id => mandateIdsArr.includes(id));
-          })
-          .map(m => m.id.toString());
-          
+        const savedMandates = r.activity_design.gad_mandate_id ? String(r.activity_design.gad_mandate_id).split(',').map(s=>s.trim()) : [];
+        form.value.gad_mandate_id = GADMandates.value.filter(m => {
+           const mIds = String(m.id).split(',');
+           return mIds.every(id => savedMandates.includes(id));
+        }).map(m => String(m.id));
+        if (savedMandates.includes('Other') && !form.value.gad_mandate_id.includes('Other')) {
+            form.value.gad_mandate_id.push('Other');
+        }
+
         if (form.value.gad_mandate_id.length > 0) {
           await fetchGenderIssues(form.value.gad_mandate_id);
         }
         
-        const issueIdsArr = r.activity_design.gender_issue_id ? r.activity_design.gender_issue_id.split(',').map(s=>s.trim()) : [];
-        form.value.gender_issue_id = genderIssues.value
-          .filter(i => {
-            const iIds = i.id.toString().split(',').map(s=>s.trim());
-            return iIds.some(id => issueIdsArr.includes(id));
-          })
-          .map(i => i.id.toString());
+        const savedIssues = r.activity_design.gender_issue_id ? String(r.activity_design.gender_issue_id).split(',').map(s=>s.trim()) : [];
+        form.value.gender_issue_id = genderIssues.value.filter(m => {
+           const mIds = String(m.id).split(',');
+           return mIds.every(id => savedIssues.includes(id));
+        }).map(m => String(m.id));
+        if (savedIssues.includes('Other') && !form.value.gender_issue_id.includes('Other')) {
+            form.value.gender_issue_id.push('Other');
+        }
       }
 
       form.value.activity_title = r.activity_title || '';

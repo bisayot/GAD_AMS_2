@@ -225,10 +225,10 @@
         <div style="display: flex; align-items: center; gap: 8px;">
            <label style="color: var(--text-muted); font-size: 0.85rem;">Filter by Classification:</label>
            <select v-model="mandateStatsFilter" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 6px 12px; border-radius: 6px; outline: none; font-size: 0.9rem;">
-             <option value="all">All Classifications</option>
-             <option value="client">Client-Focused</option>
-             <option value="org">Organization-Focused</option>
-             <option value="attributed">Attributed Program</option>
+             <option value="all" style="background: #1e293b; color: #fff;">All Classifications</option>
+             <option value="client" style="background: #1e293b; color: #fff;">Client-Focused</option>
+             <option value="org" style="background: #1e293b; color: #fff;">Organization-Focused</option>
+             <option value="attributed" style="background: #1e293b; color: #fff;">Attributed Program</option>
            </select>
         </div>
       </div>

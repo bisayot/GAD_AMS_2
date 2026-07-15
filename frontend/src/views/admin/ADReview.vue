@@ -224,7 +224,7 @@
 
               <div>
                 <label class="form-label">Accomplishment Deadline</label>
-                <input v-model="accomplishmentDeadline" type="date" class="modal-input" :min="minAccomplishmentDeadline" @change="validateDeadlineWeekend">
+                <input v-model="accomplishmentDeadline" type="date" class="modal-input" :min="minAccomplishmentDeadline" :max="maxDate" @change="validateDeadlineWeekend">
               </div>
 
               <div>
@@ -288,7 +288,7 @@
 
           <div class="form-group">
             <label>Revision Deadline</label>
-            <input type="date" v-model="revisionDeadline" :min="todayDate" class="modal-input">
+            <input type="date" v-model="revisionDeadline" :min="todayDate" :max="maxDate" class="modal-input" @change="validateRevisionDeadline">
             <p class="input-hint">Proponent must resubmit by this date.</p>
           </div>
         </div>
@@ -397,10 +397,22 @@ const getTodayDate = () => {
 };
 const todayDate = ref(getTodayDate());
 
+const maxDate = computed(() => {
+  const year = new Date(todayDate.value).getFullYear();
+  return `${year}-12-31`;
+});
+
 const maxAccomplishmentDeadline = computed(() => {
   if (!design.value.end_date) return todayDate.value;
   const targetDate = new Date(design.value.end_date);
   targetDate.setDate(targetDate.getDate() + 14); // Exactly 14 days (2 weeks)
+  
+  const today = new Date(todayDate.value);
+  if (targetDate < today) return todayDate.value;
+  
+  const currentYearEnd = new Date(`${today.getFullYear()}-12-31`);
+  if (targetDate > currentYearEnd) return maxDate.value;
+
   const year = targetDate.getFullYear();
   const month = String(targetDate.getMonth() + 1).padStart(2, '0');
   const day = String(targetDate.getDate()).padStart(2, '0');
@@ -412,6 +424,13 @@ const minAccomplishmentDeadline = computed(() => {
   const [ey, em, ed] = design.value.end_date.split('-');
   const targetDate = new Date(Date.UTC(ey, em - 1, ed));
   targetDate.setUTCDate(targetDate.getUTCDate() + 1);
+  
+  const today = new Date(todayDate.value);
+  if (targetDate < today) return todayDate.value;
+  
+  const currentYearEnd = new Date(`${today.getFullYear()}-12-31`);
+  if (targetDate > currentYearEnd) return maxDate.value;
+
   const year = targetDate.getUTCFullYear();
   const month = String(targetDate.getUTCMonth() + 1).padStart(2, '0');
   const day = String(targetDate.getUTCDate()).padStart(2, '0');
@@ -421,6 +440,30 @@ const minAccomplishmentDeadline = computed(() => {
 const validateDeadlineWeekend = () => {
   if (accomplishmentDeadline.value) {
     const deadline = new Date(accomplishmentDeadline.value);
+    const today = new Date(todayDate.value);
+    
+    if (deadline < today) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Date',
+        text: 'Past dates are not allowed. Please select a current or future date.',
+        confirmButtonColor: '#f59e0b'
+      });
+      accomplishmentDeadline.value = '';
+      return;
+    }
+    
+    if (deadline.getFullYear() > today.getFullYear()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Date',
+        text: 'Dates cannot exceed the current calendar year.',
+        confirmButtonColor: '#f59e0b'
+      });
+      accomplishmentDeadline.value = '';
+      return;
+    }
+
     const dayOfWeek = deadline.getUTCDay();
     if (dayOfWeek === 0 || dayOfWeek === 6) {
       Swal.fire({
@@ -430,6 +473,33 @@ const validateDeadlineWeekend = () => {
         confirmButtonColor: '#f59e0b'
       });
       accomplishmentDeadline.value = ''; // clear it
+    }
+  }
+};
+
+const validateRevisionDeadline = () => {
+  if (revisionDeadline.value) {
+    const deadline = new Date(revisionDeadline.value);
+    const today = new Date(todayDate.value);
+    if (deadline < today) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Date',
+        text: 'Past dates are not allowed. Please select a current or future date.',
+        confirmButtonColor: '#f59e0b'
+      });
+      revisionDeadline.value = '';
+      return;
+    }
+    
+    if (deadline.getFullYear() > today.getFullYear()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Date',
+        text: 'Dates cannot exceed the current calendar year.',
+        confirmButtonColor: '#f59e0b'
+      });
+      revisionDeadline.value = '';
     }
   }
 };

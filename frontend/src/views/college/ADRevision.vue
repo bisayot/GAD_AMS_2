@@ -101,11 +101,11 @@
               <div class="grid-2">
                 <div>
                   <label class="form-label">Start Date</label>
-                  <input v-model="formData.start_date" type="date" class="modal-input">
+                  <input v-model="formData.start_date" type="date" class="modal-input" :min="minStartDate">
                 </div>
                 <div>
                   <label class="form-label">End Date</label>
-                  <input v-model="formData.end_date" type="date" class="modal-input">
+                  <input v-model="formData.end_date" type="date" class="modal-input" :min="formData.start_date || minStartDate">
                 </div>
                 <div>
                   <label class="form-label">Start Time</label>
@@ -545,6 +545,18 @@ const activityClassifications = ref([]);
 const gadMandates = ref([]);
 const genderIssues = ref([]);
 
+
+const minStartDate = computed(() => {
+  const d = new Date();
+  const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+  const phDate = new Date(utc + (3600000 * 8));
+  phDate.setUTCDate(phDate.getUTCDate() + 3);
+  const year = phDate.getUTCFullYear();
+  const month = String(phDate.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(phDate.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+});
+
 const formData = ref({
   activity_title: '',
   office: '',
@@ -900,7 +912,264 @@ const formatBudgetName = (name) => { // Added formatBudgetName
 
 const formatCurrency = (amt) => amt ? parseFloat(amt).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'; // Added formatCurrency
 
+const isCurrentYear = (dateString) => {
+  const date = new Date(dateString + 'T00:00:00');
+  const manilaTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" });
+  const currentYear = new Date(manilaTime).getFullYear();
+  return date.getFullYear() === currentYear;
+};
+
+const isValidActivityDate = (dateString, checkLeadTime = false) => {
+  if (!isCurrentYear(dateString)) {
+    const currentYear = new Date().getFullYear();
+    return { valid: false, reason: `Activities can only be scheduled in ${currentYear}. Please select a date within the current year.` };
+  }
+  if (checkLeadTime) {
+    const targetDate = new Date(dateString + 'T00:00:00');
+    const today = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" }));
+    today.setHours(0, 0, 0, 0);
+    const diffTime = targetDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 3) {
+       return { valid: false, reason: `Activities must be scheduled at least 3 days in advance.` };
+    } else if (diffDays < 14) {
+       return { valid: true, reason: `Activities should ideally be scheduled at least 14 days in advance.`, isWarning: true };
+    }
+  }
+  return { valid: true, reason: '' };
+};
+
+const isValidActivityDuration = (startDateString, endDateString) => {
+  if (!startDateString || !endDateString) {
+    return { valid: true, reason: '', isWarning: false };
+  }
+  const startDate = new Date(startDateString + 'T00:00:00');
+  const endDate = new Date(endDateString + 'T00:00:00');
+  
+  if (endDate < startDate) {
+    return { valid: false, reason: 'End date cannot be before start date.', isWarning: false };
+  }
+  
+  const diffTime = endDate - startDate;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays > 31) {
+    return { valid: true, reason: 'Are you sure if the activity is more than 1 month?', isWarning: true };
+  }
+  
+  return { valid: true, reason: '', isWarning: false };
+};
+
+const isValidTime = (timeStr) => {
+  if (!timeStr) return true;
+  return timeStr >= "04:00" && timeStr <= "20:00";
+};
+
+watch(() => formData.value.start_date, (newDate) => {
+  if (loadingData.value) return;
+  if (newDate) {
+    const validation = isValidActivityDate(newDate, true);
+    if (!validation.valid) {
+      document.activeElement?.blur();
+      Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Date',
+        text: validation.reason,
+        confirmButtonColor: '#b979cc'
+      });
+      formData.value.start_date = '';
+      return;
+    } else if (validation.isWarning) {
+      document.activeElement?.blur();
+      Swal.fire({
+        icon: 'info',
+        title: 'Lead Time Warning',
+        text: validation.reason,
+        confirmButtonColor: '#b979cc'
+      });
+    }
+    if (formData.value.end_date) {
+      const durationValidation = isValidActivityDuration(newDate, formData.value.end_date);
+      if (!durationValidation.valid) {
+        document.activeElement?.blur();
+        Swal.fire({
+          icon: 'warning',
+          title: 'Invalid Duration',
+          text: durationValidation.reason,
+          confirmButtonColor: '#b979cc'
+        });
+        formData.value.start_date = '';
+      } else if (durationValidation.isWarning) {
+        document.activeElement?.blur();
+        Swal.fire({
+          icon: 'info',
+          title: 'Long Duration',
+          text: durationValidation.reason,
+          confirmButtonColor: '#b979cc'
+        });
+      }
+    }
+  }
+});
+
+watch(() => formData.value.end_date, (newDate) => {
+  if (loadingData.value) return;
+  if (newDate) {
+    const validation = isValidActivityDate(newDate, false);
+    if (!validation.valid) {
+      document.activeElement?.blur();
+      Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Date',
+        text: validation.reason,
+        confirmButtonColor: '#b979cc'
+      });
+      formData.value.end_date = '';
+      return;
+    }
+    if (formData.value.start_date) {
+      const durationValidation = isValidActivityDuration(formData.value.start_date, newDate);
+      if (!durationValidation.valid) {
+        document.activeElement?.blur();
+        Swal.fire({
+          icon: 'warning',
+          title: 'Invalid Duration',
+          text: durationValidation.reason,
+          confirmButtonColor: '#b979cc'
+        });
+        formData.value.end_date = '';
+      } else if (durationValidation.isWarning) {
+        document.activeElement?.blur();
+        Swal.fire({
+          icon: 'info',
+          title: 'Long Duration',
+          text: durationValidation.reason,
+          confirmButtonColor: '#b979cc'
+        });
+      }
+    }
+  }
+});
+
+watch(() => formData.value.start_time, (newTime) => {
+  if (loadingData.value) return;
+  if (newTime && !isValidTime(newTime)) {
+    document.activeElement?.blur();
+    Swal.fire({
+      icon: 'warning',
+      title: 'Invalid Time',
+      text: 'Must be set between 04:00 AM and 08:00 PM.',
+      confirmButtonColor: '#b979cc'
+    });
+    formData.value.start_time = '';
+  }
+});
+
+watch(() => formData.value.end_time, (newTime) => {
+  if (loadingData.value) return;
+  if (newTime && !isValidTime(newTime)) {
+    document.activeElement?.blur();
+    Swal.fire({
+      icon: 'warning',
+      title: 'Invalid Time',
+      text: 'Must be set between 04:00 AM and 08:00 PM.',
+      confirmButtonColor: '#b979cc'
+    });
+    formData.value.end_time = '';
+  }
+});
+
+watch([() => formData.value.start_time, () => formData.value.end_time], ([newStart, newEnd]) => {
+  if (loadingData.value) return;
+  if (newStart && newEnd) {
+    if (newStart >= newEnd) {
+      document.activeElement?.blur();
+      Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Time Range',
+        text: 'End time must be after start time on the same day.',
+        confirmButtonColor: '#b979cc'
+      });
+      formData.value.end_time = '';
+    }
+  }
+});
+
 const handleUpdate = async () => {
+
+  // Validate start date
+  const startValidation = isValidActivityDate(formData.value.start_date, true);
+  if (!startValidation.valid) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Invalid Start Date',
+      text: startValidation.reason,
+      confirmButtonColor: '#b979cc'
+    });
+    return;
+  }
+
+  // Validate end date
+  const endValidation = isValidActivityDate(formData.value.end_date, false);
+  if (!endValidation.valid) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Invalid End Date',
+      text: endValidation.reason,
+      confirmButtonColor: '#b979cc'
+    });
+    return;
+  }
+
+  // Validate activity duration
+  const durationValidation = isValidActivityDuration(formData.value.start_date, formData.value.end_date);
+  if (!durationValidation.valid) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Invalid Duration',
+      text: durationValidation.reason,
+      confirmButtonColor: '#b979cc'
+    });
+    return;
+  }
+  if (durationValidation.isWarning) {
+    const result = await Swal.fire({
+      icon: 'warning',
+      title: 'Long Duration',
+      text: durationValidation.reason,
+      showCancelButton: true,
+      confirmButtonText: 'Yes, proceed',
+      cancelButtonText: 'No, cancel',
+      confirmButtonColor: '#b979cc'
+    });
+    if (!result.isConfirmed) {
+      return;
+    }
+  }
+
+  // Validate start time and end time
+  if (!isValidTime(formData.value.start_time) || !isValidTime(formData.value.end_time)) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Invalid Time',
+      text: 'Must be set between 04:00 AM and 08:00 PM.',
+      confirmButtonColor: '#b979cc'
+    });
+    return;
+  }
+  if (formData.value.start_time && formData.value.end_time && (!formData.value.start_date || !formData.value.end_date || formData.value.start_date === formData.value.end_date)) {
+    if (formData.value.start_time >= formData.value.end_time) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Time Range',
+        text: 'End time must be after start time on the same day.',
+        confirmButtonColor: '#b979cc'
+      });
+      return;
+    }
+  }
+
   submitting.value = true;
   try {
     const id = route.params.id;

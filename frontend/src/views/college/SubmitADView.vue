@@ -558,13 +558,13 @@
                   @click="goBack" 
                   class="back-button"
                 >
-                  ← Back
+                  &#8592; Back
                 </button>
                 <button 
                   type="submit" 
                   class="submit-action-btn"
                 >
-                  Submit Design →
+                  Submit Design &#8594;
                 </button>
               </div>
             </form>
