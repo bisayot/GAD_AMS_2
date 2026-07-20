@@ -127,6 +127,17 @@
                     <option value="Other" class="dark-option">Other</option>
                   </select>
                 </div>
+                <div class="venue-col">
+                  <label class="form-label">Venue Location *</label>
+                  <div class="toggle-container" style="display: flex; gap: 1rem; align-items: center; height: 42px;">
+                    <label style="color: #cbd5e1; font-size: 14px; cursor: pointer;">
+                      <input type="radio" :value="true" v-model="formData.is_inside_bsu" style="accent-color: #b979cc; transform: scale(1.1); margin-right: 5px;" /> Inside BSU
+                    </label>
+                    <label style="color: #cbd5e1; font-size: 14px; cursor: pointer;">
+                      <input type="radio" :value="false" v-model="formData.is_inside_bsu" style="accent-color: #b979cc; transform: scale(1.1); margin-right: 5px;" /> Outside BSU
+                    </label>
+                  </div>
+                </div>
                 <div class="participants-col">
                   <label class="form-label">Participants</label>
                   <input v-model="formData.target_participants" type="number" class="modal-input modal-input-center">
@@ -569,7 +580,7 @@ const formData = ref({
   start_time: '',
   end_time: '',
   venue: '',
-  proposed_budget: 0,
+  is_inside_bsu: true,
   target_participants: 0,
   budget_items: [ // Added budget_items
     { name: 'Meals', total: 0 },
@@ -592,6 +603,32 @@ watch(() => formData.value.budget_items, (newItems) => {
 }, { deep: true });
 
 // Computed Properties for Auto-calculation
+const baselineSettings = ref({
+  meals_inside: 220,
+  meals_outside: 350,
+  snacks_inside: 60,
+  snacks_outside: 100,
+  pf_honoraria: 2258.25,
+  tokens: 1000,
+  materials: 120,
+  transportation_limit: 20000
+});
+
+const fetchBaselineSettings = async () => {
+  try {
+    const res = await api.get('baseline-settings');
+    if (res.data) {
+      baselineSettings.value = res.data;
+    }
+  } catch (err) {
+    console.error('Failed to load baseline settings:', err);
+  }
+};
+
+onMounted(() => {
+  fetchBaselineSettings();
+});
+
 const computedDays = computed(() => {
   if (!formData.value.start_date || !formData.value.end_date) return 1;
   const start = new Date(formData.value.start_date);
@@ -603,7 +640,7 @@ const computedDays = computed(() => {
 });
 
 const isOutsideBsu = computed(() => {
-  return formData.value.venue === 'Other';
+  return !formData.value.is_inside_bsu;
 });
 
 // Reactive Sub-controls State
@@ -626,13 +663,13 @@ const removeOtherItem = (index) => {
 
 // Reactive Auto-computation Watchers
 watch(
-  [mealsSelected, () => formData.value.target_participants, computedDays, isOutsideBsu],
+  [mealsSelected, () => formData.value.target_participants, computedDays, isOutsideBsu, baselineSettings],
   () => {
     if (loadingData.value) return;
     const item = formData.value.budget_items.find(i => i.name === 'Meals');
     if (item) {
       const mealsCount = (mealsSelected.value.breakfast ? 1 : 0) + (mealsSelected.value.lunch ? 1 : 0) + (mealsSelected.value.dinner ? 1 : 0);
-      const mealsRate = isOutsideBsu.value ? 350 : 220;
+      const mealsRate = isOutsideBsu.value ? baselineSettings.value.meals_outside : baselineSettings.value.meals_inside;
       const pax = Number(formData.value.target_participants) || 0;
       const calculated = (mealsCount * mealsRate * pax * computedDays.value);
       item.total = calculated || '';
@@ -642,13 +679,13 @@ watch(
 );
 
 watch(
-  [snacksSelected, () => formData.value.target_participants, computedDays, isOutsideBsu],
+  [snacksSelected, () => formData.value.target_participants, computedDays, isOutsideBsu, baselineSettings],
   () => {
     if (loadingData.value) return;
     const item = formData.value.budget_items.find(i => i.name === 'Snacks');
     if (item) {
       const snacksCount = (snacksSelected.value.am ? 1 : 0) + (snacksSelected.value.pm ? 1 : 0);
-      const snacksRate = isOutsideBsu.value ? 150 : 80;
+      const snacksRate = isOutsideBsu.value ? baselineSettings.value.snacks_outside : baselineSettings.value.snacks_inside;
       const pax = Number(formData.value.target_participants) || 0;
       const calculated = (snacksCount * snacksRate * pax * computedDays.value);
       item.total = calculated || '';
@@ -657,27 +694,27 @@ watch(
   { deep: true }
 );
 
-watch(pfPax, (newPax) => {
+watch([pfPax, baselineSettings], ([newPax, _]) => {
   if (loadingData.value) return;
   const item = formData.value.budget_items.find(i => i.name === 'Professional Fee/Honoraria');
   if (item) {
-    item.total = (Number(newPax) * 2258.25) || '';
+    item.total = (Number(newPax) * baselineSettings.value.pf_honoraria) || '';
   }
 });
 
-watch(tokensPax, (newPax) => {
+watch([tokensPax, baselineSettings], ([newPax, _]) => {
   if (loadingData.value) return;
   const item = formData.value.budget_items.find(i => i.name === 'Token/s');
   if (item) {
-    item.total = (Number(newPax) * 1000) || '';
+    item.total = (Number(newPax) * baselineSettings.value.tokens) || '';
   }
 });
 
-watch(() => formData.value.target_participants, (newPax) => {
+watch([() => formData.value.target_participants, baselineSettings], ([newPax, _]) => {
   if (loadingData.value) return;
   const item = formData.value.budget_items.find(i => i.name === 'Materials and Supplies');
   if (item) {
-    item.total = (Number(newPax) * 1000) || '';
+    item.total = (Number(newPax) * baselineSettings.value.materials) || '';
   }
 });
 
@@ -704,6 +741,15 @@ const fetchVenues = async () => {
     console.error('Error fetching venues:', err);
   }
 };
+
+watch(() => formData.value.venue, (newVenue) => {
+  if (newVenue && newVenue !== 'Other') {
+    const selectedVenue = venues.value.find(v => v.venue_id == newVenue);
+    if (selectedVenue && selectedVenue.is_inside_bsu !== undefined) {
+      formData.value.is_inside_bsu = (selectedVenue.is_inside_bsu == 1 || selectedVenue.is_inside_bsu === true);
+    }
+  }
+});
 
 const fetchFormTypes = async () => {
   try {
@@ -737,32 +783,24 @@ const fetchGADMandates = async () => {
 };
 
 const fetchGenderIssues = async (mandateIds) => {
-  if (!mandateIds || !Array.isArray(mandateIds) || mandateIds.length === 0) {
+  const ids = (mandateIds || formData.value?.gad_mandate || []).filter(id => id !== 'Other');
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
     genderIssues.value = [];
     return;
   }
   try {
-    const allIssues = [];
-    for (const mandateId of mandateIds) {
-       if (mandateId !== 'Other') {
-           const res = await api.get(`get-gender-issues/${mandateId}`);
-           if (res.data) allIssues.push(...res.data);
-       }
+    const idString = ids.join(',');
+    let url = `get-gender-issues?mandates=${encodeURIComponent(idString)}`;
+    if (formData.value && formData.value.activity_classification) {
+      url += '&classification=' + formData.value.activity_classification;
     }
-    genderIssues.value = allIssues;
+    const res = await api.get(url);
+    genderIssues.value = res.data || [];
   } catch (error) {
     console.error('Error fetching gender issues:', error);
+    genderIssues.value = [];
   }
 };
-
-watch(() => formData.value.gad_mandate, (newVal) => {
-  if (newVal && newVal.length > 0) {
-    fetchGenderIssues(newVal);
-  } else {
-    genderIssues.value = [];
-    formData.value.gender_issue = [];
-  }
-}, { deep: true });
 
 const fetchDesignDetails = async () => {
   loading.value = true;
@@ -849,6 +887,7 @@ const fetchDesignDetails = async () => {
         start_time: design.value.start_time,
         end_time: design.value.end_time,
         venue: design.value.venue_id || 'Other',
+        is_inside_bsu: design.value.is_inside_bsu == 1 || design.value.is_inside_bsu === true,
         proposed_budget: design.value.proposed_budget,
         target_participants: design.value.target_participants,
         budget_items: [
@@ -872,17 +911,35 @@ const fetchDesignDetails = async () => {
         await fetchGADMandates();
         const mapLoadedMandates = () => {
             if (gadMandates.value.length > 0 && formData.value.gad_mandate.length > 0) {
-                const loadedIds = formData.value.gad_mandate.map(String);
+                const savedMandates = formData.value.gad_mandate.map(String);
                 const mappedIds = gadMandates.value
-                    .filter(m => loadedIds.some(id => m.id.split(',').includes(id)))
+                    .filter(m => {
+                        const mIds = String(m.id).split(',');
+                        return mIds.every(id => savedMandates.includes(id));
+                    })
                     .map(m => m.id.toString());
                 if (mappedIds.length > 0) {
                     formData.value.gad_mandate = mappedIds;
                 }
+                if (savedMandates.includes('Other') && !formData.value.gad_mandate.includes('Other')) {
+                    formData.value.gad_mandate.push('Other');
+                }
             }
         };
         mapLoadedMandates();
-        await fetchGenderIssues(formData.value.gad_mandate);
+        if (formData.value.gad_mandate.length > 0) {
+            await fetchGenderIssues(formData.value.gad_mandate);
+            const savedIssues = formData.value.gender_issue.map(String);
+            formData.value.gender_issue = genderIssues.value
+                .filter(m => {
+                    const mIds = String(m.id).split(',');
+                    return mIds.every(id => savedIssues.includes(id));
+                })
+                .map(m => m.id.toString());
+            if (savedIssues.includes('Other') && !formData.value.gender_issue.includes('Other')) {
+                formData.value.gender_issue.push('Other');
+            }
+        }
       } else {
         error.value = "Activity design not found.";
     }
@@ -1101,6 +1158,17 @@ watch([() => formData.value.start_time, () => formData.value.end_time], ([newSta
 
 const handleUpdate = async () => {
 
+  // Validate Cause of Gender Issue
+  if (!formData.value.gender_issue || formData.value.gender_issue.length === 0) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Missing Field',
+      text: 'Please select at least one Cause of Gender Issue before submitting.',
+      confirmButtonColor: '#b979cc'
+    });
+    return;
+  }
+
   // Validate start date
   const startValidation = isValidActivityDate(formData.value.start_date, true);
   if (!startValidation.valid) {
@@ -1199,17 +1267,19 @@ const handleUpdate = async () => {
 
     // Venue Logic
     if (formData.value.venue && formData.value.venue !== 'Other') {
-      submitData.append('venue', formData.value.venue);
+      submitData.append('venue_id', formData.value.venue);
     } else if (formData.value.venue === 'Other') {
+      submitData.append('venue_id', 'Other');
       submitData.append('venue', customVenue.value || '');
     }
+    submitData.append('is_inside_bsu', formData.value.is_inside_bsu ? 1 : 0);
 
     const transItem = formData.value.budget_items.find(i => i.name === 'Transportation');
-    if (transItem && Number(transItem.total) > 20000) {
+    if (transItem && Number(transItem.total) > baselineSettings.value.transportation_limit) {
       Swal.fire({
         icon: 'warning',
         title: 'Limit Exceeded',
-        text: 'Transportation budget cannot exceed the maximum limit of ₱20,000.',
+        text: `Transportation budget cannot exceed the maximum limit of ₱${Number(baselineSettings.value.transportation_limit).toLocaleString()}.`,
         confirmButtonColor: '#b979cc'
       });
       return;
@@ -1278,9 +1348,14 @@ const handleUpdate = async () => {
   
   watch(() => formData.value.gad_mandate, (newVal) => {
       if (typeof loadingData !== 'undefined' && loadingData.value) return;
-      formData.value.gender_issue = [];
-      fetchGenderIssues(newVal);
-  });
+      if (newVal && newVal.length > 0) {
+          formData.value.gender_issue = [];
+          fetchGenderIssues(newVal);
+      } else {
+          genderIssues.value = [];
+          formData.value.gender_issue = [];
+      }
+  }, { deep: true });
   
   onMounted(() => {
   if (!user.value.id || user.value.role !== 'gad_staff') {

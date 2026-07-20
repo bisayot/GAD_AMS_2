@@ -126,7 +126,7 @@
                           </button>
                           <transition name="fade-pop">
                             <div v-if="helpState.startDate" class="simple-popup">
-                              Must be scheduled on working days from Monday to Thursday.
+                              Must be scheduled on working days from Monday to Friday.
                             </div>
                           </transition>
                         </div>
@@ -187,6 +187,18 @@
                       </div>
                       <input type="time" v-model="form.end_time" min="04:00" max="20:00" required class="custom-input-field code-icon-clock"
                       >
+                    </div>
+                  </div>
+
+                  <div class="input-group-ar">
+                    <label class="form-label-ar">Venue Location *</label>
+                    <div class="toggle-container" style="display: flex; gap: 1rem; align-items: center; height: 42px;">
+                      <label style="color: #cbd5e1; font-size: 14px; cursor: pointer;">
+                        <input type="radio" :value="true" v-model="form.is_inside_bsu" style="accent-color: #b979cc; transform: scale(1.1); margin-right: 5px;" /> Inside BSU
+                      </label>
+                      <label style="color: #cbd5e1; font-size: 14px; cursor: pointer;">
+                        <input type="radio" :value="false" v-model="form.is_inside_bsu" style="accent-color: #b979cc; transform: scale(1.1); margin-right: 5px;" /> Outside BSU
+                      </label>
                     </div>
                   </div>
 
@@ -754,7 +766,8 @@ const form = ref({
   start_time: '',
   end_time: '',
   venue: '',
-  attendees: '',
+  is_inside_bsu: true,
+  attendees: 0,
   male: '',
   female: '', 
   proposed_budget: 0,
@@ -801,6 +814,15 @@ const fetchVenues = async () => {
     console.error('Error fetching venues:', error);
   }
 };
+
+watch(() => form.value.venue, (newVenue) => {
+  if (newVenue && newVenue !== 'Other') {
+    const selectedVenue = venues.value.find(v => v.venue_name === newVenue);
+    if (selectedVenue && selectedVenue.is_inside_bsu !== undefined) {
+      form.value.is_inside_bsu = (selectedVenue.is_inside_bsu == 1 || selectedVenue.is_inside_bsu === true);
+    }
+  }
+});
 
 const fetchFormTypes = async () => {
   try {
@@ -1036,15 +1058,39 @@ const formatBudgetName = (name) => {
   return name.replace(/(\(.*\))/g, '<span class="budget-item-subtext">$1</span>');
 };
 
+// Baseline Settings
+const baselineSettings = ref({
+  meals_inside: 220,
+  meals_outside: 350,
+  snacks_inside: 80,
+  snacks_outside: 150,
+  pf_honoraria: 2258.25,
+  tokens: 1000,
+  materials: 1000,
+  transportation_limit: 20000
+});
 
-watch(pfPax, (newPax) => {
+const fetchBaselineSettings = async () => {
+  try {
+    const res = await api.get('/settings/baseline');
+    if (res.data) {
+      baselineSettings.value = res.data;
+    }
+  } catch (error) {
+    console.error('Failed to fetch baseline settings:', error);
+  }
+};
+
+watch([pfPax, baselineSettings], ([newPax, _]) => {
   const item = form.value.budget_items.find(i => i.name === 'Professional Fee/Honoraria');
-  if (item) item.total = (Number(newPax) * 2258.25) || '';
-});
-watch(tokensPax, (newPax) => {
+  if (item) item.total = (Number(newPax) * baselineSettings.value.pf_honoraria) || '';
+}, { deep: true });
+
+watch([tokensPax, baselineSettings], ([newPax, _]) => {
   const item = form.value.budget_items.find(i => i.name === 'Token/s');
-  if (item) item.total = (Number(newPax) * 1000) || '';
-});
+  if (item) item.total = (Number(newPax) * baselineSettings.value.tokens) || '';
+}, { deep: true });
+
 // removed buggy watchers
 
 watch(() => form.value.budget_items, (newItems) => {
@@ -1160,6 +1206,17 @@ const submitReport = async () => {
     return;
   }
 
+  // Validate Cause of Gender Issue
+  if (!form.value.gender_issue_id || form.value.gender_issue_id.length === 0) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Missing Field',
+      text: 'Please select at least one Cause of Gender Issue before submitting.',
+      confirmButtonColor: '#b979cc'
+    });
+    return;
+  }
+
   // Minimal validation for start and end date
   if (form.value.start_date && form.value.end_date) {
     const startDate = new Date(form.value.start_date + 'T00:00:00');
@@ -1259,7 +1316,7 @@ const submitReport = async () => {
     formData.append('evaluation_results', JSON.stringify(evalObj));
 
     Object.keys(form.value).forEach(key => {
-      if (key !== 'budget_items' && key !== 'evaluation_items' && key !== 'venue') {
+      if (key !== 'budget_items' && key !== 'evaluation_items' && key !== 'venue' && key !== 'is_inside_bsu') {
         formData.append(key, form.value[key]);
       }
     });
@@ -1269,6 +1326,7 @@ const submitReport = async () => {
     } else {
       formData.append('venue', form.value.venue);
     }
+    formData.append('is_inside_bsu', form.value.is_inside_bsu ? 1 : 0);
 
     const selectedClassification = ActClassification.value.find(c => c.classification_name === form.value.activity_classification);
     if (selectedClassification) {
@@ -1467,15 +1525,11 @@ watch(() => form.value.end_time, (newTime) => {
   }
 });
 
-
-
-
-
-
 onMounted(() => {
   if (!user.value.id) {
     router.push('/login');
   } else {
+    fetchBaselineSettings();
     fetchApprovedControls();
     fetchHolidays();
     fetchGADMandates();

@@ -47,11 +47,38 @@ class PlanController extends ResourceController
             $orgData['year'] = date('Y');
         }
 
-        // Get items
         $items = $db->table('gpb_items')
             ->orderBy('sort_order', 'ASC')
             ->get()
             ->getResultArray();
+
+        // Get actual accomplishment results for each mandate by looking up the linked Activity Designs
+        $arDataQuery = $db->table('activity_design_mandates adm')
+            ->select('adm.mandate_id as gpb_item_id, ar.id as ar_id, ar.male, ar.female')
+            ->join('activity_design ad', 'ad.act_design_id = adm.act_design_id')
+            ->join('accomplishment_report ar', 'ar.control_number = ad.control_number')
+            ->where('ar.status', 'Verified')
+            ->where('ar.deleted_at', null)
+            ->get()->getResultArray();
+            
+            
+        $arHeadcounts = [];
+        foreach ($arDataQuery as $row) {
+            $mandateId = $row['gpb_item_id'];
+            $arId = $row['ar_id'];
+            if (!isset($arHeadcounts[$mandateId])) {
+                $arHeadcounts[$mandateId] = [
+                    'male' => 0,
+                    'female' => 0,
+                    'seen_ars' => []
+                ];
+            }
+            if (!in_array($arId, $arHeadcounts[$mandateId]['seen_ars'])) {
+                $arHeadcounts[$mandateId]['male'] += (int)$row['male'];
+                $arHeadcounts[$mandateId]['female'] += (int)$row['female'];
+                $arHeadcounts[$mandateId]['seen_ars'][] = $arId;
+            }
+        }
 
         $processedItems = [];
         foreach ($items as $item) {
@@ -71,6 +98,8 @@ class PlanController extends ResourceController
                 'indicators' => $item['indicators'] ?? $item['targets'],
                 'responsible' => $item['responsible'] ?? $item['office'],
                 'budgetLines' => $budgetLines,
+                'actualResult_m' => isset($arHeadcounts[$item['id']]) ? $arHeadcounts[$item['id']]['male'] : 0,
+                'actualResult_f' => isset($arHeadcounts[$item['id']]) ? $arHeadcounts[$item['id']]['female'] : 0,
             ];
         }
 

@@ -60,6 +60,7 @@ class ActivityDesignController extends BaseController
         }
 
         try {
+            $isInsideBsu = filter_var($this->request->getPost('is_inside_bsu'), FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
             $venueId = $this->request->getPost("venue_id");
             if ($venueId === 'Other') {
                 $customVenueName = $this->request->getPost("custom_venue");
@@ -72,7 +73,7 @@ class ActivityDesignController extends BaseController
                 
                 // Insert new venue
                 $venueModel = new \App\Models\VenueModel();
-                $venueModel->insert(['venue_name' => $customVenueName]);
+                $venueModel->insert(['venue_name' => $customVenueName, 'is_inside_bsu' => $isInsideBsu]);
                 $venueId = $venueModel->getInsertID();
             }
 
@@ -110,6 +111,7 @@ class ActivityDesignController extends BaseController
                 "start_time"                 => $this->request->getPost("start_time"),
                 "end_time"                   => $this->request->getPost("end_time"),
                 "venue_id"                   => $venueId,
+                "is_inside_bsu"              => $isInsideBsu,
                 "target_participants"        => $this->request->getPost("target_participants"),
                 "proposed_budget"            => $this->request->getPost("proposed_budget"),
                 "user_id"                    => $this->request->getPost("user_id"),
@@ -476,7 +478,16 @@ class ActivityDesignController extends BaseController
               if (is_numeric($mandate)) {
                   $finalMandates[] = $mandate;
               }
-          }
+        }
+
+        $isInsideBsu = filter_var($this->request->getPost('is_inside_bsu'), FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+        $venueId = $this->request->getPost('venue_id');
+        if ($venueId === 'Other') {
+            $customVenueName = $this->request->getPost("venue");
+            $venueModel = new \App\Models\VenueModel();
+            $venueModel->insert(['venue_name' => $customVenueName, 'is_inside_bsu' => $isInsideBsu]);
+            $venueId = $venueModel->getInsertID();
+        }
 
         $genderIssueStr = $this->request->getPost('gender_issue_id');
         $genderIssues = $genderIssueStr ? explode(',', $genderIssueStr) : [];
@@ -498,7 +509,7 @@ class ActivityDesignController extends BaseController
             'start_time'          => $this->request->getPost('start_time'),
             'end_time'            => $this->request->getPost('end_time'),
             'venue'               => $this->request->getPost('venue'),
-            'venue_id'            => $this->request->getPost('venue_id'),
+            'venue_id'            => $venueId,
             'proposed_budget'     => $this->request->getPost('proposed_budget'),
             'target_participants' => $this->request->getPost('target_participants'),
         ];

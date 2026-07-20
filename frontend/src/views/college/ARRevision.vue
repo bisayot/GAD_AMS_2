@@ -257,6 +257,17 @@
                     <label class="info-label">Venue *</label>
                     <input type="text" v-model="form.venue" class="custom-input-field mt-1" placeholder="e.g., Convention Center, Main Hall">
                   </div>
+                  <div class="full-width-info">
+                    <label class="info-label">Venue Location *</label>
+                    <div class="toggle-container" style="display: flex; gap: 1rem; align-items: center; height: 42px;">
+                      <label style="color: #cbd5e1; font-size: 14px; cursor: pointer;">
+                        <input type="radio" :value="true" v-model="form.is_inside_bsu" style="accent-color: #b979cc; transform: scale(1.1); margin-right: 5px;" /> Inside BSU
+                      </label>
+                      <label style="color: #cbd5e1; font-size: 14px; cursor: pointer;">
+                        <input type="radio" :value="false" v-model="form.is_inside_bsu" style="accent-color: #b979cc; transform: scale(1.1); margin-right: 5px;" /> Outside BSU
+                      </label>
+                    </div>
+                  </div>
                   <div>
                     <label class="info-label">Number of Attendees</label>
                     <input type="number" v-model="form.attendees" min="0" class="custom-input-field mt-1" readonly style="opacity:0.6;cursor:not-allowed;">
@@ -699,6 +710,7 @@ const form = ref({
   start_time: '',
   end_time: '',
   venue: '',
+  is_inside_bsu: true,
   attendees: '',
   male: '',
   female: '', 
@@ -1080,10 +1092,22 @@ const submitReport = async () => {
     if (!confirm.isConfirmed) { isSubmitting.value = false; return; }
   }
 
+  // Validate Cause of Gender Issue
+  if (!form.value.gender_issue_id || form.value.gender_issue_id.length === 0) {
+    isSubmitting.value = false;
+    Swal.fire({
+      icon: 'warning',
+      title: 'Missing Field',
+      text: 'Please select at least one Cause of Gender Issue before submitting.',
+      confirmButtonColor: '#b979cc'
+    });
+    return;
+  }
+
   try {
     const formData = new FormData();
     
-    formData.append('venue_id', form.value.venue);
+    formData.append('venue', form.value.venue);
 
             const normalizedBudgetItems = [];
 
@@ -1163,10 +1187,11 @@ const submitReport = async () => {
     formData.append('custom_gender_issue', customGenderIssue.value);
 
     Object.keys(form.value).forEach(key => {
-      if (key !== 'budget_items' && key !== 'evaluation_items' && key !== 'venue') {
+      if (key !== 'budget_items' && key !== 'evaluation_items' && key !== 'venue' && key !== 'is_inside_bsu') {
         formData.append(key, form.value[key]);
       }
     });
+    formData.append('is_inside_bsu', form.value.is_inside_bsu ? 1 : 0);
     
     uploadedFiles.value.forEach(file => {
         formData.append('attachments[]', file);
@@ -1439,6 +1464,7 @@ const fetchReportDetails = async () => {
       form.value.start_time = r.start_time || '';
       form.value.end_time = r.end_time || '';
       form.value.venue = r.venue || '';
+      form.value.is_inside_bsu = r.is_inside_bsu == 1 || r.is_inside_bsu === true;
 
       form.value.attendees = r.number_of_attendees || r.attendees || '';
       form.value.male = r.male_participants || r.male || '';
