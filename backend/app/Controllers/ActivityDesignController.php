@@ -948,95 +948,114 @@ class ActivityDesignController extends BaseController
         
         $classification_id = $this->request->getGet('classification');
         
-        $expression = 'CASE WHEN mandate = "" OR mandate IS NULL THEN CONCAT("N/A (Attributed Program) - ", IFNULL(activity, "")) ELSE mandate END';
-        $builder = $db->table('gpb_items')
-            ->select('id, "GPB" as code, ' . $expression . ' as title', false);
+        try {
+            $expression = 'CASE WHEN mandate = "" OR mandate IS NULL THEN CONCAT("N/A (Attributed Program) - ", IFNULL(activity, "")) ELSE mandate END';
+            $builder = $db->table('gpb_items')
+                ->select('id, "GPB" as code, ' . $expression . ' as title', false);
 
-        if ($classification_id) {
-            $section = '';
-            if ($classification_id == 1) $section = 'client';
-            else if ($classification_id == 2) $section = 'org';
-            else if ($classification_id == 3) $section = 'attributed';
+            if ($classification_id) {
+                $section = '';
+                if ($classification_id == 1) $section = 'client';
+                else if ($classification_id == 2) $section = 'org';
+                else if ($classification_id == 3) $section = 'attributed';
 
-            if ($section) {
-                $builder->where('section', $section);
+                if ($section) {
+                    $builder->where('section', $section);
+                }
             }
-        }
-        
-        // Only filter out empty mandates if it's NOT an attributed program
-        // Because attributed programs specifically need to show N/A
-        if ($classification_id != 3) {
-            $builder->where('mandate !=', '');
-            $builder->where('mandate IS NOT NULL');
-        }
-
-        $query = $builder->get();
-        $results = $query->getResult();
-        
-        $grouped = [];
-        foreach ($results as $row) {
-            $title = $row->title;
-            if (!isset($grouped[$title])) {
-                $grouped[$title] = (object)[
-                    'id' => [],
-                    'code' => $row->code,
-                    'title' => $title
-                ];
+            
+            // Only filter out empty mandates if it's NOT an attributed program
+            // Because attributed programs specifically need to show N/A
+            if ($classification_id != 3) {
+                $builder->where('mandate !=', '');
+                $builder->where('mandate IS NOT NULL');
             }
-            $grouped[$title]->id[] = $row->id;
+
+            $query = $builder->get();
+            $results = $query->getResult();
+            
+            $grouped = [];
+            foreach ($results as $row) {
+                $title = $row->title;
+                if (!isset($grouped[$title])) {
+                    $grouped[$title] = (object)[
+                        'id' => [],
+                        'code' => $row->code,
+                        'title' => $title
+                    ];
+                }
+                $grouped[$title]->id[] = $row->id;
+            }
+            
+            // Convert arrays of IDs to comma separated string
+            foreach ($grouped as $group) {
+                $group->id = implode(',', $group->id);
+            }
+            
+            return $this->response->setJSON(array_values($grouped));
+        } catch (\Throwable $e) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'error' => true, 
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
-        
-        // Convert arrays of IDs to comma separated string
-        foreach ($grouped as $group) {
-            $group->id = implode(',', $group->id);
-        }
-        
-        return $this->response->setJSON(array_values($grouped));
     }
 
     public function getGenderIssues($mandate_id = null)
     {
         $db = \Config\Database::connect();
-        $expression = 'CASE WHEN cause = "" OR cause IS NULL THEN CONCAT("N/A (Attributed Program) - ", IFNULL(activity, "")) ELSE cause END';
-        $builder = $db->table('gpb_items')->select('id, ' . $expression . ' as title', false);
-        
-        $classification_id = $this->request->getGet('classification');
+        try {
+            $expression = 'CASE WHEN cause = "" OR cause IS NULL THEN CONCAT("N/A (Attributed Program) - ", IFNULL(activity, "")) ELSE cause END';
+            $builder = $db->table('gpb_items')->select('id, ' . $expression . ' as title', false);
+            
+            $classification_id = $this->request->getGet('classification');
 
-        if ($classification_id != 3) {
-            $builder->where('cause !=', '');
-            $builder->where('cause IS NOT NULL');
-        }
-
-        $mandates = $this->request->getGet('mandates');
-        if ($mandates) {
-            $mandateIds = explode(',', $mandates);
-            $builder->whereIn('id', $mandateIds);
-        } else if ($mandate_id) {
-            $mandateIds = explode(',', $mandate_id);
-            $builder->whereIn('id', $mandateIds);
-        }
-
-        $query = $builder->get();
-        $results = $query->getResult();
-        
-        $grouped = [];
-        foreach ($results as $row) {
-            $title = $row->title;
-            if (!isset($grouped[$title])) {
-                $grouped[$title] = (object)[
-                    'id' => [],
-                    'title' => $title
-                ];
+            if ($classification_id != 3) {
+                $builder->where('cause !=', '');
+                $builder->where('cause IS NOT NULL');
             }
-            $grouped[$title]->id[] = $row->id;
+
+            $mandates = $this->request->getGet('mandates');
+            if ($mandates) {
+                $mandateIds = explode(',', $mandates);
+                $builder->whereIn('id', $mandateIds);
+            } else if ($mandate_id) {
+                $mandateIds = explode(',', $mandate_id);
+                $builder->whereIn('id', $mandateIds);
+            }
+
+            $query = $builder->get();
+            $results = $query->getResult();
+            
+            $grouped = [];
+            foreach ($results as $row) {
+                $title = $row->title;
+                if (!isset($grouped[$title])) {
+                    $grouped[$title] = (object)[
+                        'id' => [],
+                        'title' => $title
+                    ];
+                }
+                $grouped[$title]->id[] = $row->id;
+            }
+            
+            // Convert arrays of IDs to comma separated string
+            foreach ($grouped as $group) {
+                $group->id = implode(',', $group->id);
+            }
+            
+            return $this->response->setJSON(array_values($grouped));
+        } catch (\Throwable $e) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'error' => true, 
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
         }
-        
-        // Convert arrays of IDs to comma separated string
-        foreach ($grouped as $group) {
-            $group->id = implode(',', $group->id);
-        }
-        
-        return $this->response->setJSON(array_values($grouped));
     }
 
     public function getActivityClassifications()
