@@ -948,9 +948,10 @@ class ActivityDesignController extends BaseController
         
         $classification_id = $this->request->getGet('classification');
         
+        $expression = 'CASE WHEN mandate = "" OR mandate IS NULL THEN CONCAT("N/A (Attributed Program) - ", IFNULL(activity, "")) ELSE mandate END';
         $builder = $db->table('gpb_items')
-            ->select('GROUP_CONCAT(id) as id, "GPB" as code, CASE WHEN mandate = "" OR mandate IS NULL THEN CONCAT("N/A (Attributed Program) - ", IFNULL(activity, "")) ELSE mandate END as title', false);
-        $builder->groupBy('title');
+            ->select('GROUP_CONCAT(id) as id, "GPB" as code, ' . $expression . ' as title', false);
+        $builder->groupBy($expression);
 
         if ($classification_id) {
             $section = '';
@@ -977,8 +978,9 @@ class ActivityDesignController extends BaseController
     public function getGenderIssues($mandate_id = null)
     {
         $db = \Config\Database::connect();
-        $builder = $db->table('gpb_items')->select('GROUP_CONCAT(id) as id, CASE WHEN cause = "" OR cause IS NULL THEN CONCAT("N/A (Attributed Program) - ", IFNULL(activity, "")) ELSE cause END as title', false);
-        $builder->groupBy('title');
+        $expression = 'CASE WHEN cause = "" OR cause IS NULL THEN CONCAT("N/A (Attributed Program) - ", IFNULL(activity, "")) ELSE cause END';
+        $builder = $db->table('gpb_items')->select('GROUP_CONCAT(id) as id, ' . $expression . ' as title', false);
+        $builder->groupBy($expression);
         
         $classification_id = $this->request->getGet('classification');
 
