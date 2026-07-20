@@ -951,7 +951,7 @@ class ActivityDesignController extends BaseController
         $expression = 'CASE WHEN mandate = "" OR mandate IS NULL THEN CONCAT("N/A (Attributed Program) - ", IFNULL(activity, "")) ELSE mandate END';
         $builder = $db->table('gpb_items')
             ->select('GROUP_CONCAT(id) as id, "GPB" as code, ' . $expression . ' as title', false);
-        $builder->groupBy($expression);
+        $builder->groupBy($expression, false);
 
         if ($classification_id) {
             $section = '';
@@ -980,7 +980,7 @@ class ActivityDesignController extends BaseController
         $db = \Config\Database::connect();
         $expression = 'CASE WHEN cause = "" OR cause IS NULL THEN CONCAT("N/A (Attributed Program) - ", IFNULL(activity, "")) ELSE cause END';
         $builder = $db->table('gpb_items')->select('GROUP_CONCAT(id) as id, ' . $expression . ' as title', false);
-        $builder->groupBy($expression);
+        $builder->groupBy($expression, false);
         
         $classification_id = $this->request->getGet('classification');
 
