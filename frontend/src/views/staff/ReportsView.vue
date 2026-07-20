@@ -642,7 +642,15 @@ function addDataRow(data){
   btn.className = 'remove-btn';
   btn.textContent = '×';
   btn.title = 'Remove row';
-  btn.onclick = () => { tr.remove(); renumber(); recalcAll(); };
+  btn.onclick = async () => { 
+    if (data.id && !String(data.id).startsWith('i_')) {
+      try { await api.delete(`/gpb/item/${data.id}`); } 
+      catch (e) { console.error('Failed to delete from DB', e); }
+    }
+    tr.remove(); 
+    renumber(); 
+    recalcAll(); 
+  };
   tdAct.appendChild(btn);
   tr.appendChild(tdAct);
 
@@ -958,6 +966,7 @@ function exportCSV(){
         if (fMatch) f = parseInt(fMatch[1] || fMatch[2]);
         
         return {
+          id: item.id,
           section: item.section || 'General',
           issue: item.mandate || '',
           cause: item.cause || '',

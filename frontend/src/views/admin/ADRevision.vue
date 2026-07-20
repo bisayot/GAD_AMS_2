@@ -116,12 +116,23 @@
                   <input v-model="formData.end_time" type="time" class="modal-input">
                 </div>
               </div>
+              <div style="margin-bottom: 1rem;">
+                <label class="form-label">Venue Location *</label>
+                <div class="toggle-container" style="display: flex; gap: 1rem; align-items: center; height: 38px;">
+                  <label style="color: #cbd5e1; font-size: 14px; cursor: pointer;">
+                    <input type="radio" :value="true" v-model="formData.is_inside_bsu" style="accent-color: #b979cc; transform: scale(1.1); margin-right: 5px;" /> Inside BSU
+                  </label>
+                  <label style="color: #cbd5e1; font-size: 14px; cursor: pointer;">
+                    <input type="radio" :value="false" v-model="formData.is_inside_bsu" style="accent-color: #b979cc; transform: scale(1.1); margin-right: 5px;" /> Outside BSU
+                  </label>
+                </div>
+              </div>
               <div class="venue-participants-row">
                 <div class="venue-col">
                   <label class="form-label">Venue</label>
                   <select v-model="formData.venue" class="modal-input select-input select-arrow-fix">
                     <option value="" disabled>Select venue...</option>
-                    <option v-for="v in venues" :key="v.venue_id" :value="v.venue_id" class="dark-option">
+                    <option v-for="v in filteredVenues" :key="v.venue_id" :value="v.venue_id" class="dark-option">
                       {{ v.venue_name }}
                     </option>
                     <option value="Other" class="dark-option">Other</option>
@@ -603,7 +614,7 @@ const computedDays = computed(() => {
 });
 
 const isOutsideBsu = computed(() => {
-  return formData.value.venue === 'Other';
+  return !formData.value.is_inside_bsu;
 });
 
 // Reactive Sub-controls State
@@ -626,7 +637,7 @@ const removeOtherItem = (index) => {
 
 // Reactive Auto-computation Watchers
 watch(
-  [mealsSelected, () => formData.value.target_participants, computedDays, isOutsideBsu],
+  [mealsSelected, () => formData.value.target_participants, () => computedDays.value, () => isOutsideBsu.value],
   () => {
     if (loadingData.value) return;
     const item = formData.value.budget_items.find(i => i.name === 'Meals');
@@ -642,7 +653,7 @@ watch(
 );
 
 watch(
-  [snacksSelected, () => formData.value.target_participants, computedDays, isOutsideBsu],
+  [snacksSelected, () => formData.value.target_participants, () => computedDays.value, () => isOutsideBsu.value],
   () => {
     if (loadingData.value) return;
     const item = formData.value.budget_items.find(i => i.name === 'Snacks');
@@ -704,6 +715,20 @@ const fetchVenues = async () => {
     console.error('Error fetching venues:', err);
   }
 };
+
+const filteredVenues = computed(() => {
+  return venues.value.filter(v => (v.is_inside_bsu == 1 || v.is_inside_bsu === true) === formData.value.is_inside_bsu);
+});
+
+watch(() => formData.value.is_inside_bsu, () => {
+  if (loadingData.value) return;
+  if (formData.value.venue && formData.value.venue !== 'Other') {
+    const isValid = filteredVenues.value.some(v => v.venue_id == formData.value.venue);
+    if (!isValid) {
+      formData.value.venue = '';
+    }
+  }
+});
 
 const fetchFormTypes = async () => {
   try {
@@ -841,6 +866,7 @@ const fetchDesignDetails = async () => {
         start_time: design.value.start_time,
         end_time: design.value.end_time,
         venue: design.value.venue_id || 'Other',
+        is_inside_bsu: design.value.is_inside_bsu == 1 || design.value.is_inside_bsu === true,
         proposed_budget: design.value.proposed_budget,
         target_participants: design.value.target_participants,
         budget_items: [
@@ -1229,6 +1255,7 @@ const handleUpdate = async () => {
       submitData.append('venue_id', 'Other');
       submitData.append('venue', customVenue.value || '');
     }
+    submitData.append('is_inside_bsu', formData.value.is_inside_bsu ? 1 : 0);
 
     const transItem = formData.value.budget_items.find(i => i.name === 'Transportation');
     if (transItem && Number(transItem.total) > 20000) {
@@ -1266,6 +1293,23 @@ const handleUpdate = async () => {
           }
         });
       }
+      const mealsItem = normalizedBudgetItems.find(i => i.item_name === 'Meals');
+      if (mealsItem) {
+        let selected = [];
+        if (mealsSelected.value.breakfast) selected.push('Breakfast');
+        if (mealsSelected.value.lunch) selected.push('Lunch');
+        if (mealsSelected.value.dinner) selected.push('Dinner');
+        mealsItem.sub_item = selected.join(', ');
+      }
+
+      const snacksItem = normalizedBudgetItems.find(i => i.item_name === 'Snacks');
+      if (snacksItem) {
+        let selected = [];
+        if (snacksSelected.value.am) selected.push('AM');
+        if (snacksSelected.value.pm) selected.push('PM');
+        snacksItem.sub_item = selected.join(', ');
+      }
+
       submitData.append('budget_items', JSON.stringify(normalizedBudgetItems));
 
     submitData.append('status', 'Pending'); // Reset status so admin can review again

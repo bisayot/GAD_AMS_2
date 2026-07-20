@@ -112,7 +112,7 @@
                     >
                       <option value="" disabled class="dark-option">Select venue...</option>
                       <option 
-                        v-for="v in venues" 
+                        v-for="v in filteredVenues" 
                         :key="v.venue_id" 
                         :value="v.venue_id" 
                         class="dark-option"
@@ -808,11 +808,15 @@ const fetchVenues = async () => {
   }
 };
 
-watch(() => form.value.venue, (newVenue) => {
-  if (newVenue && newVenue !== 'Other') {
-    const selectedVenue = venues.value.find(v => v.venue_id == newVenue);
-    if (selectedVenue && selectedVenue.is_inside_bsu !== undefined) {
-      form.value.is_inside_bsu = (selectedVenue.is_inside_bsu == 1 || selectedVenue.is_inside_bsu === true);
+const filteredVenues = computed(() => {
+  return venues.value.filter(v => (v.is_inside_bsu == 1 || v.is_inside_bsu === true) === form.value.is_inside_bsu);
+});
+
+watch(() => form.value.is_inside_bsu, () => {
+  if (form.value.venue && form.value.venue !== 'Other') {
+    const isValid = filteredVenues.value.some(v => v.venue_id == form.value.venue);
+    if (!isValid) {
+      form.value.venue = '';
     }
   }
 });

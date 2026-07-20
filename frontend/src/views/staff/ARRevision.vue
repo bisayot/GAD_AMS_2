@@ -255,7 +255,32 @@
                   </div>
                   <div class="full-width-info">
                     <label class="info-label">Venue *</label>
-                    <input type="text" v-model="form.venue" class="custom-input-field mt-1" placeholder="e.g., Convention Center, Main Hall">
+                    <select 
+                      v-model="form.venue" 
+                      required 
+                      class="custom-input-field select-arrow-fix mt-1"
+                    >
+                      <option value="" disabled class="dark-option">Select venue...</option>
+                      <option 
+                        v-for="v in filteredVenues" 
+                        :key="v.venue_id" 
+                        :value="v.venue_name" 
+                        class="dark-option"
+                      >
+                        {{ v.venue_name }}
+                      </option>
+                      <option value="Other" class="dark-option">Other</option>
+                    </select>
+                  </div>
+                  <div v-if="form.venue === 'Other'" class="full-width-info mt-3">
+                    <label class="info-label">Specify Other Venue *</label>
+                    <input 
+                      type="text" 
+                      v-model="customVenue" 
+                      required 
+                      class="custom-input-field mt-1"
+                      placeholder="Enter the complete venue name"
+                    >
                   </div>
                   <div class="full-width-info">
                     <label class="info-label">Venue Location *</label>
@@ -911,6 +936,20 @@ const fetchVenues = async () => {
         loading.value = false;
   }
 };
+
+const filteredVenues = computed(() => {
+  return venues.value.filter(v => (v.is_inside_bsu == 1 || v.is_inside_bsu === true) === form.value.is_inside_bsu);
+});
+
+watch(() => form.value.is_inside_bsu, () => {
+  if (loadingData.value) return;
+  if (form.value.venue && form.value.venue !== 'Other') {
+    const isValid = filteredVenues.value.some(v => v.venue_name === form.value.venue);
+    if (!isValid) {
+      form.value.venue = '';
+    }
+  }
+});
 
 fetchVenues();
 

@@ -569,7 +569,7 @@ const handleTrash = async () => {
           timer: 1500,
           showConfirmButton: false
         });
-        router.push('/staff/mandates');
+        router.push(Number(report.value.is_archived) === 1 ? '/staff/archive' : '/staff/ar-list');
       } else {
         throw new Error(response.data.message || 'Failed to move to trash');
       }

@@ -566,7 +566,7 @@ const handleTrash = async () => {
           timer: 1500,
           showConfirmButton: false
         });
-        router.push(design.value.is_archived == 1 ? '/staff/archive' : '/staff/mandates');
+        router.push(design.value.is_archived == 1 ? '/staff/archive' : '/staff/ad-list');
       } else {
         throw new Error(response.data.message || 'Failed to move to trash');
       }

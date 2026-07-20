@@ -511,7 +511,7 @@ const handleTrash = async () => {
           timer: 1500,
           showConfirmButton: false
         });
-        router.push('/college/mandates');
+        router.push(Number(report.value.is_archived) === 1 ? '/college/archive' : '/college/submitted-list');
       } else {
         throw new Error(response.data.message || 'Failed to move to trash');
       }

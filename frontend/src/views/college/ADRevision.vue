@@ -121,7 +121,7 @@
                   <label class="form-label">Venue</label>
                   <select v-model="formData.venue" class="modal-input select-input select-arrow-fix">
                     <option value="" disabled>Select venue...</option>
-                    <option v-for="v in venues" :key="v.venue_id" :value="v.venue_id" class="dark-option">
+                    <option v-for="v in filteredVenues" :key="v.venue_id" :value="v.venue_id" class="dark-option">
                       {{ v.venue_name }}
                     </option>
                     <option value="Other" class="dark-option">Other</option>
@@ -664,7 +664,7 @@ const removeOtherItem = (index) => {
 
 // Reactive Auto-computation Watchers
 watch(
-  [mealsSelected, () => formData.value.target_participants, computedDays, isOutsideBsu, baselineSettings],
+  [mealsSelected, () => formData.value.target_participants, () => computedDays.value, () => isOutsideBsu.value, () => baselineSettings.value],
   () => {
     if (loadingData.value) return;
     const item = formData.value.budget_items.find(i => i.name === 'Meals');
@@ -680,7 +680,7 @@ watch(
 );
 
 watch(
-  [snacksSelected, () => formData.value.target_participants, computedDays, isOutsideBsu, baselineSettings],
+  [snacksSelected, () => formData.value.target_participants, () => computedDays.value, () => isOutsideBsu.value, () => baselineSettings.value],
   () => {
     if (loadingData.value) return;
     const item = formData.value.budget_items.find(i => i.name === 'Snacks');
@@ -743,11 +743,16 @@ const fetchVenues = async () => {
   }
 };
 
-watch(() => formData.value.venue, (newVenue) => {
-  if (newVenue && newVenue !== 'Other') {
-    const selectedVenue = venues.value.find(v => v.venue_id == newVenue);
-    if (selectedVenue && selectedVenue.is_inside_bsu !== undefined) {
-      formData.value.is_inside_bsu = (selectedVenue.is_inside_bsu == 1 || selectedVenue.is_inside_bsu === true);
+const filteredVenues = computed(() => {
+  return venues.value.filter(v => (v.is_inside_bsu == 1 || v.is_inside_bsu === true) === formData.value.is_inside_bsu);
+});
+
+watch(() => formData.value.is_inside_bsu, () => {
+  if (loadingData.value) return;
+  if (formData.value.venue && formData.value.venue !== 'Other') {
+    const isValid = filteredVenues.value.some(v => v.venue_id == formData.value.venue);
+    if (!isValid) {
+      formData.value.venue = '';
     }
   }
 });
@@ -1331,6 +1336,23 @@ const handleUpdate = async () => {
             const snacksItem = normalizedBudgetItems.find(i => i.item_name === 'Snacks');
             if (snacksItem) snacksItem.sub_item = selected.join(', ');
           }
+      }
+
+      const mealsItem = normalizedBudgetItems.find(i => i.item_name === 'Meals');
+      if (mealsItem) {
+        let selected = [];
+        if (mealsSelected.value.breakfast) selected.push('Breakfast');
+        if (mealsSelected.value.lunch) selected.push('Lunch');
+        if (mealsSelected.value.dinner) selected.push('Dinner');
+        mealsItem.sub_item = selected.join(', ');
+      }
+
+      const snacksItem = normalizedBudgetItems.find(i => i.item_name === 'Snacks');
+      if (snacksItem) {
+        let selected = [];
+        if (snacksSelected.value.am) selected.push('AM');
+        if (snacksSelected.value.pm) selected.push('PM');
+        snacksItem.sub_item = selected.join(', ');
       }
 
       submitData.append('budget_items', JSON.stringify(normalizedBudgetItems));

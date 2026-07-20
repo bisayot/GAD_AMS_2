@@ -211,7 +211,7 @@
                     >
                       <option value="" disabled class="dark-option">Select venue...</option>
                       <option 
-                        v-for="v in venues" 
+                        v-for="v in filteredVenues" 
                         :key="v.venue_id" 
                         :value="v.venue_name" 
                         class="dark-option"
@@ -815,11 +815,15 @@ const fetchVenues = async () => {
   }
 };
 
-watch(() => form.value.venue, (newVenue) => {
-  if (newVenue && newVenue !== 'Other') {
-    const selectedVenue = venues.value.find(v => v.venue_name === newVenue);
-    if (selectedVenue && selectedVenue.is_inside_bsu !== undefined) {
-      form.value.is_inside_bsu = (selectedVenue.is_inside_bsu == 1 || selectedVenue.is_inside_bsu === true);
+const filteredVenues = computed(() => {
+  return venues.value.filter(v => (v.is_inside_bsu == 1 || v.is_inside_bsu === true) === form.value.is_inside_bsu);
+});
+
+watch(() => form.value.is_inside_bsu, () => {
+  if (form.value.venue && form.value.venue !== 'Other') {
+    const isValid = filteredVenues.value.some(v => v.venue_name === form.value.venue);
+    if (!isValid) {
+      form.value.venue = '';
     }
   }
 });
@@ -959,6 +963,7 @@ watch(() => form.value.control_number, async (newVal) => {
     form.value.end_date = selected.end_date;
     form.value.start_time = selected.start_time;
     form.value.end_time = selected.end_time;
+    form.value.is_inside_bsu = selected.is_inside_bsu == 1 || selected.is_inside_bsu === true;
     form.value.venue = selected.venue_name || selected.venue; 
     form.value.activity_classification = selected.activity_classification || 'N/A';
     form.value.form_type = selected.form_type_name || selected.form_type || 'N/A';
