@@ -77,6 +77,7 @@ const adminMenu = ref([
       { label: 'Office/Unit Management', icon: 'domain', href: '/admin/office-management' },
       { label: 'User Management', icon: 'manage_accounts', href: '/admin/user-management' },
       { label: 'Activity Logs', icon: 'history', href: '/admin/activity-logs' },
+      { label: 'Venues Management', icon: 'location_on', href: '/admin/venues' },
       { label: 'Document Trash Bin', icon: 'delete', href: '/admin/trash-bin' }
     ]
   },

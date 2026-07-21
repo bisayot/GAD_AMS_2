@@ -78,6 +78,7 @@ const staffMenu = ref([
       { label: 'Office/Unit Management', icon: 'domain', href: '/staff/office-management' },
       { label: 'User Management', icon: 'manage_accounts', href: '/staff/user-management' },
       { label: 'Activity Logs', icon: 'history', href: '/staff/activity-logs' },
+      { label: 'Venues Management', icon: 'location_on', href: '/staff/venues' },
       { label: 'Document Trash Bin', icon: 'delete', href: '/staff/trashbin' }
     ]
   },

@@ -48,6 +48,7 @@ const routes = [
       { path: 'user-management', name: 'admin-user-management', component: () => import('../views/admin/UserManagementView.vue') },
       { path: 'activity-logs', name: 'admin-activity-logs', component: () => import('../views/admin/ActivityLogsView.vue') },
       { path: 'office-management', name: 'admin-office-management', component: () => import('../views/admin/OfficeManagementView.vue') },
+      { path: 'venues', name: 'admin-venues', component: () => import('../views/admin/VenuesManagementView.vue') },
       { path: 'settings', name: 'admin-settings', component: () => import('../views/UserSettingsView.vue') },
     ]
   },
@@ -110,6 +111,7 @@ const routes = [
       { path: 'user-management', name: 'staff-user-management', component: () => import('../views/staff/UserManagementView.vue') },
       { path: 'activity-logs', name: 'staff-activity-logs', component: () => import('../views/staff/ActivityLogsView.vue') },
       { path: 'office-management', name: 'staff-office-management', component: () => import('../views/staff/OfficeManagementView.vue') },
+      { path: 'venues', name: 'staff-venues', component: () => import('../views/staff/VenuesManagementView.vue') },
       { path: 'settings', name: 'staff-settings', component: () => import('../views/UserSettingsView.vue') },
     ]
   },

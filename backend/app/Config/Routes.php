@@ -363,4 +363,12 @@ $routes->group('api', function($routes) {
     $routes->get('annual-reports/archive', 'AnnualReportArchiveController::index');
     $routes->options('annual-reports/archive/(:num)', 'AuthController::handleOptions');
     $routes->get('annual-reports/archive/(:num)', 'AnnualReportArchiveController::show/$1');
+
+    // Venues Management
+    $routes->options('venues', 'AuthController::handleOptions');
+    $routes->get('venues', 'VenueController::index');
+    $routes->post('venues', 'VenueController::create');
+    $routes->options('venues/(:num)', 'AuthController::handleOptions');
+    $routes->put('venues/(:num)', 'VenueController::update/$1');
+    $routes->delete('venues/(:num)', 'VenueController::delete/$1');
 });
