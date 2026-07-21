@@ -348,7 +348,7 @@ onMounted(() => {
 <style scoped>
 .page-container {
   padding: v-bind('isNested ? "0" : "32px"');
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
