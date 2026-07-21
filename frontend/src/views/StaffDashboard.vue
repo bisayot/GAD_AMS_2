@@ -75,10 +75,9 @@ const staffMenu = ref([
   {
     label: 'System Controls', icon: 'admin_panel_settings',
     children: [
-      { label: 'Office/Unit Management', icon: 'domain', href: '/staff/office-management' },
+      { label: 'Campus Resources', icon: 'business_center', href: '/staff/campus-resources' },
       { label: 'User Management', icon: 'manage_accounts', href: '/staff/user-management' },
       { label: 'Activity Logs', icon: 'history', href: '/staff/activity-logs' },
-      { label: 'Venues Management', icon: 'location_on', href: '/staff/venues' },
       { label: 'Document Trash Bin', icon: 'delete', href: '/staff/trashbin' }
     ]
   },

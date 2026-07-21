@@ -1,6 +1,6 @@
 <template>
   <div class="page-container">
-    <div class="header-section">
+    <div v-if="!isNested" class="header-section">
       <div class="flex justify-between items-center w-full">
         <div>
           <h1 class="page-title">Office / Unit Management</h1>
@@ -11,6 +11,14 @@
           Add Office
         </button>
       </div>
+    </div>
+
+    <!-- Action Bar for nested view -->
+    <div v-if="isNested" class="flex justify-end mb-6">
+      <button class="btn-primary" @click="openAddModal">
+        <span class="material-symbols-outlined">add</span>
+        Add Office
+      </button>
     </div>
 
     <!-- Filters and Search -->
@@ -126,6 +134,13 @@
 import { ref, onMounted, computed } from 'vue';
 import api from '../../api';
 import Swal from 'sweetalert2';
+
+const props = defineProps({
+  isNested: {
+    type: Boolean,
+    default: false
+  }
+});
 
 const offices = ref([]);
 const loading = ref(true);
@@ -332,8 +347,8 @@ onMounted(() => {
 
 <style scoped>
 .page-container {
-  padding: 1rem;
-  max-width: 1400px;
+  padding: v-bind('isNested ? "0" : "32px"');
+  max-width: 1200px;
   margin: 0 auto;
 }
 

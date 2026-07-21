@@ -1,7 +1,15 @@
 <template>
   <div class="venues-view">
-    <div class="header-actions">
+    <div v-if="!isNested" class="header-actions">
       <h2>Venues Management</h2>
+      <button class="btn-add" @click="openAddModal">
+        <span class="material-symbols-outlined">add</span>
+        Add New Venue
+      </button>
+    </div>
+
+    <!-- Action Bar for nested view -->
+    <div v-if="isNested" class="flex justify-end mb-6">
       <button class="btn-add" @click="openAddModal">
         <span class="material-symbols-outlined">add</span>
         Add New Venue
@@ -85,6 +93,13 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import api from '../../api';
+
+const props = defineProps({
+  isNested: {
+    type: Boolean,
+    default: false
+  }
+});
 
 const venues = ref([]);
 const loading = ref(true);
@@ -178,7 +193,7 @@ onMounted(() => {
 
 <style scoped>
 .venues-view {
-  padding: 32px;
+  padding: v-bind('isNested ? "0" : "32px"');
   max-width: 1200px;
   margin: 0 auto;
 }
