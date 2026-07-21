@@ -84,7 +84,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import api from '@/services/api'; // Assuming you have an api service
+import api from '../../api';
 
 const venues = ref([]);
 const loading = ref(true);
