@@ -352,10 +352,10 @@ $routes->group('api', function($routes) {
     $routes->options('gpb/item', 'AuthController::handleOptions');
     $routes->get('gpb/item', 'GpbController::index');
     $routes->post('gpb/item', 'GpbController::create');
-    $routes->options('gpb/item/(:num)', 'AuthController::handleOptions');
-    $routes->get('gpb/item/(:num)', 'GpbController::show/$1');
-    $routes->put('gpb/item/(:num)', 'GpbController::update/$1');
-    $routes->delete('gpb/item/(:num)', 'GpbController::delete/$1');
+    $routes->options('gpb/item/(:segment)', 'AuthController::handleOptions');
+    $routes->get('gpb/item/(:segment)', 'GpbController::show/$1');
+    $routes->put('gpb/item/(:segment)', 'GpbController::update/$1');
+    $routes->delete('gpb/item/(:segment)', 'GpbController::delete/$1');
 
     // Annual Report Archives
     $routes->options('annual-reports/archive', 'AuthController::handleOptions');
