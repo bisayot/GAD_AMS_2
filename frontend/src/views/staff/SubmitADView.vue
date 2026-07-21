@@ -2283,4 +2283,24 @@ onUnmounted(() => {
   opacity: 1;
   transform: translate(-50%, 0) scale(1);
 }
+
+@media (max-width: 768px) {
+  .budget-row-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .budget-item-value {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .budget-sub-controls {
+    flex-wrap: wrap;
+  }
+  .grand-total-banner-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
 </style>

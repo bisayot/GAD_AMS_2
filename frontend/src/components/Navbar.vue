@@ -68,4 +68,9 @@ const navItems = [
 .btn-login:hover { transform: scale(0.97); box-shadow: 0 4px 12px rgba(126, 34, 206, 0.3); }
 @media (max-width: 1024px) { .search-wrapper { display: none; } .already-text { display: none; } }
 @media (max-width: 768px) { .navbar-links { display: none; } .navbar-inner { padding: 12px 20px; } }
+@media (max-width: 480px) {
+  .navbar-brand { font-size: 18px; }
+  .btn-login { padding: 6px 16px; font-size: 11px; }
+  .navbar-inner { padding: 10px 12px; gap: 12px; }
+}
 </style>

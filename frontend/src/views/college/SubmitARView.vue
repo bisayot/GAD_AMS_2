@@ -2455,4 +2455,24 @@ onUnmounted(() => {
   outline: none;
   border-color: #b979cc;
 }
+
+@media (max-width: 768px) {
+  .budget-row-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .budget-item-value {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .budget-sub-controls {
+    flex-wrap: wrap;
+  }
+  .grand-total-banner-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
 </style>
