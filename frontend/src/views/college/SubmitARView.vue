@@ -807,7 +807,9 @@ const ActClassification = ref([]);
 const fetchVenues = async () => {
   try {
     const response = await api.get('venues');
-    if (response.data && response.data.success) {
+    if (Array.isArray(response.data)) {
+      venues.value = response.data;
+    } else if (response.data && response.data.success) {
       venues.value = response.data.data || [];
     }
   } catch (error) {

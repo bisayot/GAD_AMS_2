@@ -67,7 +67,11 @@ class SettingController extends ResourceController
         $setting = $settingModel->where('key', 'system_settings')->first();
         
         $defaults = [
-            'ad_submission_limit_enabled' => true
+            'ad_submission_limit_enabled' => true,
+            'trash_ttl_days' => 30,
+            'messages_ttl_days' => 365,
+            'activity_logs_ttl_days' => 365,
+            'archived_documents_ttl_days' => 1825
         ];
 
         if ($setting && isset($setting['value'])) {
@@ -85,5 +89,15 @@ class SettingController extends ResourceController
         $data = $this->request->getJSON(true);
         $settingModel->saveSetting('system_settings', $data, 0); // Using 0 for global fiscal year
         return $this->respondUpdated(['message' => 'Settings updated successfully']);
+    }
+
+    public function triggerCleanup()
+    {
+        try {
+            $result = \App\Libraries\DataRetentionService::runCleanup(true); // force run
+            return $this->respond(['success' => true, 'message' => 'Cleanup triggered', 'result' => $result]);
+        } catch (\Exception $e) {
+            return $this->fail('Cleanup failed: ' . $e->getMessage());
+        }
     }
 }

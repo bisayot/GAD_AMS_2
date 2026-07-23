@@ -330,7 +330,9 @@ $routes->group('api', function($routes) {
     $routes->options('settings/system', 'AuthController::handleOptions');
     $routes->get('settings/system', 'SettingController::getSystemSettings');
     $routes->post('settings/system', 'SettingController::updateSystemSettings');
-
+    
+    $routes->options('settings/trigger-cleanup', 'AuthController::handleOptions');
+    $routes->post('settings/trigger-cleanup', 'SettingController::triggerCleanup');
     
     $routes->options('plan/mandate-statistics', 'AuthController::handleOptions');
     $routes->get('plan/mandate-statistics', 'PlanController::getMandateStatistics');
