@@ -412,7 +412,7 @@
                     <td style="padding: 12px 8px; color: var(--text-primary);">{{ item.item_name }} <span v-if="item.sub_item" style="color: var(--text-muted); font-size: 0.8rem;">- {{ item.sub_item }}</span></td>
                     <td style="padding: 12px 8px; color: var(--text-primary);">₱{{ Number(item.amount).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</td>
                     <td style="padding: 12px 8px;">
-                      <select v-if="item.amount > 0" v-model="item.gpb_budget_line_id" style="width: 200px; padding: 6px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 4px; outline: none;" @change="markAllocationsDirty">
+                      <select v-if="item.amount > 0" v-model="item.gpb_budget_line_id" style="width: 200px; padding: 6px; background: #1e293b; border: 1px solid var(--border); color: #f8fafc; border-radius: 4px; outline: none;" @change="markAllocationsDirty">
                          <option :value="null">-- Not Allocated --</option>
                          <option v-for="bl in (currentAllocationStat?.budget_lines || [])" :key="bl.id" :value="bl.id">
                             {{ bl.label }} (₱{{ Number(bl.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2}) }})

@@ -1280,7 +1280,7 @@ function exportCSV(){
   /* section divider rows */
   .report-wrapper tr.section-row td{
     background:var(--gold) !important;
-    color:var(--gold);
+    color:var(--cream);
     font-family: 'Manrope', system-ui, Avenir, Helvetica, Arial, sans-serif;
     font-weight:700;
     font-size:13.5px;
