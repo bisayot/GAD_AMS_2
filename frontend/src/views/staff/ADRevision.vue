@@ -2019,5 +2019,19 @@ letter-spacing: 0.05em;
   .budget-card-input {
     width: 100%;
   }
+  .doc-item, .doc-item-custom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .doc-info {
+    width: 100%;
+    word-break: break-word;
+  }
+  .preview-btn {
+    align-self: flex-start;
+    width: 100%;
+    box-sizing: border-box;
+  }
 }
 </style>
