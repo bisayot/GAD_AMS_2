@@ -12983,14 +12983,14 @@ class BasePreferences {
     supportsPinchToZoom: true
   });
   #defaults = Object.freeze({
-    annotationEditorMode: 0,
+    annotationEditorMode: 1,
     annotationMode: 2,
     cursorToolOnLoad: 0,
     defaultZoomDelay: 400,
     defaultZoomValue: "",
     disablePageLabels: false,
-    enableHighlightEditor: false,
-    enableHighlightFloatingButton: false,
+    enableHighlightEditor: true,
+    enableHighlightFloatingButton: true,
     enableML: false,
     enablePermissions: false,
     enablePrintAutoRotate: true,
