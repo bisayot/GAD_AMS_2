@@ -12983,7 +12983,7 @@ class BasePreferences {
     supportsPinchToZoom: true
   });
   #defaults = Object.freeze({
-    annotationEditorMode: 1,
+    annotationEditorMode: 0,
     annotationMode: 2,
     cursorToolOnLoad: 0,
     defaultZoomDelay: 400,
