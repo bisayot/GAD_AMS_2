@@ -461,11 +461,11 @@
               <div class="document-previews" style="margin-top: 15px;">
                 <div v-if="design.attachment" style="margin-bottom: 20px;">
                   <p style="color: #cbd5e1; font-size: 13px; font-weight: bold; margin-bottom: 8px;">Previous Document:</p>
-                  <iframe :src="`${api.defaults.baseURL}/files/${Number(design.is_archived) === 1 ? 'archived' : 'drafts'}/${design.attachment}`" width="100%" height="400px" style="border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;"></iframe>
+                  <iframe :src="getPdfViewerUrl(`${api.defaults.baseURL}/files/${Number(design.is_archived) === 1 ? 'archived' : 'drafts'}/${design.attachment}`)" width="100%" height="400px" style="border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;"></iframe>
                 </div>
                 <div v-if="newFileURL">
                   <p style="color: #b979cc; font-size: 13px; font-weight: bold; margin-bottom: 8px;">New Document Preview:</p>
-                  <iframe :src="newFileURL" width="100%" height="400px" style="border: 1px solid #b979cc; border-radius: 8px;"></iframe>
+                  <iframe :src="getPdfViewerUrl(newFileURL)" width="100%" height="400px" style="border: 1px solid #b979cc; border-radius: 8px;"></iframe>
                 </div>
               </div>
             </div>
@@ -556,6 +556,12 @@ const activityClassifications = ref([]);
 const gadMandates = ref([]);
 const genderIssues = ref([]);
 
+
+const userRole = user.value?.role || user.value?.user_role || '';
+const getPdfViewerUrl = (url) => {
+  if (!url) return '';
+  return `/pdfjs/web/viewer.html?file=${encodeURIComponent(url)}&role=${encodeURIComponent(userRole)}`;
+};
 
 const minStartDate = computed(() => {
   const d = new Date();

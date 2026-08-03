@@ -512,7 +512,7 @@ See https://github.com/adobe-type-tools/cmap-resources
         const fileUrl = urlParams.get('file');
 
         // Hide editor toolbar for non-Admins
-        if (role && role.toLowerCase() !== 'admin') {
+        if (!role || role.toLowerCase() !== 'admin') {
           const style = document.createElement('style');
           style.innerHTML = `
             #editorModeButtons, #editorModeSeparator, #editorFreeText, #editorInk, #editorStamp {
