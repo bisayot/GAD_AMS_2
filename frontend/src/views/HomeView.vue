@@ -205,6 +205,26 @@
             This platform is proudly hosted using industry-leading cloud services. To keep this community resource free and accessible, we utilize managed free-tier hosting for our infrastructure.
           </p>
 
+          <!-- Scheduled Maintenances Notices -->
+          <div v-if="maintenances.length > 0" class="status-notices">
+            <h3 class="notices-title">Scheduled Maintenance Notices</h3>
+            <div class="notice-list">
+              <div v-for="(notice, idx) in maintenances" :key="idx" class="notice-card">
+                <div class="notice-icon"><span class="material-symbols-outlined">build</span></div>
+                <div class="notice-content">
+                  <h4>{{ notice.service }} - {{ notice.name }}</h4>
+                  <p class="notice-time">
+                    <strong>Scheduled For:</strong> {{ new Date(notice.scheduled_for).toLocaleString() }} 
+                    to {{ new Date(notice.scheduled_until).toLocaleString() }}
+                  </p>
+                  <div class="notice-updates" v-if="notice.incident_updates && notice.incident_updates.length > 0">
+                    <p v-html="notice.incident_updates[0].body"></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="status-grid">
             <div class="status-card">
               <div class="status-icon-wrap"><span class="material-symbols-outlined">web</span></div>
@@ -367,6 +387,42 @@ const runAnimation = () => {
   requestAnimationFrame(animate);
 };
 
+const maintenances = ref([]);
+
+const fetchStatusPages = async () => {
+  const services = [
+    { name: 'Vercel (Frontend)', url: 'https://www.vercel-status.com/api/v2/summary.json' },
+    { name: 'Aiven (Database)', url: 'https://status.aiven.io/api/v2/summary.json' },
+    { name: 'Cloudflare (Network)', url: 'https://www.cloudflarestatus.com/api/v2/summary.json' },
+    { name: 'Render (Backend API)', url: 'https://status.render.com/api/v2/summary.json' }
+  ];
+
+  for (const service of services) {
+    try {
+      const res = await fetch(service.url);
+      const data = await res.json();
+      
+      if (data.scheduled_maintenances && data.scheduled_maintenances.length > 0) {
+        const upcoming = data.scheduled_maintenances.filter(m => ['scheduled', 'in_progress'].includes(m.status));
+        upcoming.forEach(m => {
+          maintenances.value.push({
+            service: service.name,
+            name: m.name,
+            status: m.status,
+            scheduled_for: m.scheduled_for,
+            scheduled_until: m.scheduled_until,
+            incident_updates: m.incident_updates
+          });
+        });
+      }
+    } catch (e) {
+      console.error(`Failed to fetch status for ${service.name}`, e);
+    }
+  }
+  
+  maintenances.value.sort((a, b) => new Date(a.scheduled_for) - new Date(b.scheduled_for));
+};
+
 const fetchAnalyticsData = async () => {
   analyticsLoading.value = true;
   try {
@@ -398,6 +454,7 @@ onMounted(() => {
   }, 2500);
 
   fetchAnalyticsData();
+  fetchStatusPages();
   
   // Intersection Observer to trigger animation when scrolled into view
   const observer = new IntersectionObserver((entries) => {
@@ -1164,4 +1221,16 @@ const goals = [
   .status-container { padding: 24px; }
   .status-title { font-size: 24px; }
 }
+
+/* NOTICES SECTION */
+.status-notices { margin-bottom: 32px; text-align: left; background: #fff; padding: 24px; border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.3); border-left: 4px solid #3b82f6; }
+.notices-title { font-size: 18px; font-weight: 800; color: #1e293b; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.notices-title::before { content: 'info'; font-family: 'Material Symbols Outlined'; color: #3b82f6; }
+.notice-list { display: flex; flex-direction: column; gap: 16px; }
+.notice-card { display: flex; gap: 16px; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
+.notice-icon { color: #3b82f6; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: rgba(59, 130, 246, 0.1); border-radius: 50%; flex-shrink: 0; }
+.notice-content h4 { font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+.notice-time { font-size: 13px; color: #475569; margin-bottom: 8px; }
+.notice-updates { font-size: 13px; color: #334155; line-height: 1.6; padding-left: 12px; border-left: 2px solid #cbd5e1; }
+.notice-updates :deep(a) { color: #3b82f6; text-decoration: underline; }
 </style>
