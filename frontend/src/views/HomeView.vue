@@ -189,22 +189,6 @@
       </div>
     </section>
 
-    <!-- SYSTEM STATUS (FREE TIER DISCLOSURE) -->
-    <section class="section status-section">
-      <div class="section-inner">
-        <div class="status-container">
-          <div class="status-header">
-            <div class="status-indicator">
-              <div class="pulse-dot"></div>
-              <span>All Systems Operational</span>
-            </div>
-            <h2 class="status-title">Infrastructure Status</h2>
-          </div>
-          
-          <p class="status-description">
-            This platform is proudly hosted using industry-leading cloud services. To keep this community resource free and accessible, we utilize managed free-tier hosting for our infrastructure.
-          </p>
-
   </div>
   </div>
 </template>
