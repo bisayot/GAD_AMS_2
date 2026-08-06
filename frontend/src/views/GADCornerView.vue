@@ -344,10 +344,10 @@ const fetchAccomplishmentReports = async () => {
     
     let combined = [];
     if (res1.data && res1.data.success) {
-      combined = [...combined, ...res1.data.data.filter(r => r.status === 'Verified')];
+      combined = [...combined, ...res1.data.data.filter(r => r.status === 'Verified').map(r => ({ ...r, is_archived: 0 }))];
     }
     if (res2.data && res2.data.success) {
-      combined = [...combined, ...res2.data.data.filter(r => r.type === 'report')];
+      combined = [...combined, ...res2.data.data.filter(r => r.type === 'report').map(r => ({ ...r, is_archived: 1 }))];
     }
     
     verifiedReports.value = combined.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
@@ -381,13 +381,16 @@ const viewPdf = (report) => {
     if (report.attachment) {
       const attachments = JSON.parse(report.attachment);
       if (attachments && attachments.length > 0) {
-        currentPdfUrl.value = `${import.meta.env.VITE_API_BASE_URL || 'https://gad-ams-2-1.onrender.com/api/'}files/drafts/${attachments[0]}`;
+        const folder = report.is_archived ? 'archived' : 'drafts';
+        currentPdfUrl.value = `${import.meta.env.VITE_API_BASE_URL || 'https://gad-ams-2-1.onrender.com/api/'}files/${folder}/${attachments[0]}`;
         isPdfPreviewOpen.value = true;
         return;
       }
     }
+    // Fallback if no attachment exists
     Swal.fire({ icon: 'info', title: 'Not Available', text: 'There is no PDF attachment available for this report.' });
   } catch (err) {
+    console.error('Failed to parse attachment:', err);
     Swal.fire({ icon: 'error', title: 'Error', text: 'Could not open the file.' });
   }
 };
