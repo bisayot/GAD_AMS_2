@@ -189,7 +189,55 @@
       </div>
     </section>
 
+    <!-- SYSTEM STATUS (FREE TIER DISCLOSURE) -->
+    <section class="section status-section">
+      <div class="section-inner">
+        <div class="status-container">
+          <div class="status-header">
+            <div class="status-indicator">
+              <div class="pulse-dot"></div>
+              <span>All Systems Operational</span>
+            </div>
+            <h2 class="status-title">Infrastructure Status</h2>
+          </div>
+          
+          <p class="status-description">
+            This platform is proudly hosted using industry-leading cloud services. To keep this community resource free and accessible, we utilize managed free-tier hosting for our infrastructure.
+          </p>
 
+          <div class="status-grid">
+            <div class="status-card">
+              <div class="status-icon-wrap"><span class="material-symbols-outlined">web</span></div>
+              <div class="status-card-content">
+                <h4>Frontend (Vercel)</h4>
+                <p>Global CDN edge network. Always online with zero cold starts.</p>
+              </div>
+            </div>
+            <div class="status-card">
+              <div class="status-icon-wrap"><span class="material-symbols-outlined">dns</span></div>
+              <div class="status-card-content">
+                <h4>Database (Aiven)</h4>
+                <p>Dedicated MySQL instance. Highly available and reliable.</p>
+              </div>
+            </div>
+            <div class="status-card">
+              <div class="status-icon-wrap"><span class="material-symbols-outlined">cloud</span></div>
+              <div class="status-card-content">
+                <h4>Network (Cloudflare)</h4>
+                <p>Advanced routing and DDoS protection active globally.</p>
+              </div>
+            </div>
+            <div class="status-card warning-card">
+              <div class="status-icon-wrap" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1);"><span class="material-symbols-outlined">schedule</span></div>
+              <div class="status-card-content">
+                <h4>Backend API (Render)</h4>
+                <p><strong>Standby Mode Active:</strong> Server sleeps after 15 mins of inactivity. <span style="color: #b45309; font-weight: 600;">The first login request may take ~50 seconds to wake the server up.</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
   </div>
   </div>
@@ -1088,5 +1136,32 @@ const goals = [
   .hero-badge { font-size: 12px; padding: 4px 12px; }
   .section-tag { font-size: 12px; }
   .hero-logo { max-width: 250px; }
+}
+
+/* STATUS SECTION */
+.status-section { background: #fff; border-top: 1px solid #ede9f7; padding: 60px 48px; }
+.status-container { max-width: 900px; margin: 0 auto; background: #faf8ff; border: 1px solid #ede9f7; border-radius: 16px; padding: 40px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); }
+.status-header { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 24px; }
+.status-indicator { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 6px 16px; border-radius: 9999px; margin-bottom: 16px; }
+.pulse-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); animation: pulseGreen 2s infinite; }
+@keyframes pulseGreen {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+.status-title { font-size: 32px; font-weight: 800; color: #1a1a2e; letter-spacing: -0.02em; }
+.status-description { text-align: center; font-size: 16px; color: #475569; line-height: 1.6; margin-bottom: 32px; max-width: 700px; margin-inline: auto; }
+.status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.status-card { display: flex; gap: 16px; background: #fff; padding: 20px; border: 1px solid #ede9f7; border-radius: 12px; align-items: flex-start; }
+.status-card.warning-card { border-color: rgba(245, 158, 11, 0.3); background: #fffbeb; }
+.status-icon-wrap { width: 40px; height: 40px; border-radius: 8px; background: rgba(153, 13, 209, 0.1); color: #990dd1; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.status-icon-wrap .material-symbols-outlined { font-size: 20px; }
+.status-card-content h4 { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+.status-card-content p { font-size: 13px; color: #64748b; line-height: 1.5; }
+
+@media (max-width: 768px) {
+  .status-grid { grid-template-columns: 1fr; }
+  .status-container { padding: 24px; }
+  .status-title { font-size: 24px; }
 }
 </style>

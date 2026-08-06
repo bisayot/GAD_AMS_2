@@ -11,74 +11,8 @@
       </div>
     </section>
 
-    <section class="py-16 px-12 bg-background">
-      <div class="max-w-screen-2xl mx-auto grid lg:grid-cols-12 gap-16">
-
-        <div class="lg:col-span-8">
-          <div class="space-y-12">
-            <article v-for="post in posts" :key="post.id" class="grid md:grid-cols-12 gap-8 items-start pb-12 border-b border-outline-variant/10 last:border-0">
-              <div class="md:col-span-4 aspect-video bg-surface-container rounded overflow-hidden border border-outline-variant/5">
-                <img :src="post.image" class="w-full h-full object-cover" :alt="post.title" />
-              </div>
-              <div class="md:col-span-8 space-y-4">
-                <div class="flex items-center gap-3">
-                  <span class="text-[10px] font-black uppercase tracking-widest text-secondary">{{ post.category }}</span>
-                  <span class="text-xs text-outline">{{ post.date }}</span>
-                </div>
-                <h3 class="text-2xl font-headline font-extrabold text-on-surface leading-tight hover:text-primary transition-colors cursor-pointer">
-                  {{ post.title }}
-                </h3>
-                <p class="text-on-surface-variant leading-relaxed text-sm line-clamp-3">
-                  {{ post.excerpt }}
-                </p>
-                <button class="text-xs font-bold text-primary uppercase tracking-widest flex items-center gap-2 hover:gap-3 transition-all">
-                  Read Full Article <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                </button>
-              </div>
-            </article>
-          </div>
-        </div>
-
-        <!-- Sidebar -->
-        <aside class="lg:col-span-4 space-y-12">
-          <!-- Popular Topics -->
-          <div class="p-8 bg-surface-container-low rounded border border-outline-variant/10">
-            <h4 class="text-xs font-black uppercase tracking-[0.2em] text-primary mb-6">Topic Explorer</h4>
-            <div class="flex flex-wrap gap-2">
-              <span v-for="topic in topics" :key="topic" class="px-3 py-1 bg-surface-container-lowest border border-outline-variant/30 rounded text-xs font-medium text-on-surface-variant hover:border-primary cursor-pointer transition-all">#{{ topic }}</span>
-            </div>
-          </div>
-
-          <!-- Newsletter -->
-          <div class="p-8 bg-primary text-on-primary rounded">
-            <h4 class="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-2">Stay Updated</h4>
-            <p class="text-sm leading-relaxed mb-6">Join our official mailing list for institutional announcements and reports.</p>
-            <div class="space-y-3">
-              <input class="w-full bg-white/10 border border-white/20 rounded px-4 py-2 text-xs placeholder:text-white/50" placeholder="Email Address" />
-              <button class="w-full bg-secondary text-on-secondary py-2 rounded font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-opacity">
-                Join List
-              </button>
-            </div>
-          </div>
-
-          <!-- Archives -->
-          <div class="p-8 bg-surface-container-low rounded border border-outline-variant/10">
-            <h4 class="text-xs font-black uppercase tracking-[0.2em] text-primary mb-6">Archive Repository</h4>
-            <ul class="space-y-3">
-              <li v-for="archive in archives" :key="archive.month">
-                <a class="flex justify-between items-center group" href="#">
-                  <span class="text-sm text-on-surface-variant group-hover:text-primary transition-colors">{{ archive.month }}</span>
-                  <span class="text-[10px] font-bold text-outline">{{ archive.count }} items</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </aside>
-      </div>
-    </section>
-
     <!-- Accomplishment Reports Section -->
-    <section class="py-16 px-12 bg-background border-t border-outline-variant/10">
+    <section class="py-16 px-12 bg-background">
       <div class="max-w-7xl mx-auto space-y-12">
         <div class="space-y-4">
           <span class="inline-block px-4 py-1.5 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-bold uppercase tracking-widest">Public Disclosures</span>
@@ -150,6 +84,73 @@
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- News & Updates Section -->
+    <section class="py-16 px-12 bg-background border-t border-outline-variant/10">
+      <div class="max-w-screen-2xl mx-auto grid lg:grid-cols-12 gap-16">
+
+        <div class="lg:col-span-8">
+          <div class="space-y-12">
+            <article v-for="post in posts" :key="post.id" class="grid md:grid-cols-12 gap-8 items-start pb-12 border-b border-outline-variant/10 last:border-0">
+              <div class="md:col-span-4 aspect-video bg-surface-container rounded overflow-hidden border border-outline-variant/5">
+                <img :src="post.image" class="w-full h-full object-cover" :alt="post.title" />
+              </div>
+              <div class="md:col-span-8 space-y-4">
+                <div class="flex items-center gap-3">
+                  <span class="text-[10px] font-black uppercase tracking-widest text-secondary">{{ post.category }}</span>
+                  <span class="text-xs text-outline">{{ post.date }}</span>
+                </div>
+                <h3 class="text-2xl font-headline font-extrabold text-on-surface leading-tight hover:text-primary transition-colors cursor-pointer">
+                  {{ post.title }}
+                </h3>
+                <p class="text-on-surface-variant leading-relaxed text-sm line-clamp-3">
+                  {{ post.excerpt }}
+                </p>
+                <button class="text-xs font-bold text-primary uppercase tracking-widest flex items-center gap-2 hover:gap-3 transition-all">
+                  Read Full Article <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </button>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="lg:col-span-4 space-y-12">
+          <!-- Popular Topics -->
+          <div class="p-8 bg-surface-container-low rounded border border-outline-variant/10">
+            <h4 class="text-xs font-black uppercase tracking-[0.2em] text-primary mb-6">Topic Explorer</h4>
+            <div class="flex flex-wrap gap-2">
+              <span v-for="topic in topics" :key="topic" class="px-3 py-1 bg-surface-container-lowest border border-outline-variant/30 rounded text-xs font-medium text-on-surface-variant hover:border-primary cursor-pointer transition-all">#{{ topic }}</span>
+            </div>
+          </div>
+
+          <!-- Newsletter -->
+          <div class="p-8 bg-primary text-on-primary rounded">
+            <h4 class="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-2">Stay Updated</h4>
+            <p class="text-sm leading-relaxed mb-6">Join our official mailing list for institutional announcements and reports.</p>
+            <div class="space-y-3">
+              <input class="w-full bg-white/10 border border-white/20 rounded px-4 py-2 text-xs placeholder:text-white/50" placeholder="Email Address" />
+              <button class="w-full bg-secondary text-on-secondary py-2 rounded font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-opacity">
+                Join List
+              </button>
+            </div>
+          </div>
+
+          <!-- Archives -->
+          <div class="p-8 bg-surface-container-low rounded border border-outline-variant/10">
+            <h4 class="text-xs font-black uppercase tracking-[0.2em] text-primary mb-6">Archive Repository</h4>
+            <ul class="space-y-3">
+              <li v-for="archive in archives" :key="archive.month">
+                <a class="flex justify-between items-center group" href="#">
+                  <span class="text-sm text-on-surface-variant group-hover:text-primary transition-colors">{{ archive.month }}</span>
+                  <span class="text-[10px] font-bold text-outline">{{ archive.count }} items</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </aside>
       </div>
     </section>
 
