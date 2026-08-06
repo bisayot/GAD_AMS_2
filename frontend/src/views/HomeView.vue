@@ -205,60 +205,6 @@
             This platform is proudly hosted using industry-leading cloud services. To keep this community resource free and accessible, we utilize managed free-tier hosting for our infrastructure.
           </p>
 
-          <!-- Scheduled Maintenances Notices -->
-          <div v-if="maintenances.length > 0" class="status-notices">
-            <h3 class="notices-title">Scheduled Maintenance Notices</h3>
-            <div class="notice-list">
-              <div v-for="(notice, idx) in maintenances" :key="idx" class="notice-card">
-                <div class="notice-icon"><span class="material-symbols-outlined">build</span></div>
-                <div class="notice-content">
-                  <h4>{{ notice.service }} - {{ notice.name }}</h4>
-                  <p class="notice-time">
-                    <strong>Scheduled For:</strong> {{ new Date(notice.scheduled_for).toLocaleString() }} 
-                    to {{ new Date(notice.scheduled_until).toLocaleString() }}
-                  </p>
-                  <div class="notice-updates" v-if="notice.incident_updates && notice.incident_updates.length > 0">
-                    <p v-html="notice.incident_updates[0].body"></p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="status-grid">
-            <div class="status-card">
-              <div class="status-icon-wrap"><span class="material-symbols-outlined">web</span></div>
-              <div class="status-card-content">
-                <h4>Frontend (Vercel)</h4>
-                <p>Global CDN edge network. Always online with zero cold starts.</p>
-              </div>
-            </div>
-            <div class="status-card">
-              <div class="status-icon-wrap"><span class="material-symbols-outlined">dns</span></div>
-              <div class="status-card-content">
-                <h4>Database (Aiven)</h4>
-                <p>Dedicated MySQL instance. Highly available and reliable.</p>
-              </div>
-            </div>
-            <div class="status-card">
-              <div class="status-icon-wrap"><span class="material-symbols-outlined">cloud</span></div>
-              <div class="status-card-content">
-                <h4>Network (Cloudflare)</h4>
-                <p>Advanced routing and DDoS protection active globally.</p>
-              </div>
-            </div>
-            <div class="status-card warning-card">
-              <div class="status-icon-wrap" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1);"><span class="material-symbols-outlined">schedule</span></div>
-              <div class="status-card-content">
-                <h4>Backend API (Render)</h4>
-                <p><strong>Standby Mode Active:</strong> Server sleeps after 15 mins of inactivity. <span style="color: #b45309; font-weight: 600;">The first login request may take ~50 seconds to wake the server up.</span></p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
   </div>
   </div>
 </template>
@@ -387,42 +333,6 @@ const runAnimation = () => {
   requestAnimationFrame(animate);
 };
 
-const maintenances = ref([]);
-
-const fetchStatusPages = async () => {
-  const services = [
-    { name: 'Vercel (Frontend)', url: 'https://www.vercel-status.com/api/v2/summary.json' },
-    { name: 'Aiven (Database)', url: 'https://status.aiven.io/api/v2/summary.json' },
-    { name: 'Cloudflare (Network)', url: 'https://www.cloudflarestatus.com/api/v2/summary.json' },
-    { name: 'Render (Backend API)', url: 'https://status.render.com/api/v2/summary.json' }
-  ];
-
-  for (const service of services) {
-    try {
-      const res = await fetch(service.url);
-      const data = await res.json();
-      
-      if (data.scheduled_maintenances && data.scheduled_maintenances.length > 0) {
-        const upcoming = data.scheduled_maintenances.filter(m => ['scheduled', 'in_progress'].includes(m.status));
-        upcoming.forEach(m => {
-          maintenances.value.push({
-            service: service.name,
-            name: m.name,
-            status: m.status,
-            scheduled_for: m.scheduled_for,
-            scheduled_until: m.scheduled_until,
-            incident_updates: m.incident_updates
-          });
-        });
-      }
-    } catch (e) {
-      console.error(`Failed to fetch status for ${service.name}`, e);
-    }
-  }
-  
-  maintenances.value.sort((a, b) => new Date(a.scheduled_for) - new Date(b.scheduled_for));
-};
-
 const fetchAnalyticsData = async () => {
   analyticsLoading.value = true;
   try {
@@ -454,7 +364,6 @@ onMounted(() => {
   }, 2500);
 
   fetchAnalyticsData();
-  fetchStatusPages();
   
   // Intersection Observer to trigger animation when scrolled into view
   const observer = new IntersectionObserver((entries) => {
@@ -1194,43 +1103,4 @@ const goals = [
   .section-tag { font-size: 12px; }
   .hero-logo { max-width: 250px; }
 }
-
-/* STATUS SECTION */
-.status-section { background: #fff; border-top: 1px solid #ede9f7; padding: 60px 48px; }
-.status-container { max-width: 900px; margin: 0 auto; background: #faf8ff; border: 1px solid #ede9f7; border-radius: 16px; padding: 40px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); }
-.status-header { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 24px; }
-.status-indicator { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 6px 16px; border-radius: 9999px; margin-bottom: 16px; }
-.pulse-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); animation: pulseGreen 2s infinite; }
-@keyframes pulseGreen {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-}
-.status-title { font-size: 32px; font-weight: 800; color: #1a1a2e; letter-spacing: -0.02em; }
-.status-description { text-align: center; font-size: 16px; color: #475569; line-height: 1.6; margin-bottom: 32px; max-width: 700px; margin-inline: auto; }
-.status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.status-card { display: flex; gap: 16px; background: #fff; padding: 20px; border: 1px solid #ede9f7; border-radius: 12px; align-items: flex-start; }
-.status-card.warning-card { border-color: rgba(245, 158, 11, 0.3); background: #fffbeb; }
-.status-icon-wrap { width: 40px; height: 40px; border-radius: 8px; background: rgba(153, 13, 209, 0.1); color: #990dd1; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.status-icon-wrap .material-symbols-outlined { font-size: 20px; }
-.status-card-content h4 { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
-.status-card-content p { font-size: 13px; color: #64748b; line-height: 1.5; }
-
-@media (max-width: 768px) {
-  .status-grid { grid-template-columns: 1fr; }
-  .status-container { padding: 24px; }
-  .status-title { font-size: 24px; }
-}
-
-/* NOTICES SECTION */
-.status-notices { margin-bottom: 32px; text-align: left; background: #fff; padding: 24px; border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.3); border-left: 4px solid #3b82f6; }
-.notices-title { font-size: 18px; font-weight: 800; color: #1e293b; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-.notices-title::before { content: 'info'; font-family: 'Material Symbols Outlined'; color: #3b82f6; }
-.notice-list { display: flex; flex-direction: column; gap: 16px; }
-.notice-card { display: flex; gap: 16px; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
-.notice-icon { color: #3b82f6; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: rgba(59, 130, 246, 0.1); border-radius: 50%; flex-shrink: 0; }
-.notice-content h4 { font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
-.notice-time { font-size: 13px; color: #475569; margin-bottom: 8px; }
-.notice-updates { font-size: 13px; color: #334155; line-height: 1.6; padding-left: 12px; border-left: 2px solid #cbd5e1; }
-.notice-updates :deep(a) { color: #3b82f6; text-decoration: underline; }
 </style>
