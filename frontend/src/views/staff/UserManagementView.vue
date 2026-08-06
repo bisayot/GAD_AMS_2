@@ -177,10 +177,7 @@
             </div>
           </div>
           <div class="card-body custom-scrollbar relative">
-            <div class="warning-note mb-4">
-              <span class="material-symbols-outlined text-sm">warning</span>
-              Note: Suspended accounts will be automatically deleted after 30 days.
-            </div>
+
             <div v-if="suspendedUsers.length === 0" class="empty-state !text-red-400/50">No suspended users.</div>
             <div v-else class="user-grid">
               <div v-for="user in suspendedUsers" :key="user.id" class="user-item !border-red-500/20 hover:!border-red-500/40 hover:!bg-red-500/10">
