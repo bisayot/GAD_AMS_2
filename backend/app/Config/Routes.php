@@ -72,6 +72,21 @@ $routes->group('api', function($routes) {
     $routes->options('storage/ticket', 'AuthController::handleOptions');
 
     // ----------------------------------------------------------------
+    // CONTACT INQUIRIES ROUTES (new)
+    // ----------------------------------------------------------------
+    $routes->options('contact', 'AuthController::handleOptions');
+    $routes->post('contact', 'ContactController::submit');
+    
+    $routes->options('contact-inquiries', 'AuthController::handleOptions');
+    $routes->get('contact-inquiries', 'ContactController::index');
+    
+    $routes->options('contact-inquiries/(:num)/read', 'AuthController::handleOptions');
+    $routes->post('contact-inquiries/(:num)/read', 'ContactController::markAsRead/$1');
+
+    $routes->options('contact-inquiries/(:num)/reply', 'AuthController::handleOptions');
+    $routes->post('contact-inquiries/(:num)/reply', 'ContactController::reply/$1');
+
+    // ----------------------------------------------------------------
     // ACTIVITY DESIGN ROUTES (new)
     // ----------------------------------------------------------------
     $routes->options('submit-activity-design', 'AuthController::handleOptions');

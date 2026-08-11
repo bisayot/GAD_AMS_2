@@ -101,9 +101,16 @@
               <label class="block text-xs font-label uppercase tracking-widest text-on-surface-variant font-bold mb-2">Message</label>
               <textarea v-model="form.message" class="w-full bg-surface-container-low border-none rounded-lg focus:ring-0 focus:border-b-2 focus:border-primary transition-all p-4 text-on-surface" placeholder="How can we help you today?" rows="5" required></textarea>
             </div>
-            <button class="w-full py-5 rounded-full bg-primary text-white font-headline font-bold tracking-tight hover:opacity-95 shadow-lg active:scale-[0.98] transition-all" type="submit">
-              Dispatch Message
+            <button :disabled="isSubmitting" class="w-full py-5 rounded-full bg-primary text-white font-headline font-bold tracking-tight hover:opacity-95 shadow-lg active:scale-[0.98] transition-all disabled:opacity-50" type="submit">
+              {{ isSubmitting ? 'Dispatching...' : 'Dispatch Message' }}
             </button>
+            
+            <div class="mt-4 p-4 bg-primary/5 rounded-lg border border-primary/10 flex items-start gap-3">
+              <span class="material-symbols-outlined text-primary text-[20px]">info</span>
+              <p class="text-sm text-on-surface-variant leading-relaxed">
+                Our system uses a free email service with daily limits. If you don't hear back from us, please email us directly at <a href="mailto:gad.office@bsu.edu.ph" class="text-primary font-bold hover:underline">gad.office@bsu.edu.ph</a>.
+              </p>
+            </div>
           </form>
         </div>
       </section>
@@ -154,6 +161,7 @@
 
 <script setup>
 import { reactive, ref, computed } from 'vue';
+import axios from '@/utils/axios';
 
 const form = reactive({
   name: '',
@@ -210,11 +218,28 @@ const filteredFocalPersons = computed(() => {
   );
 });
 
-const submitForm = () => {
-  alert('Thank you for your inquiry! We will get back to you soon.');
-  form.name = '';
-  form.email = '';
-  form.message = '';
+const isSubmitting = ref(false);
+
+const submitForm = async () => {
+  if (isSubmitting.value) return;
+  isSubmitting.value = true;
+  
+  try {
+    const response = await axios.post('/contact', form);
+    if (response.data && response.data.status === 201) {
+      alert('Thank you for your inquiry! We will get back to you soon.');
+      form.name = '';
+      form.email = '';
+      form.message = '';
+    } else {
+      alert('Something went wrong. Please try again.');
+    }
+  } catch (error) {
+    console.error('Error submitting form:', error);
+    alert('Failed to send inquiry. Please check your connection and try again.');
+  } finally {
+    isSubmitting.value = false;
+  }
 };
 </script>
 

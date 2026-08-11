@@ -65,6 +65,7 @@ const staffMenu = ref([
   { label: 'New Submission', icon: 'add', href: '/staff/submit' },
   { label: 'Dashboard', icon: 'dashboard', href: '/staff/dashboard' },
   { label: 'Messages', icon: 'mail', href: '/staff/messages', badge: 0 },
+  { label: 'Contact Inquiries', icon: 'contact_mail', href: '/staff/contact-inquiries' },
   { label: 'Submitted List', icon: 'list', href: '/staff/submitted-list' },
   { label: 'Activity Design List', icon: 'list', href: '/staff/ad-list' },
   { label: 'Accomplishment Report List', icon: 'list', href: '/staff/ar-list' },
