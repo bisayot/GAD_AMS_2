@@ -118,6 +118,7 @@
 <script setup>
 import { reactive, ref } from 'vue';
 import api from '../api';
+import Swal from 'sweetalert2';
 
 const form = reactive({
   name: '',
@@ -136,7 +137,12 @@ const submitForm = async () => {
   try {
     const response = await api.post('/contact', form);
     if (response.data && response.data.status === 201) {
-      alert('Thank you for your inquiry! We will get back to you soon.');
+      Swal.fire({
+        icon: 'success',
+        title: 'Sent Successfully!',
+        text: 'Thank you for your inquiry! We will get back to you soon.',
+        confirmButtonColor: '#6100a4'
+      });
       form.name = '';
       form.email = '';
       form.subject = '';
@@ -147,11 +153,21 @@ const submitForm = async () => {
         emailLimitReached.value = false;
       }
     } else {
-      alert('Something went wrong. Please try again.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'Something went wrong. Please try again.',
+        confirmButtonColor: '#6100a4'
+      });
     }
   } catch (error) {
     console.error('Error submitting form:', error);
-    alert('Failed to send inquiry. Please check your connection and try again.');
+    Swal.fire({
+      icon: 'error',
+      title: 'Connection Error',
+      text: 'Failed to send inquiry. Please check your connection and try again.',
+      confirmButtonColor: '#6100a4'
+    });
   } finally {
     isSubmitting.value = false;
   }

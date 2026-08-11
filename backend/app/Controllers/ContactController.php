@@ -176,6 +176,7 @@ class ContactController extends BaseController
         
         $payload = [
             'sender'      => ['name' => $replierName . ' - BSU GAD', 'email' => $senderEmail],
+            'replyTo'     => ['name' => 'No Reply - BSU GAD', 'email' => 'noreply@bsu.edu.ph'],
             'to'          => [['email' => $inquiry['email']]],
             'subject'     => 'Re: ' . $inquiry['subject'] . ' [' . $ticketNumber . ']',
             'htmlContent' => $htmlMessage
