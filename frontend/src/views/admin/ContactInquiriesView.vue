@@ -44,7 +44,7 @@
       </div>
 
     <!-- Main Content -->
-    <div class="glass-card overflow-hidden">
+    <div class="glass-card overflow-hidden rounded-[2rem]">
       <!-- Loading State -->
       <div v-if="loading" class="p-12 flex flex-col items-center justify-center text-slate-400">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mb-4"></div>
