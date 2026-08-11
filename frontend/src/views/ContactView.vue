@@ -93,13 +93,7 @@
             </div>
             <div>
               <label class="block text-xs font-label uppercase tracking-widest text-on-surface-variant font-bold mb-2">Subject</label>
-              <select v-model="form.subject" class="w-full bg-surface-container-low border-none rounded-lg focus:ring-0 focus:border-b-2 focus:border-primary transition-all p-4 text-on-surface appearance-none">
-                <option>Resource Access Inquiry</option>
-                <option>Event Registration</option>
-                <option>Consultation Request</option>
-                <option>Report a Concern</option>
-                <option>Other</option>
-              </select>
+              <input v-model="form.subject" class="w-full bg-surface-container-low border-none rounded-lg focus:ring-0 focus:border-b-2 focus:border-primary transition-all p-4 text-on-surface" placeholder="What is this regarding?" type="text" required />
             </div>
             <div>
               <label class="block text-xs font-label uppercase tracking-widest text-on-surface-variant font-bold mb-2">Message</label>
@@ -109,7 +103,7 @@
               {{ isSubmitting ? 'Dispatching...' : 'Dispatch Message' }}
             </button>
             
-            <div class="mt-4 p-4 bg-primary/5 rounded-lg border border-primary/10 flex items-start gap-3">
+            <div v-if="emailLimitReached" class="mt-4 p-4 bg-primary/5 rounded-lg border border-primary/10 flex items-start gap-3">
               <span class="material-symbols-outlined text-primary text-[20px]">info</span>
               <p class="text-sm text-on-surface-variant leading-relaxed">
                 Our system uses a free email service with daily limits. If you don't hear back from us, please email us directly at <a href="mailto:gad.office@bsu.edu.ph" class="text-primary font-bold hover:underline">gad.office@bsu.edu.ph</a>.
@@ -128,11 +122,12 @@ import api from '../api';
 const form = reactive({
   name: '',
   email: '',
-  subject: 'Resource Access Inquiry',
+  subject: '',
   message: ''
 });
 
 const isSubmitting = ref(false);
+const emailLimitReached = ref(false);
 
 const submitForm = async () => {
   if (isSubmitting.value) return;
@@ -144,7 +139,13 @@ const submitForm = async () => {
       alert('Thank you for your inquiry! We will get back to you soon.');
       form.name = '';
       form.email = '';
+      form.subject = '';
       form.message = '';
+      if (response.data.email_sent === false) {
+        emailLimitReached.value = true;
+      } else {
+        emailLimitReached.value = false;
+      }
     } else {
       alert('Something went wrong. Please try again.');
     }
