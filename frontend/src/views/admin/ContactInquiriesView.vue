@@ -23,24 +23,25 @@
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="glass-card p-6 flex items-center gap-4">
-        <div class="w-12 h-12 rounded-full bg-blue-900/50 text-blue-400 flex items-center justify-center">
-          <span class="material-symbols-outlined">inbox</span>
-        </div>
-        <div>
-          <p class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Total Inquiries</p>
-          <p class="text-2xl font-bold text-white">{{ inquiries.length }}</p>
+          <div class="w-12 h-12 rounded-full bg-blue-900/50 text-blue-400 flex items-center justify-center">
+            <span class="material-symbols-outlined">inbox</span>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Total Inquiries</p>
+            <p class="text-2xl font-bold text-white">{{ inquiries.length }}</p>
+          </div>
         </div>
         
         <div class="glass-card p-6 flex items-center gap-4">
-        <div class="w-12 h-12 rounded-full bg-amber-900/50 text-amber-400 flex items-center justify-center">
-          <span class="material-symbols-outlined">mark_email_unread</span>
-        </div>
-        <div>
-          <p class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Unread</p>
-          <p class="text-2xl font-bold text-white">{{ unreadCount }}</p>
+          <div class="w-12 h-12 rounded-full bg-amber-900/50 text-amber-400 flex items-center justify-center">
+            <span class="material-symbols-outlined">mark_email_unread</span>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Unread</p>
+            <p class="text-2xl font-bold text-white">{{ unreadCount }}</p>
+          </div>
         </div>
       </div>
-    </div>
 
     <!-- Main Content -->
     <div class="glass-card overflow-hidden">
