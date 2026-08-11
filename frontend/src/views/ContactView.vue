@@ -6,10 +6,10 @@
           <div class="lg:col-span-7">
             <span class="inline-block px-4 py-1 rounded-full bg-secondary-container text-on-secondary-container text-xs font-label font-bold uppercase tracking-widest mb-6">Connect With Us</span>
             <h1 class="text-5xl md:text-7xl font-headline font-extrabold tracking-tighter text-primary leading-tight mb-8">
-              University Directory & Support Hub
+              University Support Hub
             </h1>
             <p class="text-xl text-on-surface-variant max-w-2xl leading-relaxed">
-              The Gender and Development office is committed to providing accessible support and resources across all colleges. Reach out to our dedicated focal persons or visit the main office.
+              The Gender and Development office is committed to providing accessible support. Compose a message below or visit the main office.
             </p>
           </div>
           <div class="lg:col-span-5 hidden lg:block">

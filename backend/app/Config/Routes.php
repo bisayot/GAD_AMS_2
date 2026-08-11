@@ -86,6 +86,9 @@ $routes->group('api', function($routes) {
     $routes->options('contact-inquiries/(:num)/reply', 'AuthController::handleOptions');
     $routes->post('contact-inquiries/(:num)/reply', 'ContactController::reply/$1');
 
+    $routes->options('contact-inquiries/(:num)', 'AuthController::handleOptions');
+    $routes->delete('contact-inquiries/(:num)', 'ContactController::delete/$1');
+
     // ----------------------------------------------------------------
     // ACTIVITY DESIGN ROUTES (new)
     // ----------------------------------------------------------------

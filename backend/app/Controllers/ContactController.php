@@ -34,19 +34,11 @@ class ContactController extends BaseController
         $model = new ContactInquiryModel();
         
         if ($model->insert($data)) {
-            // Send email
-            $email = \Config\Services::email();
-            
-            // Using SMTP user as sender to avoid DMARC/SPF issues with Brevo
+            // Send email using Brevo REST API to bypass Render's SMTP block
+            $apiKey = getenv('BREVO_API_KEY') ?: env('BREVO_API_KEY') ?: getenv('SMTP_PASS') ?: env('SMTP_PASS') ?: env('email.SMTPPass') ?: '';
             $smtpUser = getenv('SMTP_USER') ?: 'gad.office@bsu.edu.ph';
-            $email->setFrom($smtpUser, 'GAD AMS Contact Form');
-            $email->setReplyTo($data['email'], $data['name']);
             
-            // Send to admin email (fallback to smtp user if none specific)
             $adminEmail = 'gad.office@bsu.edu.ph'; // Replace with actual recipient if needed
-            $email->setTo($adminEmail);
-            
-            $email->setSubject('New Contact Inquiry: ' . $data['subject']);
             
             $htmlMessage = "
                 <h2>New Contact Inquiry</h2>
@@ -58,9 +50,33 @@ class ContactController extends BaseController
                 <p>" . nl2br(esc($data['message'])) . "</p>
             ";
             
-            $email->setMessage($htmlMessage);
+            $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'accept: application/json',
+                'api-key: ' . $apiKey,
+                'content-type: application/json'
+            ]);
             
-            $emailSent = $email->send();
+            $payload = [
+                'sender'      => ['name' => $data['name'], 'email' => $smtpUser], // Using SMTP user as sender to avoid DMARC
+                'replyTo'     => ['name' => $data['name'], 'email' => $data['email']],
+                'to'          => [['email' => $adminEmail]],
+                'subject'     => 'New Contact Inquiry: ' . $data['subject'],
+                'htmlContent' => $htmlMessage
+            ];
+            
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+            
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            
+            $emailSent = ($httpCode >= 200 && $httpCode < 300);
             
             return $this->respondCreated([
                 'status'  => 201,
@@ -130,12 +146,9 @@ class ContactController extends BaseController
             }
         }
 
-        // Send Email
-        $email = \Config\Services::email();
+        // Send Email using Brevo REST API to bypass Render's SMTP block
+        $apiKey = getenv('BREVO_API_KEY') ?: env('BREVO_API_KEY') ?: getenv('SMTP_PASS') ?: env('SMTP_PASS') ?: env('email.SMTPPass') ?: '';
         $smtpUser = getenv('SMTP_USER') ?: 'gad.office@bsu.edu.ph';
-        $email->setFrom($smtpUser, $replierName . ' - BSU GAD');
-        $email->setTo($inquiry['email']);
-        $email->setSubject('Re: ' . $inquiry['subject']);
         
         $htmlMessage = "
             <h2>Reply to Your Inquiry</h2>
@@ -147,17 +160,57 @@ class ContactController extends BaseController
             <p><em>" . nl2br(esc($inquiry['message'])) . "</em></p>
         ";
         
-        $email->setMessage($htmlMessage);
+        $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'accept: application/json',
+            'api-key: ' . $apiKey,
+            'content-type: application/json'
+        ]);
         
-        if ($email->send()) {
+        $payload = [
+            'sender'      => ['name' => $replierName . ' - BSU GAD', 'email' => $smtpUser],
+            'to'          => [['email' => $inquiry['email']]],
+            'subject'     => 'Re: ' . $inquiry['subject'],
+            'htmlContent' => $htmlMessage
+        ];
+        
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+        
+        if ($httpCode >= 200 && $httpCode < 300) {
             $model->update($id, ['status' => $repliedByStatus]);
             return $this->respond([
                 'message' => 'Reply sent successfully.',
                 'status' => $repliedByStatus
             ]);
         } else {
-            // Usually fails when Brevo limit is hit or network issue
+            log_message('error', 'Brevo API Error in ContactReply: ' . $response . ' cURL Error: ' . $curlError);
             return $this->failServerError('Failed to send email. You might have reached your daily limit.');
         }
+    }
+
+    public function delete($id = null)
+    {
+        $model = new ContactInquiryModel();
+        $inquiry = $model->find($id);
+        
+        if (!$inquiry) {
+            return $this->failNotFound('Inquiry not found.');
+        }
+        
+        if ($model->delete($id)) {
+            return $this->respondDeleted(['message' => 'Inquiry permanently deleted.']);
+        }
+        
+        return $this->failServerError('Failed to delete inquiry.');
     }
 }
