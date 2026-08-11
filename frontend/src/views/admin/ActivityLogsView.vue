@@ -62,7 +62,7 @@
           <button 
             @click="activeTab = 'main'"
             class="flex-1 py-4 text-center font-bold text-sm transition-all duration-300 border-b-2"
-            :class="activeTab === 'main' ? 'text-purple-700 border-purple-600 bg-purple-100 shadow-sm' : 'text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-100'"
+            :class="activeTab === 'main' ? 'text-white border-purple-400 bg-purple-600/30 shadow-[inset_0_-2px_10px_rgba(168,85,247,0.2)]' : 'text-slate-400 border-transparent hover:text-slate-300 hover:bg-white/5'"
           >
             Main Logs <br>
             <span class="text-xs font-normal opacity-70">(Retained for 1 Year)</span>
@@ -70,7 +70,7 @@
           <button 
             @click="activeTab = 'operational'"
             class="flex-1 py-4 text-center font-bold text-sm transition-all duration-300 border-b-2"
-            :class="activeTab === 'operational' ? 'text-blue-700 border-blue-600 bg-blue-100 shadow-sm' : 'text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-100'"
+            :class="activeTab === 'operational' ? 'text-white border-blue-400 bg-blue-600/30 shadow-[inset_0_-2px_10px_rgba(96,165,250,0.2)]' : 'text-slate-400 border-transparent hover:text-slate-300 hover:bg-white/5'"
           >
             Operational Logs <br>
             <span class="text-xs font-normal opacity-70">(Retained for 90 Days)</span>
