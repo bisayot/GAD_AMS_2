@@ -36,7 +36,7 @@ class ContactController extends BaseController
         if ($model->insert($data)) {
             // Send email using Brevo REST API to bypass Render's SMTP block
             $apiKey = getenv('BREVO_API_KEY') ?: env('BREVO_API_KEY') ?: getenv('SMTP_PASS') ?: env('SMTP_PASS') ?: env('email.SMTPPass') ?: '';
-            $smtpUser = getenv('SMTP_USER') ?: 'gad.office@bsu.edu.ph';
+            $senderEmail = getenv('FROM_EMAIL') ?: env('FROM_EMAIL') ?: env('email.fromEmail') ?: 'gadims.bsu.bsit@gmail.com';
             
             $adminEmail = 'gad.office@bsu.edu.ph'; // Replace with actual recipient if needed
             
@@ -59,7 +59,7 @@ class ContactController extends BaseController
             ]);
             
             $payload = [
-                'sender'      => ['name' => $data['name'], 'email' => $smtpUser], // Using SMTP user as sender to avoid DMARC
+                'sender'      => ['name' => $data['name'] . ' (via System)', 'email' => $senderEmail], // Using verified email as sender to avoid DMARC
                 'replyTo'     => ['name' => $data['name'], 'email' => $data['email']],
                 'to'          => [['email' => $adminEmail]],
                 'subject'     => 'New Contact Inquiry: ' . $data['subject'],
@@ -148,13 +148,19 @@ class ContactController extends BaseController
 
         // Send Email using Brevo REST API to bypass Render's SMTP block
         $apiKey = getenv('BREVO_API_KEY') ?: env('BREVO_API_KEY') ?: getenv('SMTP_PASS') ?: env('SMTP_PASS') ?: env('email.SMTPPass') ?: '';
-        $smtpUser = getenv('SMTP_USER') ?: 'gad.office@bsu.edu.ph';
+        $senderEmail = getenv('FROM_EMAIL') ?: env('FROM_EMAIL') ?: env('email.fromEmail') ?: 'gadims.bsu.bsit@gmail.com';
         
+        $ticketNumber = 'INQ-' . str_pad($inquiry['id'], 5, '0', STR_PAD_LEFT);
+
         $htmlMessage = "
             <h2>Reply to Your Inquiry</h2>
             <p>Hello {$inquiry['name']},</p>
             <p>" . nl2br(esc($replyMessage)) . "</p>
             <br>
+            <hr>
+            <p style='font-size: 0.9em; color: #555;'>
+                <em>Note: This is a one-way reply. If you wish to continue this conversation, you can create an account in our system or email the GAD Office directly at gad.office@bsu.edu.ph, making sure to include your ticket number <strong>{$ticketNumber}</strong> in your message.</em>
+            </p>
             <hr>
             <p><strong>Your original message:</strong></p>
             <p><em>" . nl2br(esc($inquiry['message'])) . "</em></p>
@@ -169,9 +175,9 @@ class ContactController extends BaseController
         ]);
         
         $payload = [
-            'sender'      => ['name' => $replierName . ' - BSU GAD', 'email' => $smtpUser],
+            'sender'      => ['name' => $replierName . ' - BSU GAD', 'email' => $senderEmail],
             'to'          => [['email' => $inquiry['email']]],
-            'subject'     => 'Re: ' . $inquiry['subject'],
+            'subject'     => 'Re: ' . $inquiry['subject'] . ' [' . $ticketNumber . ']',
             'htmlContent' => $htmlMessage
         ];
         

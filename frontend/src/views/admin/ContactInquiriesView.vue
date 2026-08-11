@@ -1,15 +1,23 @@
 <template>
   <main class="main-viewport flex-1 overflow-y-auto" style="background: linear-gradient(135deg, #0f172a 0%, #1e1e2f 100%); min-height: 100vh; padding: 2rem;">
     <div class="page-container">
-      <div class="header-section mb-8 flex items-center justify-between">
+      <div class="header-section mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 class="page-title">Contact Inquiries</h1>
           <p class="page-subtitle">Review and manage inquiries submitted from the public contact form.</p>
         </div>
-        <button @click="fetchInquiries" class="btn-secondary flex items-center gap-2">
-          <span class="material-symbols-outlined text-[20px]">refresh</span>
-          Refresh
-        </button>
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+          <input 
+            v-model="searchQuery" 
+            type="text" 
+            placeholder="Search inquiries..." 
+            class="form-input w-full sm:w-64"
+          />
+          <button @click="fetchInquiries" class="btn-secondary flex items-center gap-2">
+            <span class="material-symbols-outlined text-[20px]">refresh</span>
+            Refresh
+          </button>
+        </div>
       </div>
 
       <!-- Stats Cards -->
@@ -43,16 +51,16 @@
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="inquiries.length === 0" class="p-12 flex flex-col items-center justify-center text-slate-400">
+      <div v-else-if="filteredInquiries.length === 0" class="p-12 flex flex-col items-center justify-center text-slate-400">
         <span class="material-symbols-outlined text-5xl mb-4 opacity-50">mail</span>
         <h3 class="text-lg font-medium text-white mb-1">No Inquiries Found</h3>
-        <p>There are currently no contact form submissions.</p>
+        <p>Try adjusting your search criteria.</p>
       </div>
 
       <!-- Inquiries List -->
       <div v-else class="divide-y divide-purple-500/20">
         <div 
-          v-for="inquiry in inquiries" 
+          v-for="inquiry in filteredInquiries" 
           :key="inquiry.id"
           class="p-6 transition-colors duration-200 hover:bg-white/5 flex flex-col gap-4 group"
           :class="{ 'bg-purple-900/20': inquiry.status === 'new' }"
@@ -64,9 +72,14 @@
               <span v-else-if="inquiry.status === 'replied_staff'" class="w-2.5 h-2.5 rounded-full bg-green-500 mt-1" title="Replied by Staff"></span>
               <span v-else-if="inquiry.status === 'replied_director'" class="w-2.5 h-2.5 rounded-full bg-purple-500 mt-1" title="Replied by Director"></span>
               <div>
-                <h4 class="text-lg font-semibold text-white" :class="{'font-bold': inquiry.status === 'new'}">
-                  {{ inquiry.name }}
-                </h4>
+                <div class="flex items-center gap-2">
+                  <h4 class="text-lg font-semibold text-white" :class="{'font-bold': inquiry.status === 'new'}">
+                    {{ inquiry.name }}
+                  </h4>
+                  <span class="text-xs font-bold text-purple-300 bg-purple-900/40 px-2 py-0.5 rounded border border-purple-500/30">
+                    {{ formatTicketNumber(inquiry.id) }}
+                  </span>
+                </div>
                 <a :href="'mailto:' + inquiry.email" class="text-sm text-purple-300 hover:text-purple-200 hover:underline flex items-center gap-1 mt-0.5">
                   <span class="material-symbols-outlined text-[14px]">mail</span>
                   {{ inquiry.email }}
@@ -177,6 +190,7 @@ import Swal from 'sweetalert2';
 
 const inquiries = ref([]);
 const loading = ref(true);
+const searchQuery = ref('');
 
 const showReplyModal = ref(false);
 const activeInquiry = ref(null);
@@ -186,6 +200,21 @@ const replying = ref(false);
 const unreadCount = computed(() => {
   return inquiries.value.filter(i => i.status === 'new').length;
 });
+
+const filteredInquiries = computed(() => {
+  if (!searchQuery.value) return inquiries.value;
+  const q = searchQuery.value.toLowerCase();
+  return inquiries.value.filter(i => 
+    i.name.toLowerCase().includes(q) || 
+    i.email.toLowerCase().includes(q) || 
+    i.subject.toLowerCase().includes(q) ||
+    formatTicketNumber(i.id).toLowerCase().includes(q)
+  );
+});
+
+const formatTicketNumber = (id) => {
+  return 'INQ-' + String(id).padStart(5, '0');
+};
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
