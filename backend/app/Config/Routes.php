@@ -79,6 +79,9 @@ $routes->group('api', function($routes) {
     
     $routes->options('contact-inquiries', 'AuthController::handleOptions');
     $routes->get('contact-inquiries', 'ContactController::index');
+
+    $routes->options('contact-inquiries/unread-count', 'AuthController::handleOptions');
+    $routes->get('contact-inquiries/unread-count', 'ContactController::unreadCount');
     
     $routes->options('contact-inquiries/(:num)/read', 'AuthController::handleOptions');
     $routes->post('contact-inquiries/(:num)/read', 'ContactController::markAsRead/$1');

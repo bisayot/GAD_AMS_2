@@ -220,4 +220,15 @@ class ContactController extends BaseController
         
         return $this->failServerError('Failed to delete inquiry.');
     }
+
+    public function unreadCount()
+    {
+        $model = new ContactInquiryModel();
+        $count = $model->where('status', 'new')->countAllResults();
+        
+        return $this->respond([
+            'success' => true,
+            'count' => $count
+        ]);
+    }
 }
