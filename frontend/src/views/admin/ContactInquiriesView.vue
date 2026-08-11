@@ -58,16 +58,16 @@
       </div>
 
       <!-- Inquiries List -->
-      <div v-else class="divide-y divide-purple-500/20">
+      <div v-else class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6 p-6">
         <div 
           v-for="inquiry in filteredInquiries" 
           :key="inquiry.id"
-          class="p-6 transition-colors duration-200 hover:bg-white/5 flex flex-col gap-4 group"
-          :class="{ 'bg-purple-900/20': inquiry.status === 'new' }"
+          class="p-6 transition-all duration-300 hover:bg-white/5 flex flex-col gap-4 group rounded-xl border border-purple-500/20"
+          :class="{ 'bg-purple-900/20 shadow-[0_0_15px_rgba(168,85,247,0.15)]': inquiry.status === 'new', 'bg-black/20': inquiry.status !== 'new' }"
         >
           <!-- Header: Status, Date, Name -->
-          <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
-            <div class="flex items-start lg:items-center gap-3">
+          <div class="flex flex-col gap-4">
+            <div class="flex items-start gap-3">
               <span v-if="inquiry.status === 'new'" class="w-2.5 h-2.5 rounded-full bg-purple-500 mt-1 shadow-[0_0_8px_rgba(168,85,247,0.8)]"></span>
               <span v-else-if="inquiry.status === 'replied_staff'" class="w-2.5 h-2.5 rounded-full bg-green-500 mt-1" title="Replied by Staff"></span>
               <span v-else-if="inquiry.status === 'replied_director'" class="w-2.5 h-2.5 rounded-full bg-purple-500 mt-1" title="Replied by Director"></span>
@@ -87,7 +87,7 @@
               </div>
             </div>
             
-            <div class="flex items-center flex-wrap gap-3 lg:justify-end mt-2 lg:mt-0">
+            <div class="flex items-center flex-wrap gap-2 mt-2">
               <span class="text-sm text-slate-300 bg-black/20 px-3 py-1 rounded-full whitespace-nowrap border border-white/5">
                 {{ formatDate(inquiry.created_at) }}
               </span>
@@ -128,9 +128,9 @@
           </div>
 
           <!-- Content: Subject & Message -->
-          <div class="ml-0 lg:ml-6 mt-2">
-            <h5 class="font-medium text-white mb-2">Subject: {{ inquiry.subject }}</h5>
-            <div class="bg-black/20 rounded-lg p-4 border border-white/10 text-slate-300 text-sm whitespace-pre-wrap leading-relaxed shadow-inner">
+          <div class="mt-4 flex-grow flex flex-col">
+            <h5 class="font-medium text-white mb-3">Subject: {{ inquiry.subject }}</h5>
+            <div class="bg-black/30 rounded-lg p-4 border border-white/5 text-slate-300 text-sm whitespace-pre-wrap leading-relaxed shadow-inner flex-grow">
               {{ inquiry.message }}
             </div>
           </div>
