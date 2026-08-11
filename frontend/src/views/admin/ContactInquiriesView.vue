@@ -66,8 +66,8 @@
           :class="{ 'bg-purple-900/20': inquiry.status === 'new' }"
         >
           <!-- Header: Status, Date, Name -->
-          <div class="flex justify-between items-start flex-wrap gap-4">
-            <div class="flex items-center gap-3">
+          <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+            <div class="flex items-start lg:items-center gap-3">
               <span v-if="inquiry.status === 'new'" class="w-2.5 h-2.5 rounded-full bg-purple-500 mt-1 shadow-[0_0_8px_rgba(168,85,247,0.8)]"></span>
               <span v-else-if="inquiry.status === 'replied_staff'" class="w-2.5 h-2.5 rounded-full bg-green-500 mt-1" title="Replied by Staff"></span>
               <span v-else-if="inquiry.status === 'replied_director'" class="w-2.5 h-2.5 rounded-full bg-purple-500 mt-1" title="Replied by Director"></span>
@@ -87,7 +87,7 @@
               </div>
             </div>
             
-            <div class="flex items-center flex-wrap gap-4">
+            <div class="flex items-center flex-wrap gap-3 lg:justify-end mt-2 lg:mt-0">
               <span class="text-sm text-slate-300 bg-black/20 px-3 py-1 rounded-full whitespace-nowrap border border-white/5">
                 {{ formatDate(inquiry.created_at) }}
               </span>
@@ -111,7 +111,7 @@
               <button 
                 v-if="inquiry.status === 'new'"
                 @click="markAsRead(inquiry)"
-                class="text-sm px-3 py-1 bg-white/10 border border-white/20 rounded text-slate-200 hover:bg-white/20 hover:text-white transition-colors flex items-center gap-1"
+                class="text-sm px-3 py-1.5 bg-slate-600 rounded text-white hover:bg-slate-500 transition-colors flex items-center gap-1 shadow-sm"
                 title="Mark as Read"
               >
                 <span class="material-symbols-outlined text-[16px]">done</span> Mark Read
@@ -119,7 +119,7 @@
 
               <button 
                 @click="deleteInquiry(inquiry)"
-                class="text-sm px-3 py-1 bg-red-500/20 text-red-300 border border-red-500/30 rounded hover:bg-red-500/30 transition-colors flex items-center gap-1"
+                class="text-sm px-3 py-1.5 bg-red-600 rounded text-white hover:bg-red-500 transition-colors flex items-center gap-1 shadow-sm"
                 title="Delete Inquiry"
               >
                 <span class="material-symbols-outlined text-[16px]">delete</span> Delete
