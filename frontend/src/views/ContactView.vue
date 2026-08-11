@@ -123,7 +123,7 @@
 
 <script setup>
 import { reactive, ref } from 'vue';
-import axios from '@/utils/axios';
+import api from '../api';
 
 const form = reactive({
   name: '',
@@ -139,7 +139,7 @@ const submitForm = async () => {
   isSubmitting.value = true;
   
   try {
-    const response = await axios.post('/contact', form);
+    const response = await api.post('/contact', form);
     if (response.data && response.data.status === 201) {
       alert('Thank you for your inquiry! We will get back to you soon.');
       form.name = '';

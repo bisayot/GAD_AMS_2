@@ -17,7 +17,6 @@
           System Status
         </button>
       </div>
-      </div>
     </div>
     
     
