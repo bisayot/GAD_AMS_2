@@ -55,12 +55,12 @@ const activeTab = ref('offices');
 .page-title {
   font-size: 36px;
   font-weight: 800;
-  color: #ffffff;
+  color: #1e293b;
   margin: 0 0 8px 0;
 }
 
 .page-subtitle {
-  color: #94a3b8;
+  color: #64748b;
   font-size: 18px;
   margin: 0;
 }
@@ -73,7 +73,7 @@ const activeTab = ref('offices');
   background: transparent;
   border: none;
   border-bottom: 3px solid transparent;
-  color: #94a3b8;
+  color: #64748b;
   font-weight: 700;
   font-size: 18px;
   cursor: pointer;
