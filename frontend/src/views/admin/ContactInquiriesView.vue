@@ -1,19 +1,20 @@
 <template>
-  <div class="px-6 py-8 mx-auto max-w-7xl">
-    <div class="flex items-center justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-headline font-bold text-white">Contact Inquiries</h1>
-        <p class="text-slate-400 mt-1">Review and manage inquiries submitted from the public contact form.</p>
+  <main class="main-viewport flex-1 overflow-y-auto" style="background: linear-gradient(135deg, #0f172a 0%, #1e1e2f 100%); min-height: 100vh; padding: 2rem;">
+    <div class="page-container">
+      <div class="header-section mb-8 flex items-center justify-between">
+        <div>
+          <h1 class="page-title">Contact Inquiries</h1>
+          <p class="page-subtitle">Review and manage inquiries submitted from the public contact form.</p>
+        </div>
+        <button @click="fetchInquiries" class="btn-secondary flex items-center gap-2">
+          <span class="material-symbols-outlined text-[20px]">refresh</span>
+          Refresh
+        </button>
       </div>
-      <button @click="fetchInquiries" class="flex items-center gap-2 px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg shadow-sm hover:bg-slate-700 text-slate-300 font-medium transition-colors">
-        <span class="material-symbols-outlined text-[20px]">refresh</span>
-        Refresh
-      </button>
-    </div>
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <div class="bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-700 flex items-center gap-4">
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="glass-card p-6 flex items-center gap-4">
         <div class="w-12 h-12 rounded-full bg-blue-900/50 text-blue-400 flex items-center justify-center">
           <span class="material-symbols-outlined">inbox</span>
         </div>
@@ -21,9 +22,8 @@
           <p class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Total Inquiries</p>
           <p class="text-2xl font-bold text-white">{{ inquiries.length }}</p>
         </div>
-      </div>
-      
-      <div class="bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-700 flex items-center gap-4">
+        
+        <div class="glass-card p-6 flex items-center gap-4">
         <div class="w-12 h-12 rounded-full bg-amber-900/50 text-amber-400 flex items-center justify-center">
           <span class="material-symbols-outlined">mark_email_unread</span>
         </div>
@@ -35,10 +35,10 @@
     </div>
 
     <!-- Main Content -->
-    <div class="bg-slate-800 rounded-xl shadow-sm border border-slate-700 overflow-hidden">
+    <div class="glass-card overflow-hidden">
       <!-- Loading State -->
       <div v-if="loading" class="p-12 flex flex-col items-center justify-center text-slate-400">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mb-4"></div>
         <p>Loading inquiries...</p>
       </div>
 
@@ -50,32 +50,32 @@
       </div>
 
       <!-- Inquiries List -->
-      <div v-else class="divide-y divide-slate-700">
+      <div v-else class="divide-y divide-purple-500/20">
         <div 
           v-for="inquiry in inquiries" 
           :key="inquiry.id"
-          class="p-6 transition-colors duration-200 hover:bg-slate-700/50 flex flex-col gap-4 group"
-          :class="{ 'bg-blue-900/20': inquiry.status === 'new' }"
+          class="p-6 transition-colors duration-200 hover:bg-white/5 flex flex-col gap-4 group"
+          :class="{ 'bg-purple-900/20': inquiry.status === 'new' }"
         >
           <!-- Header: Status, Date, Name -->
-          <div class="flex justify-between items-start">
+          <div class="flex justify-between items-start flex-wrap gap-4">
             <div class="flex items-center gap-3">
-              <span v-if="inquiry.status === 'new'" class="w-2.5 h-2.5 rounded-full bg-blue-500 mt-1"></span>
+              <span v-if="inquiry.status === 'new'" class="w-2.5 h-2.5 rounded-full bg-purple-500 mt-1 shadow-[0_0_8px_rgba(168,85,247,0.8)]"></span>
               <span v-else-if="inquiry.status === 'replied_staff'" class="w-2.5 h-2.5 rounded-full bg-green-500 mt-1" title="Replied by Staff"></span>
               <span v-else-if="inquiry.status === 'replied_director'" class="w-2.5 h-2.5 rounded-full bg-purple-500 mt-1" title="Replied by Director"></span>
               <div>
                 <h4 class="text-lg font-semibold text-white" :class="{'font-bold': inquiry.status === 'new'}">
                   {{ inquiry.name }}
                 </h4>
-                <a :href="'mailto:' + inquiry.email" class="text-sm text-primary-light hover:text-primary hover:underline flex items-center gap-1 mt-0.5">
+                <a :href="'mailto:' + inquiry.email" class="text-sm text-purple-300 hover:text-purple-200 hover:underline flex items-center gap-1 mt-0.5">
                   <span class="material-symbols-outlined text-[14px]">mail</span>
                   {{ inquiry.email }}
                 </a>
               </div>
             </div>
             
-            <div class="flex items-center gap-4">
-              <span class="text-sm text-slate-400 bg-slate-900 px-3 py-1 rounded-full whitespace-nowrap">
+            <div class="flex items-center flex-wrap gap-4">
+              <span class="text-sm text-slate-300 bg-black/20 px-3 py-1 rounded-full whitespace-nowrap border border-white/5">
                 {{ formatDate(inquiry.created_at) }}
               </span>
               
@@ -89,7 +89,7 @@
               <button 
                 v-if="!inquiry.status.startsWith('replied')"
                 @click="openReplyModal(inquiry)"
-                class="text-sm px-3 py-1 bg-primary text-white border border-transparent rounded hover:bg-primary-dark transition-colors flex items-center gap-1"
+                class="text-sm px-3 py-1 btn-primary flex items-center gap-1"
                 title="Reply"
               >
                 <span class="material-symbols-outlined text-[16px]">reply</span> Reply
@@ -98,7 +98,7 @@
               <button 
                 v-if="inquiry.status === 'new'"
                 @click="markAsRead(inquiry)"
-                class="text-sm px-3 py-1 bg-slate-700 border border-slate-600 rounded text-slate-300 hover:bg-slate-600 hover:text-white transition-colors flex items-center gap-1"
+                class="text-sm px-3 py-1 bg-white/10 border border-white/20 rounded text-slate-200 hover:bg-white/20 hover:text-white transition-colors flex items-center gap-1"
                 title="Mark as Read"
               >
                 <span class="material-symbols-outlined text-[16px]">done</span> Mark Read
@@ -106,7 +106,7 @@
 
               <button 
                 @click="deleteInquiry(inquiry)"
-                class="text-sm px-3 py-1 bg-red-900/30 text-red-400 border border-red-800/50 rounded hover:bg-red-900/50 hover:text-red-300 transition-colors flex items-center gap-1"
+                class="text-sm px-3 py-1 bg-red-500/20 text-red-300 border border-red-500/30 rounded hover:bg-red-500/30 transition-colors flex items-center gap-1"
                 title="Delete Inquiry"
               >
                 <span class="material-symbols-outlined text-[16px]">delete</span> Delete
@@ -117,46 +117,49 @@
           <!-- Content: Subject & Message -->
           <div class="ml-0 lg:ml-6 mt-2">
             <h5 class="font-medium text-white mb-2">Subject: {{ inquiry.subject }}</h5>
-            <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700 text-slate-300 text-sm whitespace-pre-wrap leading-relaxed">
+            <div class="bg-black/20 rounded-lg p-4 border border-white/10 text-slate-300 text-sm whitespace-pre-wrap leading-relaxed shadow-inner">
               {{ inquiry.message }}
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
 
     <!-- Reply Modal -->
-    <div v-if="showReplyModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div class="bg-slate-800 rounded-xl shadow-xl w-full max-w-lg flex flex-col border border-slate-700">
-        <div class="p-6 border-b border-slate-700 flex justify-between items-center">
+    <div v-if="showReplyModal" class="modal-overlay">
+      <div class="glass-card w-full max-w-lg flex flex-col" style="max-height: 90vh;">
+        <div class="p-6 border-b border-purple-500/20 flex justify-between items-center bg-black/20 rounded-t-[1.5rem]">
           <h3 class="text-xl font-bold text-white">Reply to {{ activeInquiry?.name }}</h3>
           <button @click="closeReplyModal" class="text-slate-400 hover:text-white transition-colors">
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
         
-        <div class="p-6 flex-grow overflow-y-auto">
-          <div class="mb-4 p-3 bg-amber-900/30 border border-amber-700/50 rounded-lg text-sm text-amber-200 flex items-start gap-2">
+        <div class="p-6 flex-grow overflow-y-auto custom-scrollbar">
+          <div class="mb-4 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg text-sm text-amber-200 flex items-start gap-3">
             <span class="material-symbols-outlined text-amber-400 text-[20px]">warning</span>
-            <p>
+            <p class="leading-relaxed">
               <strong>Note:</strong> Our system uses a free email service with daily limits. If sending fails, please close this and reply manually using your own email client.
             </p>
           </div>
           
-          <label class="block text-sm font-semibold text-slate-200 mb-2">Message</label>
-          <textarea 
-            v-model="replyMessage" 
-            rows="6" 
-            class="w-full bg-slate-900 text-white border border-slate-700 rounded-lg focus:ring-primary focus:border-primary p-3" 
-            placeholder="Type your reply here..."
-          ></textarea>
+          <div class="form-group">
+            <label class="form-label">Message</label>
+            <textarea 
+              v-model="replyMessage" 
+              rows="6" 
+              class="form-input" 
+              placeholder="Type your reply here..."
+            ></textarea>
+          </div>
         </div>
         
-        <div class="p-6 border-t border-slate-700 bg-slate-900/50 flex justify-end gap-3 rounded-b-xl">
-          <button @click="closeReplyModal" class="px-4 py-2 text-slate-300 hover:bg-slate-700 bg-slate-800 border border-slate-700 rounded-lg font-medium transition-colors">
+        <div class="p-6 border-t border-purple-500/20 bg-black/20 flex justify-end gap-3 rounded-b-[1.5rem]">
+          <button @click="closeReplyModal" class="btn-secondary">
             Cancel
           </button>
-          <button @click="submitReply" :disabled="replying || !replyMessage.trim()" class="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark disabled:opacity-50 transition-colors flex items-center gap-2">
+          <button @click="submitReply" :disabled="replying || !replyMessage.trim()" class="btn-primary flex items-center gap-2">
             <span v-if="replying" class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
             {{ replying ? 'Sending...' : 'Send Reply' }}
           </button>
@@ -164,6 +167,7 @@
       </div>
     </div>
   </div>
+  </main>
 </template>
 
 <script setup>
@@ -308,4 +312,104 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.page-container { max-width: 1200px; margin: 0 auto; width: 100%; }
+.page-title {
+  font-size: 2rem;
+  color: white;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.5rem;
+}
+.page-subtitle {
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+.glass-card { 
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%); 
+  backdrop-filter: blur(12px); 
+  border-radius: 1.5rem; 
+  border: 1px solid rgba(147, 51, 234, 0.2); 
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05); 
+}
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+  padding: 0.6rem 1.25rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.btn-primary {
+  background: linear-gradient(135deg, #b979cc 0%, #9b59b6 100%);
+  color: white;
+  padding: 0.6rem 1.25rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  border: none;
+  transition: all 0.2s;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(185, 121, 204, 0.3);
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(185, 121, 204, 0.4);
+}
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.form-label {
+  color: #cbd5e1;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.form-input {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(185, 121, 204, 0.3);
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.2s;
+}
+.form-input:focus {
+  border-color: #b979cc;
+  background: rgba(0, 0, 0, 0.5);
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.02);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(185, 121, 204, 0.3);
+  border-radius: 10px;
+}
 </style>
