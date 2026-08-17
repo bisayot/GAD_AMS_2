@@ -211,8 +211,10 @@ class AuthController extends ResourceController
         ]);
 
         // Brevo requires an API Key (starts with xkeysib-) for HTTP requests, not an SMTP password
-        $apiKey = getenv('BREVO_API_KEY') ?: env('BREVO_API_KEY') ?: getenv('SMTP_PASS') ?: env('SMTP_PASS') ?: env('email.SMTPPass') ?: '';
-        $fromEmail = getenv('FROM_EMAIL') ?: env('FROM_EMAIL') ?: env('email.fromEmail') ?: 'gadims.bsu.bsit@gmail.com';
+        $apiKey = env('BREVO_API_KEY') ?: getenv('BREVO_API_KEY') ?: env('SMTP_PASS') ?: getenv('SMTP_PASS') ?: env('email.SMTPPass') ?: '';
+        $apiKey = trim($apiKey, '"\'');
+        $fromEmail = env('FROM_EMAIL') ?: getenv('FROM_EMAIL') ?: env('email.fromEmail') ?: 'gadims.bsu.bsit@gmail.com';
+        $fromEmail = trim($fromEmail, '"\'');
 
         $frontendUrl = rtrim(getenv('FRONTEND_URL') ?: env('FRONTEND_URL') ?: getenv('app.baseURL') ?: env('app.baseURL') ?: 'http://localhost:5173', '/');
         $resetLink = $frontendUrl . '/reset-password?token=' . $token;
