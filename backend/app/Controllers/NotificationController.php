@@ -5,6 +5,7 @@ namespace App\Controllers;
 use CodeIgniter\RESTful\ResourceController;
 use App\Models\NotificationModel;
 use App\Libraries\NotificationService;
+use App\Models\UserModel;
 
 class NotificationController extends ResourceController
 {
@@ -26,6 +27,14 @@ class NotificationController extends ResourceController
         $notificationModel = new NotificationModel();
         $notifications = $notificationModel->getUnread($userId);
         
+        $userModel = new UserModel();
+        $user = $userModel->find($userId);
+        if ($user) {
+            foreach ($notifications as &$notif) {
+                $notif['link'] = NotificationService::resolveLink($notif['link'], $user['role']);
+            }
+        }
+        
         return $this->respond([
             'status' => 'success',
             'data' => $notifications
@@ -46,6 +55,14 @@ class NotificationController extends ResourceController
 
         $notificationModel = new NotificationModel();
         $notifications = $notificationModel->getAllForUser($userId, $limit);
+        
+        $userModel = new UserModel();
+        $user = $userModel->find($userId);
+        if ($user) {
+            foreach ($notifications as &$notif) {
+                $notif['link'] = NotificationService::resolveLink($notif['link'], $user['role']);
+            }
+        }
         
         return $this->respond([
             'status' => 'success',

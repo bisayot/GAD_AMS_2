@@ -17,8 +17,37 @@ class NotificationService
      * @param string|null $type Optional type (e.g. 'success', 'warning', 'info')
      * @return bool
      */
+    public static function resolveLink($link, $role)
+    {
+        if (empty($link)) return $link;
+
+        $prefix = in_array($role, ['admin', 'gad_staff']) ? '/admin' : '/' . $role;
+
+        if (strpos($link, 'activity-designs') !== false || strpos($link, 'ad-list') !== false) {
+            return $role === 'college' ? "$prefix/submitted-list" : "$prefix/ad-list";
+        }
+        if (strpos($link, 'accomplishment-reports') !== false || strpos($link, 'ar-list') !== false) {
+            return $role === 'college' ? "$prefix/submitted-list" : "$prefix/ar-list";
+        }
+        if (strpos($link, 'messages') !== false) {
+            return "$prefix/messages";
+        }
+        if (strpos($link, 'inquiries') !== false || strpos($link, 'contact-inquiries') !== false) {
+            return "$prefix/contact-inquiries";
+        }
+
+        return $link;
+    }
+
     public static function send($userId, $title, $message, $link = null, $type = 'info')
     {
+        $userModel = new UserModel();
+        $user = $userModel->find($userId);
+
+        if ($user && $link) {
+            $link = self::resolveLink($link, $user['role']);
+        }
+
         // 1. Save to database
         $notificationModel = new NotificationModel();
         $notificationModel->insert([
@@ -30,10 +59,7 @@ class NotificationService
             'is_read' => 0
         ]);
 
-        // 2. Fetch User to get email
-        $userModel = new UserModel();
-        $user = $userModel->find($userId);
-
+        // 2. Send email
         if ($user && !empty($user['email'])) {
             self::sendEmail($user['email'], $user['first_name'], $title, $message, $link);
         }
