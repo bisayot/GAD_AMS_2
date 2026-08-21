@@ -21,13 +21,21 @@ class NotificationService
     {
         if (empty($link)) return $link;
 
-        $prefix = in_array($role, ['admin', 'gad_staff']) ? '/admin' : '/' . $role;
+        if (in_array($role, ['admin', 'gad_staff'])) {
+            $prefix = '/admin';
+        } elseif (in_array($role, ['college', 'twg', 'non-twg'])) {
+            $prefix = '/college';
+        } else {
+            $prefix = '/' . $role;
+        }
+
+        $isCollegeRole = in_array($role, ['college', 'twg', 'non-twg']);
 
         if (strpos($link, 'activity-designs') !== false || strpos($link, 'ad-list') !== false) {
-            return $role === 'college' ? "$prefix/submitted-list" : "$prefix/ad-list";
+            return $isCollegeRole ? "$prefix/submitted-list" : "$prefix/ad-list";
         }
         if (strpos($link, 'accomplishment-reports') !== false || strpos($link, 'ar-list') !== false) {
-            return $role === 'college' ? "$prefix/submitted-list" : "$prefix/ar-list";
+            return $isCollegeRole ? "$prefix/submitted-list" : "$prefix/ar-list";
         }
         if (strpos($link, 'messages') !== false) {
             return "$prefix/messages";
