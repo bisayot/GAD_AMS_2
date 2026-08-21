@@ -54,7 +54,15 @@ class NotificationService
             <p><strong>" . htmlspecialchars($title) . "</strong></p>
             <p>" . nl2br(htmlspecialchars($message)) . "</p>";
         
-        // No link routing in email as per user request
+        if (!empty($link)) {
+            $frontendUrl = env('FRONTEND_URL') ?: getenv('FRONTEND_URL') ?: 'http://localhost:5173';
+            $fullLink = rtrim($frontendUrl, '/') . '/' . ltrim($link, '/');
+            $htmlMessage .= "
+            <div style='margin-top: 20px;'>
+                <a href='" . htmlspecialchars($fullLink) . "' style='display: inline-block; padding: 10px 20px; background-color: #990dd1; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold;'>View Details</a>
+            </div>";
+        }
+
         $htmlMessage .= "
             <br><br>
             <hr style='border: 0; border-top: 1px solid #eee;'>
